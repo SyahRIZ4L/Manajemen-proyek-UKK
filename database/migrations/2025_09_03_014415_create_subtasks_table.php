@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::create('management_projek_subtasks', function (Blueprint $table) {
+        Schema::create('subtasks', function (Blueprint $table) {
             $table->integer('subtask_id', true);
             $table->integer('card_id');
             $table->string('subtask_title', 100);
@@ -20,12 +20,12 @@ return new class extends Migration
             $table->timestamp('created_at')->useCurrent();
 
             // Foreign key
-            $table->foreign('card_id')->references('card_id')->on('management_projek_cards')->onDelete('cascade');
+            $table->foreign('card_id')->references('card_id')->on('cards')->onDelete('cascade');
         });
     }
 
     public function down()
     {
-        Schema::dropIfExists('management_projek_subtasks');
+        Schema::dropIfExists('subtasks');
     }
 };

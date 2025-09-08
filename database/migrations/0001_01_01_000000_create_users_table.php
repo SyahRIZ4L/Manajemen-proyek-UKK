@@ -8,19 +8,26 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::create('management_projek_users', function (Blueprint $table) {
+        Schema::create('users', function (Blueprint $table) {
             $table->integer('user_id', true);
             $table->string('username', 50)->unique();
             $table->string('password', 255);
             $table->string('full_name', 100);
             $table->string('email', 100)->unique();
-            $table->timestamp('created_at')->useCurrent();
+            $table->enum('role', [
+                'Project_Admin',
+                'Team_Lead',
+                'Developer',
+                'Designer',
+                'member'
+            ])->default('member');
             $table->enum('current_task_status', ['idle', 'working'])->default('idle');
+            $table->timestamps(); // created_at & updated_at
         });
     }
 
     public function down()
     {
-        Schema::dropIfExists('management_projek_users');
+        Schema::dropIfExists('users');
     }
 };

@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::create('management_projek_cards', function (Blueprint $table) {
+        Schema::create('cards', function (Blueprint $table) {
             $table->integer('card_id', true);
             $table->integer('board_id');
             $table->string('card_title', 100);
@@ -23,13 +23,13 @@ return new class extends Migration
             $table->decimal('actual_hours', 5, 2)->nullable();
 
             // Foreign keys
-            $table->foreign('board_id')->references('board_id')->on('management_projek_boards')->onDelete('cascade');
-            $table->foreign('created_by')->references('user_id')->on('management_projek_users')->onDelete('cascade');
+            $table->foreign('board_id')->references('board_id')->on('boards')->onDelete('cascade');
+            $table->foreign('created_by')->references('user_id')->on('users')->onDelete('cascade');
         });
     }
 
     public function down()
     {
-        Schema::dropIfExists('management_projek_cards');
+        Schema::dropIfExists('cards');
     }
 };

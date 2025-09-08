@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::create('management_projek_time_logs', function (Blueprint $table) {
+        Schema::create('time_logs', function (Blueprint $table) {
             $table->integer('log_id', true);
             $table->integer('card_id')->nullable();
             $table->integer('subtask_id')->nullable();
@@ -19,14 +19,14 @@ return new class extends Migration
             $table->text('description')->nullable();
 
             // Foreign keys
-            $table->foreign('card_id')->references('card_id')->on('management_projek_cards')->onDelete('cascade');
-            $table->foreign('subtask_id')->references('subtask_id')->on('management_projek_subtasks')->onDelete('cascade');
-            $table->foreign('user_id')->references('user_id')->on('management_projek_users')->onDelete('cascade');
+            $table->foreign('card_id')->references('card_id')->on('cards')->onDelete('cascade');
+            $table->foreign('subtask_id')->references('subtask_id')->on('subtasks')->onDelete('cascade');
+            $table->foreign('user_id')->references('user_id')->on('users')->onDelete('cascade');
         });
     }
 
     public function down()
     {
-        Schema::dropIfExists('management_projek_time_logs');
+        Schema::dropIfExists('time_logs');
     }
 };
