@@ -1,331 +1,232 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>Dashboard - Manajemen Proyek</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        .sidebar {
             min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .navbar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .card {
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-            transition: transform 0.3s ease;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-        }
-        .status-badge {
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-        }
-        .status-idle {
-            background-color: #e3f2fd;
-            color: #1976d2;
-        }
-        .status-working {
-            background-color: #e8f5e8;
-            color: #2e7d32;
-        }
-        .role-badge {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 6px 12px;
+        }
+        .main-content {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        .info-card {
+            border: none;
             border-radius: 15px;
-            font-size: 0.8rem;
-            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
         }
-        .quick-action-btn {
-            border-radius: 10px;
-            padding: 12px 20px;
-            font-weight: 600;
+        .info-card:hover {
+            transform: translateY(-5px);
+        }
+        .welcome-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+        }
+        .nav-link {
+            color: rgba(255,255,255,0.8);
             transition: all 0.3s ease;
-            border: 2px solid transparent;
         }
-        .quick-action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        .nav-link:hover, .nav-link.active {
+            color: white;
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 8px;
         }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="#">
-                <i class="fas fa-rocket me-2"></i>Project Manager
-            </a>
-
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{{ route('dashboard') }}">
-                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
-                        </a>
-                    </li>
-
-                    @if(auth()->user()->isProjectAdmin())
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('admin.users') }}">
-                                <i class="fas fa-users me-1"></i>Users
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('admin.projects') }}">
-                                <i class="fas fa-project-diagram me-1"></i>Projects
-                            </a>
-                        </li>
-                    @endif
-
-                    @if(auth()->user()->isTeamLead() || auth()->user()->isProjectAdmin())
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('team.members') }}">
-                                <i class="fas fa-user-friends me-1"></i>Team
-                            </a>
-                        </li>
-                    @endif
-                </ul>
-
-                <ul class="navbar-nav">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user-circle me-1"></i>{{ auth()->user()->full_name }}
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Settings</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <form method="POST" action="{{ route('logout') }}" class="d-inline">
-                                    @csrf
-                                    <button class="dropdown-item" type="submit">
-                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <div class="container mt-4">
-        @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
-
-        <!-- Welcome Section -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                    <div class="card-body text-white">
-                        <div class="row align-items-center">
-                            <div class="col-md-8">
-                                <h2 class="mb-2">Welcome back, {{ auth()->user()->full_name }}! 👋</h2>
-                                <p class="mb-3 opacity-75">Ready to make today productive?</p>
-                                <div class="d-flex align-items-center">
-                                    <span class="role-badge me-3">{{ auth()->user()->role }}</span>
-                                    <span class="status-badge {{ auth()->user()->isWorking() ? 'status-working' : 'status-idle' }}">
-                                        <i class="fas fa-circle me-1"></i>{{ auth()->user()->current_task_status }}
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="col-md-4 text-end">
-                                <i class="fas fa-user-circle" style="font-size: 5rem; opacity: 0.3;"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Stats Cards -->
-        <div class="row mb-4">
-            <div class="col-md-3 mb-3">
-                <div class="card h-100">
-                    <div class="card-body text-center">
-                        <div class="text-primary mb-2">
-                            <i class="fas fa-tasks fa-2x"></i>
-                        </div>
-                        <h4 class="fw-bold">12</h4>
-                        <p class="text-muted mb-0">Active Tasks</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <div class="card h-100">
-                    <div class="card-body text-center">
-                        <div class="text-success mb-2">
-                            <i class="fas fa-check-circle fa-2x"></i>
-                        </div>
-                        <h4 class="fw-bold">8</h4>
-                        <p class="text-muted mb-0">Completed</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <div class="card h-100">
-                    <div class="card-body text-center">
-                        <div class="text-warning mb-2">
-                            <i class="fas fa-clock fa-2x"></i>
-                        </div>
-                        <h4 class="fw-bold">3</h4>
-                        <p class="text-muted mb-0">Pending Review</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <div class="card h-100">
-                    <div class="card-body text-center">
-                        <div class="text-info mb-2">
-                            <i class="fas fa-calendar fa-2x"></i>
-                        </div>
-                        <h4 class="fw-bold">2</h4>
-                        <p class="text-muted mb-0">This Week</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            @if(auth()->user()->isDeveloper() || auth()->user()->isTeamLead() || auth()->user()->isProjectAdmin())
-                                <div class="col-md-3 mb-2">
-                                    <button class="btn btn-outline-primary quick-action-btn w-100">
-                                        <i class="fas fa-code me-2"></i>New Task
-                                    </button>
-                                </div>
-                            @endif
-
-                            @if(auth()->user()->isDesigner() || auth()->user()->isTeamLead() || auth()->user()->isProjectAdmin())
-                                <div class="col-md-3 mb-2">
-                                    <button class="btn btn-outline-success quick-action-btn w-100">
-                                        <i class="fas fa-palette me-2"></i>Design Review
-                                    </button>
-                                </div>
-                            @endif
-
-                            @if(auth()->user()->isTeamLead() || auth()->user()->isProjectAdmin())
-                                <div class="col-md-3 mb-2">
-                                    <button class="btn btn-outline-warning quick-action-btn w-100">
-                                        <i class="fas fa-users me-2"></i>Team Meeting
-                                    </button>
-                                </div>
-                            @endif
-
-                            <div class="col-md-3 mb-2">
-                                <button class="btn btn-outline-info quick-action-btn w-100" onclick="toggleTaskStatus()">
-                                    <i class="fas fa-{{ auth()->user()->isWorking() ? 'pause' : 'play' }} me-2"></i>
-                                    {{ auth()->user()->isWorking() ? 'Take Break' : 'Start Working' }}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Recent Activity & Tasks -->
+    <div class="container-fluid">
         <div class="row">
-            <div class="col-md-8 mb-4">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Activity</h5>
-                        <small class="text-muted">Last 7 days</small>
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar p-3">
+                <div class="text-center mb-4">
+                    <h4><i class="fas fa-project-diagram"></i> ProManage</h4>
+                    <small>Sistem Manajemen Proyek</small>
+                </div>
+
+                <div class="mb-4">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-white rounded-circle p-2 me-3">
+                            <i class="fas fa-user text-primary"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0"><?= htmlspecialchars(auth()->user()->name ?? 'User') ?></h6>
+                            <small class="opacity-75">Member</small>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <div class="list-group list-group-flush">
-                            <div class="list-group-item d-flex align-items-center border-0">
-                                <div class="bg-primary rounded-circle p-2 me-3">
-                                    <i class="fas fa-plus text-white small"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-1">Task Created: "Update login system"</h6>
-                                    <small class="text-muted">2 hours ago</small>
-                                </div>
+                </div>
+
+                <nav class="nav flex-column">
+                    <a class="nav-link active mb-2" href="<?= route('home') ?>"><i class="fas fa-home me-2"></i> Dashboard</a>
+                    <a class="nav-link mb-2" href="<?= route('profile.show') ?>"><i class="fas fa-user me-2"></i> Profile</a>
+                    <a class="nav-link mb-2" href="<?= route('tasks.index') ?>"><i class="fas fa-tasks me-2"></i> Tugas Saya</a>
+                    <a class="nav-link mb-2" href="<?= route('tasks.history') ?>"><i class="fas fa-history me-2"></i> History Task</a>
+                    <a class="nav-link mb-2" href="<?= route('notifications.index') ?>"><i class="fas fa-bell me-2"></i> Notifikasi</a>
+                    <a class="nav-link mb-2" href="#"><i class="fas fa-project-diagram me-2"></i> Proyek</a>
+                    <a class="nav-link mb-2" href="#"><i class="fas fa-calendar me-2"></i> Kalender</a>
+                    <a class="nav-link mb-2" href="#"><i class="fas fa-user-friends me-2"></i> Tim</a>
+                    <a class="nav-link mb-2" href="#"><i class="fas fa-cog me-2"></i> Pengaturan</a>
+                </nav>
+
+                <div class="mt-auto pt-4">
+                    <form method="POST" action="<?= route('logout') ?>">
+                        <?= csrf_field() ?>
+                        <button type="submit" class="btn btn-outline-light btn-sm w-100">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content p-4">
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Dashboard</h2>
+                    <div class="text-muted">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        <?= date('d F Y') ?>
+                    </div>
+                </div>
+
+                <!-- Welcome Card -->
+                <div class="welcome-card p-4 mb-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h3>Selamat Datang, <?= htmlspecialchars(auth()->user()->name ?? 'User') ?>!</h3>
+                            <p class="mb-0">Mulai kelola proyek Anda dengan efisien dan terorganisir</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <i class="fas fa-rocket fa-3x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3 mb-3">
+                        <div class="card info-card text-center p-3">
+                            <i class="fas fa-project-diagram fa-3x text-primary mb-3"></i>
+                            <h5>Proyek Aktif</h5>
+                            <h3 class="text-primary">5</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card info-card text-center p-3">
+                            <i class="fas fa-tasks fa-3x text-success mb-3"></i>
+                            <h5>Tugas Selesai</h5>
+                            <h3 class="text-success">23</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card info-card text-center p-3">
+                            <i class="fas fa-clock fa-3x text-warning mb-3"></i>
+                            <h5>Tugas Pending</h5>
+                            <h3 class="text-warning">7</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card info-card text-center p-3">
+                            <i class="fas fa-user-friends fa-3x text-info mb-3"></i>
+                            <h5>Anggota Tim</h5>
+                            <h3 class="text-info">15</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Company Info Section -->
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="card info-card h-100">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0"><i class="fas fa-building me-2"></i>Tentang Perusahaan</h5>
                             </div>
-                            <div class="list-group-item d-flex align-items-center border-0">
-                                <div class="bg-success rounded-circle p-2 me-3">
-                                    <i class="fas fa-check text-white small"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-1">Task Completed: "Database migration"</h6>
-                                    <small class="text-muted">Yesterday</small>
-                                </div>
-                            </div>
-                            <div class="list-group-item d-flex align-items-center border-0">
-                                <div class="bg-info rounded-circle p-2 me-3">
-                                    <i class="fas fa-comment text-white small"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-1">New comment on "Homepage design"</h6>
-                                    <small class="text-muted">2 days ago</small>
+                            <div class="card-body">
+                                <h6>PT. Teknologi Maju Bersama</h6>
+                                <p class="text-muted mb-3">Perusahaan teknologi yang fokus pada pengembangan solusi digital untuk berbagai industri.</p>
+
+                                <div class="row">
+                                    <div class="col-6 mb-2">
+                                        <small class="text-muted">Didirikan:</small>
+                                        <div>2020</div>
+                                    </div>
+                                    <div class="col-6 mb-2">
+                                        <small class="text-muted">Karyawan:</small>
+                                        <div>50+ Orang</div>
+                                    </div>
+                                    <div class="col-6 mb-2">
+                                        <small class="text-muted">Lokasi:</small>
+                                        <div>Jakarta, Indonesia</div>
+                                    </div>
+                                    <div class="col-6 mb-2">
+                                        <small class="text-muted">Industri:</small>
+                                        <div>Teknologi</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <div class="col-md-4 mb-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="fas fa-calendar-day me-2"></i>Today's Tasks</h5>
+                    <div class="col-md-6 mb-4">
+                        <div class="card info-card h-100">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i class="fas fa-bullseye me-2"></i>Visi & Misi</h5>
+                            </div>
+                            <div class="card-body">
+                                <h6>Visi</h6>
+                                <p class="text-muted mb-3">Menjadi perusahaan teknologi terdepan dalam menghadirkan solusi digital inovatif untuk kemajuan bisnis di Indonesia.</p>
+
+                                <h6>Misi</h6>
+                                <ul class="text-muted">
+                                    <li>Mengembangkan teknologi berkualitas tinggi</li>
+                                    <li>Memberikan pelayanan terbaik kepada klien</li>
+                                    <li>Menciptakan lingkungan kerja yang inovatif</li>
+                                    <li>Berkontribusi pada kemajuan teknologi nasional</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="card info-card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-history me-2"></i>Aktivitas Terbaru</h5>
                     </div>
                     <div class="card-body">
-                        <div class="list-group list-group-flush">
-                            <div class="list-group-item border-0 px-0">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" checked>
-                                    <label class="form-check-label">
-                                        <s>Review pull requests</s>
-                                    </label>
-                                </div>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-primary rounded-circle p-2 me-3">
+                                <i class="fas fa-user-plus text-white"></i>
                             </div>
-                            <div class="list-group-item border-0 px-0">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox">
-                                    <label class="form-check-label">
-                                        Update documentation
-                                    </label>
-                                </div>
+                            <div>
+                                <div>Selamat datang di sistem manajemen proyek!</div>
+                                <small class="text-muted">Baru saja</small>
                             </div>
-                            <div class="list-group-item border-0 px-0">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox">
-                                    <label class="form-check-label">
-                                        Team standup meeting
-                                    </label>
-                                </div>
+                        </div>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-success rounded-circle p-2 me-3">
+                                <i class="fas fa-check text-white"></i>
+                            </div>
+                            <div>
+                                <div>Akun Anda telah berhasil diaktifkan</div>
+                                <small class="text-muted">5 menit yang lalu</small>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="bg-info rounded-circle p-2 me-3">
+                                <i class="fas fa-book text-white"></i>
+                            </div>
+                            <div>
+                                <div>Silakan jelajahi fitur-fitur yang tersedia</div>
+                                <small class="text-muted">10 menit yang lalu</small>
                             </div>
                         </div>
                     </div>
@@ -335,11 +236,5 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        function toggleTaskStatus() {
-            // This would typically make an AJAX call to update the user's task status
-            alert('Feature coming soon! This will toggle your work status.');
-        }
-    </script>
 </body>
 </html>
