@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Auth;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +21,21 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Define Gates for authorization
+        Gate::define('manage-projects', function ($user) {
+            return in_array($user->role, ['Project_Admin', 'Team_Lead']);
+        });
+
+        Gate::define('manage-users', function ($user) {
+            return $user->role === 'Project_Admin';
+        });
+
+        Gate::define('admin-only', function ($user) {
+            return $user->role === 'Project_Admin';
+        });
+
+        Gate::define('team-lead-or-admin', function ($user) {
+            return in_array($user->role, ['Project_Admin', 'Team_Lead']);
+        });
     }
 }

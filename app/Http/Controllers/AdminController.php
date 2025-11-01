@@ -7,153 +7,110 @@ use Illuminate\Support\Facades\Auth;
 
 class AdminController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
     /**
-     * Display admin dashboard.
+     * Admin Dashboard - Minimal & Clean
      */
     public function dashboard()
     {
-        // Admin dashboard logic here
-        return view('admin.dashboard');
+        $user = Auth::user();
+
+        // Simple admin check
+        $adminEmails = [
+            'admin@test.com',
+            'admin@example.com',
+            'syahrizal@admin.com'
+        ];
+
+        $isAdmin = in_array($user->email, $adminEmails) || $user->role === 'Project_Admin';
+
+        if (!$isAdmin) {
+            return redirect()->route('home')->with('error', 'Access denied');
+        }
+
+        // Minimal dashboard data
+        $stats = [
+            'projects' => 8,
+            'members' => 12,
+            'tasks' => 35,
+            'completed' => 28
+        ];
+
+        return view('admin.dashboard', compact('stats', 'user'));
     }
 
     /**
-     * Display projects index.
+     * Projects Management
      */
-    public function index()
+    public function projects()
     {
-        // Projects list logic here
-        return view('admin.projects.index');
+        $user = Auth::user();
+
+        $adminEmails = ['admin@test.com', 'admin@example.com', 'syahrizal@admin.com'];
+        $isAdmin = in_array($user->email, $adminEmails) || $user->role === 'Project_Admin';
+
+        if (!$isAdmin) {
+            return redirect()->route('home')->with('error', 'Access denied');
+        }
+
+        // Sample projects data
+        $projects = [
+            ['id' => 1, 'name' => 'Website Project', 'status' => 'Active', 'progress' => 75],
+            ['id' => 2, 'name' => 'Mobile App', 'status' => 'Planning', 'progress' => 25],
+            ['id' => 3, 'name' => 'API Development', 'status' => 'Completed', 'progress' => 100],
+        ];
+
+        return view('admin.projects', compact('projects', 'user'));
     }
 
     /**
-     * Show form for creating new project.
+     * Admin Panel - Full Control Interface
      */
-    public function create()
+    public function panel()
     {
-        return view('admin.projects.create');
+        $user = Auth::user();
+
+        // Simple admin check
+        $adminEmails = [
+            'admin@test.com',
+            'admin@example.com',
+            'syahrizal@admin.com'
+        ];
+
+        $isAdmin = in_array($user->email, $adminEmails) || $user->role === 'Project_Admin';
+
+        if (!$isAdmin) {
+            return redirect()->route('home')->with('error', 'Access denied - Admin only');
+        }
+
+        return view('admin.panel', compact('user'));
     }
 
     /**
-     * Store new project.
+     * Users Management
      */
-    public function store(Request $request)
+    public function users()
     {
-        // Store project logic here
-        return redirect()->route('admin.projects.index')->with('success', 'Proyek berhasil dibuat!');
-    }
+        $user = Auth::user();
 
-    /**
-     * Show form for editing project.
-     */
-    public function edit($id)
-    {
-        // Edit project logic here
-        return view('admin.projects.edit');
-    }
+        $adminEmails = ['admin@test.com', 'admin@example.com', 'syahrizal@admin.com'];
+        $isAdmin = in_array($user->email, $adminEmails) || $user->role === 'Project_Admin';
 
-    /**
-     * Update project.
-     */
-    public function update(Request $request, $id)
-    {
-        // Update project logic here
-        return redirect()->route('admin.projects.index')->with('success', 'Proyek berhasil diperbarui!');
-    }
+        if (!$isAdmin) {
+            return redirect()->route('home')->with('error', 'Access denied');
+        }
 
-    /**
-     * Delete project.
-     */
-    public function destroy($id)
-    {
-        // Delete project logic here
-        return redirect()->route('admin.projects.index')->with('success', 'Proyek berhasil dihapus!');
-    }
+        // Sample users data
+        $users = [
+            ['id' => 1, 'name' => 'John Doe', 'email' => 'john@example.com', 'role' => 'Developer'],
+            ['id' => 2, 'name' => 'Jane Smith', 'email' => 'jane@example.com', 'role' => 'Team_Lead'],
+            ['id' => 3, 'name' => 'Mike Johnson', 'email' => 'mike@example.com', 'role' => 'Member'],
+        ];
 
-    /**
-     * Display project members.
-     */
-    public function projectMembers($projectId)
-    {
-        return view('admin.projects.members');
-    }
-
-    /**
-     * Add project member.
-     */
-    public function addProjectMember(Request $request, $projectId)
-    {
-        return redirect()->back()->with('success', 'Member berhasil ditambahkan!');
-    }
-
-    /**
-     * Remove project member.
-     */
-    public function removeProjectMember($memberId)
-    {
-        return redirect()->back()->with('success', 'Member berhasil dihapus!');
-    }
-
-    /**
-     * Update member role.
-     */
-    public function updateMemberRole(Request $request, $memberId)
-    {
-        return redirect()->back()->with('success', 'Role member berhasil diperbarui!');
-    }
-
-    /**
-     * Display team.
-     */
-    public function team()
-    {
-        return view('admin.team');
-    }
-
-    /**
-     * Display admin tasks.
-     */
-    public function tasks()
-    {
-        return view('admin.tasks.index');
-    }
-
-    /**
-     * Edit task.
-     */
-    public function editTask($taskId)
-    {
-        return view('admin.tasks.edit');
-    }
-
-    /**
-     * Update task.
-     */
-    public function updateTask(Request $request, $taskId)
-    {
-        return redirect()->route('admin.tasks.index')->with('success', 'Task berhasil diperbarui!');
-    }
-
-    /**
-     * Display all data.
-     */
-    public function allData()
-    {
-        return view('admin.data');
-    }
-
-    /**
-     * Display reports.
-     */
-    public function reports()
-    {
-        return view('admin.reports');
-    }
-
-    /**
-     * Generate report.
-     */
-    public function generateReport(Request $request)
-    {
-        return redirect()->back()->with('success', 'Report berhasil dibuat!');
+        return view('admin.users', compact('users', 'user'));
     }
 }

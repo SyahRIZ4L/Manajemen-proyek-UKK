@@ -1,16 +1,38 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\AdminController;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\TaskController;
-use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
-// Root redirect
+
+
+// Root redirect - SIMPLIFIED
 Route::get('/', function () {
-    return auth()->check() ? redirect()->route('home') : redirect()->route('login');
+    if (Auth::check()) {
+        return redirect()->route('home');
+    }
+    return redirect()->route('login');
+});
+
+// Debug route untuk cek user data
+Route::get('/debug-user', function () {
+    if (!Auth::check()) {
+        return 'User not logged in';
+    }
+
+    $user = Auth::user();
+    return [
+        'user_id' => $user->user_id,
+        'username' => $user->username,
+        'email' => $user->email,
+        'role' => $user->role,
+        'full_name' => $user->full_name,
+        'current_task_status' => $user->current_task_status,
+    ];
 });
 
 // Authentication Routes
@@ -25,62 +47,32 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    // Homepage/Dashboard
+    // Homepage/Dashboard - Role-specific dashboards
     Route::get('/home', [HomeController::class, 'index'])->name('home');
     Route::get('/dashboard', [HomeController::class, 'index'])->name('dashboard'); // Alias for backward compatibility
 
-    // Profile Routes
-    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
-    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+    // Admin Panel Route - Only accessible by admins
+    Route::get('/admin/panel', [AdminController::class, 'panel'])->name('admin.panel');
 
-    // Task Management Routes
-    Route::resource('tasks', TaskController::class);
-    Route::get('/tasks-history', [TaskController::class, 'history'])->name('tasks.history');
-    Route::put('/tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.status.update');
-    Route::post('/tasks/{task}/time', [TaskController::class, 'logTime'])->name('tasks.time.log');
+    // Project Management Routes - Only accessible by admins and team leads
+    Route::middleware('can:manage-projects')->group(function () {
+        Route::get('/api/projects/stats', [ProjectController::class, 'getStatistics'])->name('projects.stats');
+        Route::get('/api/projects', [ProjectController::class, 'index'])->name('projects.index');
+        Route::post('/api/projects', [ProjectController::class, 'store'])->name('projects.store');
+        Route::get('/api/projects/{id}', [ProjectController::class, 'show'])->name('projects.show');
+        Route::get('/api/projects/{id}/members', [ProjectController::class, 'getMembers'])->name('projects.members');
+        Route::get('/api/projects/{id}/board-stats', [ProjectController::class, 'getBoardStats'])->name('projects.board-stats');
+        Route::put('/api/projects/{id}', [ProjectController::class, 'update'])->name('projects.update');
+        Route::delete('/api/projects/{id}', [ProjectController::class, 'destroy'])->name('projects.destroy');
+    });
 
-    // Time Tracking API
-    Route::get('/api/time-tracking', [HomeController::class, 'getTimeTrackingData'])->name('api.time-tracking');
-
-    // Notifications
-    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
-    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
-    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
-    Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
-    Route::get('/api/notifications/unread-count', [NotificationController::class, 'getUnreadCount'])->name('api.notifications.unread-count');
-});
-
-// Admin Routes
-Route::middleware(['auth', 'project.admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
-
-    // Projects Management
-    Route::resource('projects', AdminController::class, [
-        'only' => ['index', 'create', 'store', 'edit', 'update', 'destroy'],
-        'names' => [
-            'index' => 'projects.index',
-            'create' => 'projects.create',
-            'store' => 'projects.store',
-            'edit' => 'projects.edit',
-            'update' => 'projects.update',
-            'destroy' => 'projects.destroy'
-        ]
-    ]);
-
-    // Project Members
-    Route::get('/projects/{project}/members', [AdminController::class, 'projectMembers'])->name('projects.members');
-    Route::post('/projects/{project}/members', [AdminController::class, 'addProjectMember'])->name('projects.members.add');
-    Route::delete('/members/{member}', [AdminController::class, 'removeProjectMember'])->name('members.remove');
-    Route::put('/members/{member}/role', [AdminController::class, 'updateMemberRole'])->name('members.role');
-
-    // Other Admin Routes
-    Route::get('/team', [AdminController::class, 'team'])->name('team');
-    Route::get('/tasks', [AdminController::class, 'tasks'])->name('tasks.index');
-    Route::get('/tasks/{task}/edit', [AdminController::class, 'editTask'])->name('tasks.edit');
-    Route::put('/tasks/{task}', [AdminController::class, 'updateTask'])->name('tasks.update');
-    Route::get('/data', [AdminController::class, 'allData'])->name('data');
-    Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
-    Route::post('/reports/generate', [AdminController::class, 'generateReport'])->name('reports.generate');
+    // User Management Routes - Only accessible by admins
+    Route::middleware('can:manage-users')->group(function () {
+        Route::get('/api/users', [UserController::class, 'index'])->name('users.index');
+        Route::post('/api/users', [UserController::class, 'store'])->name('users.store');
+        Route::get('/api/users/{id}', [UserController::class, 'show'])->name('users.show');
+        Route::put('/api/users/{id}', [UserController::class, 'update'])->name('users.update');
+        Route::delete('/api/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+        Route::get('/api/users/stats', [UserController::class, 'getStatistics'])->name('users.stats');
+    });
 });

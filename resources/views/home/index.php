@@ -87,21 +87,44 @@
                 <div class="mb-4">
                     <div class="d-flex align-items-center">
                         <div class="bg-white rounded-circle p-2 me-3">
-                            <i class="fas fa-user text-primary"></i>
+                            <?php if ($userRole === 'Project Admin'): ?>
+                                <i class="fas fa-crown text-warning"></i>
+                            <?php elseif ($userRole === 'Team Lead'): ?>
+                                <i class="fas fa-users-cog text-info"></i>
+                            <?php elseif ($userRole === 'Developer'): ?>
+                                <i class="fas fa-code text-success"></i>
+                            <?php elseif ($userRole === 'Designer'): ?>
+                                <i class="fas fa-paint-brush text-danger"></i>
+                            <?php elseif ($userRole === 'Tester'): ?>
+                                <i class="fas fa-bug text-secondary"></i>
+                            <?php else: ?>
+                                <i class="fas fa-user text-primary"></i>
+                            <?php endif; ?>
                         </div>
                         <div>
                             <h6 class="mb-0"><?= htmlspecialchars($user->name) ?></h6>
-                            <small class="opacity-75">Member</small>
+                            <small class="opacity-75"><?= $userRole ?></small>
                         </div>
                     </div>
                 </div>
 
                 <nav class="nav flex-column">
                     <a class="nav-link active mb-2" href="<?= route('home') ?>"><i class="fas fa-home me-2"></i> Dashboard</a>
+
+                    <?php if ($userRole === 'Project Admin'): ?>
+                    <a class="nav-link mb-2" href="<?= route('admin.dashboard') ?>"><i class="fas fa-crown me-2"></i> Admin Panel</a>
+                    <a class="nav-link mb-2" href="<?= route('admin.projects.index') ?>"><i class="fas fa-project-diagram me-2"></i> Kelola Proyek</a>
+                    <a class="nav-link mb-2" href="<?= route('admin.team') ?>"><i class="fas fa-users me-2"></i> Kelola Tim</a>
+                    <a class="nav-link mb-2" href="<?= route('admin.reports') ?>"><i class="fas fa-chart-bar me-2"></i> Laporan</a>
+                    <?php elseif ($userRole === 'Team Lead'): ?>
+                    <a class="nav-link mb-2" href="<?= route('teamlead.dashboard') ?>"><i class="fas fa-users-cog me-2"></i> Team Lead Panel</a>
+                    <a class="nav-link mb-2" href="<?= route('teamlead.tasks') ?>"><i class="fas fa-tasks me-2"></i> Kelola Tugas</a>
+                    <a class="nav-link mb-2" href="<?= route('teamlead.coordination') ?>"><i class="fas fa-project-diagram me-2"></i> Koordinasi Tim</a>
+                    <?php endif; ?>
+
                     <a class="nav-link mb-2" href="<?= route('profile.show') ?>"><i class="fas fa-user me-2"></i> Profile</a>
                     <a class="nav-link mb-2" href="<?= route('tasks.index') ?>"><i class="fas fa-tasks me-2"></i> Tugas Saya</a>
                     <a class="nav-link mb-2" href="<?= route('tasks.history') ?>"><i class="fas fa-history me-2"></i> History Task</a>
-                    <a class="nav-link mb-2" href="#"><i class="fas fa-project-diagram me-2"></i> Proyek</a>
                     <a class="nav-link mb-2" href="#"><i class="fas fa-calendar me-2"></i> Kalender</a>
                     <a class="nav-link mb-2" href="#"><i class="fas fa-user-friends me-2"></i> Tim</a>
                 </nav>
@@ -118,6 +141,21 @@
 
             <!-- Main Content -->
             <div class="col-md-9 col-lg-10 main-content p-4">
+                <!-- Success/Error Messages -->
+                <?php if (session('success')): ?>
+                <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                    <i class="fas fa-check-circle me-2"></i><?= session('success') ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <?php endif; ?>
+
+                <?php if (session('error')): ?>
+                <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i><?= session('error') ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <?php endif; ?>
+
                 <!-- Header -->
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2>Dashboard</h2>
@@ -131,11 +169,37 @@
                 <div class="welcome-card p-4 mb-4">
                     <div class="row align-items-center">
                         <div class="col-md-8">
-                            <h3>Selamat Datang, <?= htmlspecialchars($user->name) ?>!</h3>
-                            <p class="mb-0">Kelola proyek Anda dengan efisien dan pantau progress secara real-time</p>
+                            <h3>Selamat Datang <?= ucfirst(strtolower($userRole)) ?>, <?= htmlspecialchars($user->name) ?>!</h3>
+                            <p class="mb-2">Kelola proyek Anda dengan efisien dan pantau progress secara real-time</p>
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-light text-dark me-2">
+                                    <i class="fas fa-user-tag me-1"></i><?= $userRole ?>
+                                </span>
+                                <?php if ($userRole === 'Project Admin'): ?>
+                                <a href="<?= route('admin.dashboard') ?>" class="btn btn-light btn-sm">
+                                    <i class="fas fa-cog me-1"></i>Admin Panel
+                                </a>
+                                <?php elseif ($userRole === 'Team Lead'): ?>
+                                <a href="<?= route('teamlead.dashboard') ?>" class="btn btn-light btn-sm">
+                                    <i class="fas fa-users-cog me-1"></i>Team Lead Panel
+                                </a>
+                                <?php endif; ?>
+                            </div>
                         </div>
                         <div class="col-md-4 text-center">
-                            <i class="fas fa-rocket fa-3x opacity-75"></i>
+                            <?php if ($userRole === 'Project Admin'): ?>
+                                <i class="fas fa-crown fa-3x opacity-75"></i>
+                            <?php elseif ($userRole === 'Team Lead'): ?>
+                                <i class="fas fa-users-cog fa-3x opacity-75"></i>
+                            <?php elseif ($userRole === 'Developer'): ?>
+                                <i class="fas fa-code fa-3x opacity-75"></i>
+                            <?php elseif ($userRole === 'Designer'): ?>
+                                <i class="fas fa-paint-brush fa-3x opacity-75"></i>
+                            <?php elseif ($userRole === 'Tester'): ?>
+                                <i class="fas fa-bug fa-3x opacity-75"></i>
+                            <?php else: ?>
+                                <i class="fas fa-rocket fa-3x opacity-75"></i>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -353,6 +417,15 @@
                 }
             }
         });
+
+        // Auto-hide success alerts after 5 seconds
+        setTimeout(function() {
+            const successAlerts = document.querySelectorAll('.alert-success');
+            successAlerts.forEach(function(alert) {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
 
         // Mark notification as read
         document.querySelectorAll('.mark-read').forEach(button => {

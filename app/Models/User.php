@@ -30,6 +30,12 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+    // Accessor untuk name attribute (gunakan full_name)
+    public function getNameAttribute()
+    {
+        return $this->full_name;
+    }
+
     // Define role constants
     const ROLES = [
         'PROJECT_ADMIN' => 'Project_Admin',
@@ -79,5 +85,16 @@ class User extends Authenticatable
     public function isIdle()
     {
         return $this->current_task_status === self::TASK_STATUS['IDLE'];
+    }
+
+    // Relasi dengan Project
+    public function createdProjects()
+    {
+        return $this->hasMany(Project::class, 'created_by');
+    }
+
+    public function projectMemberships()
+    {
+        return $this->hasMany(ProjectMember::class, 'user_id');
     }
 }

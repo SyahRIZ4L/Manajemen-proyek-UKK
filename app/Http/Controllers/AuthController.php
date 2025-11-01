@@ -27,7 +27,7 @@ class AuthController extends Controller
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
-            return redirect()->intended('dashboard')->with('success', 'Login berhasil!');
+            return redirect()->intended('home')->with('success', 'Login berhasil! Selamat datang kembali.');
         }
 
         return back()->withErrors([
@@ -55,17 +55,33 @@ class AuthController extends Controller
 
         Auth::login($user);
 
-        return redirect('dashboard')->with('success', 'Registrasi berhasil!');
+        return redirect('home')->with('success', 'Registrasi berhasil! Selamat bergabung.');
     }
 
     // Handle logout
-    //public function logout(Request $request)
-    //{
-        //Auth::logout();
+    public function logout(Request $request)
+    {
+        try {
+            // Get user name before logout
+            $userName = Auth::user() ? Auth::user()->name : 'User';
 
-        //$request->session()->invalidate();
-        //$request->session()->regenerateToken();
+            // Logout user
+            Auth::logout();
 
-        //return redirect('/')->with('success', 'Logout berhasil!');
-    //}
+            // Invalidate session
+            $request->session()->invalidate();
+
+            // Regenerate CSRF token
+            $request->session()->regenerateToken();
+
+            // Clear any remaining session data
+            Session::flush();
+
+            return redirect('/login')->with('success', "Logout berhasil! Terima kasih {$userName}, sampai jumpa lagi.");
+
+        } catch (\Exception $e) {
+            // If there's any error, still redirect to login
+            return redirect('/login')->with('success', 'Logout berhasil!');
+        }
+    }
 }
