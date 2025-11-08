@@ -484,6 +484,10 @@
             background: #d4edda;
             color: #155724;
         }
+        .status-cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
 
         .project-body {
             padding: 20px;
@@ -751,6 +755,36 @@
             border: 2px solid rgba(25, 135, 84, 0.3);
         }
 
+        .project-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        .project-actions .btn {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .project-actions .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .project-actions .btn-success:hover {
+            background: #198754;
+            border-color: #198754;
+        }
+
+        .project-actions .btn-warning:hover {
+            background: #fd7e14;
+            border-color: #fd7e14;
+        }
+
         .team-member-card {
             background: #f8f9fa;
             border: 1px solid #dee2e6;
@@ -837,6 +871,168 @@
 
         .info-value {
             color: #6c757d;
+        }
+
+        /* Reports Styles */
+        .report-stat-card {
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            border: 1px solid #f0f0f0;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        .report-stat-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .chart-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-tabs .nav-link {
+            border: none;
+            color: #6c757d;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tabs .nav-link:hover {
+            border-color: transparent;
+            color: #667eea;
+        }
+
+        .nav-tabs .nav-link.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 0.5rem 0.5rem 0 0;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(102, 126, 234, 0.05);
+        }
+
+        /* Dark theme for reports */
+        body.dark-theme .report-stat-card {
+            background: #333333;
+            border-color: #444444;
+            color: #e0e0e0;
+        }
+
+        body.dark-theme .chart-container {
+            background: #2d2d2d !important;
+            color: #e0e0e0;
+        }
+
+        body.dark-theme .nav-tabs .nav-link {
+            color: #a0a0a0;
+        }
+
+        body.dark-theme .nav-tabs .nav-link:hover {
+            color: #667eea;
+        }
+
+        body.dark-theme .table-hover tbody tr:hover {
+            background-color: rgba(102, 126, 234, 0.1);
+        }
+
+        /* Notification Styles */
+        .notification-dropdown {
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            border-radius: 12px;
+        }
+
+        .notification-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .notification-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .notification-item.unread {
+            background-color: rgba(102, 126, 234, 0.05);
+            border-left: 3px solid #667eea;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+
+        .notification-message {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-bottom: 4px;
+        }
+
+        .notification-time {
+            font-size: 0.75rem;
+            color: #adb5bd;
+        }
+
+        .notification-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .notification-icon.task-update {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+        }
+
+        .notification-icon.status-change {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+        }
+
+        .notification-icon.project-update {
+            background-color: rgba(0, 123, 255, 0.1);
+            color: #007bff;
+        }
+
+        /* Dark theme for notifications */
+        body.dark-theme .notification-dropdown {
+            background: #2d2d2d;
+            color: #e0e0e0;
+        }
+
+        body.dark-theme .notification-item {
+            border-bottom-color: #444444;
+        }
+
+        body.dark-theme .notification-item:hover {
+            background-color: #3a3a3a;
+        }
+
+        body.dark-theme .notification-item.unread {
+            background-color: rgba(102, 126, 234, 0.1);
+        }
+
+        body.dark-theme .notification-message {
+            color: #a0a0a0;
+        }
+
+        body.dark-theme .notification-time {
+            color: #707070;
         }
 
         @media (max-width: 768px) {
@@ -932,9 +1128,7 @@
                     <a href="#profile" onclick="showContent('profile')" class="btn-action" title="Profile Settings">
                         <i class="bi bi-person-gear"></i>
                     </a>
-                    <button onclick="toggleTheme()" class="btn-action theme-toggle" title="Toggle Theme">
-                        <i class="bi bi-moon-fill" id="theme-icon"></i>
-                    </button>
+                   
                     <form action="{{ route('logout') }}" method="POST" style="display: inline;">
                         @csrf
                         <button type="submit" class="btn-action logout-btn" title="Logout">
@@ -943,13 +1137,7 @@
                     </form>
                 </div>
 
-                <!-- Back Button Section -->
-                <div class="back-section">
-                    <a href="{{ route('home') }}" class="back-btn-new">
-                        <i class="bi bi-arrow-left me-2"></i>
-                        <span>Back to the front</span>
-                    </a>
-                </div>
+
             </div>
         </div>
     </div>
@@ -958,8 +1146,40 @@
     <div class="main-content">
         <!-- Content Header -->
         <div class="content-header">
-            <h2 id="content-title">Admin Dashboard</h2>
-            <p class="text-muted mb-0" id="content-subtitle">Welcome to the administrative control center</p>
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 id="content-title" class="mb-0">Admin Dashboard</h2>
+                    <p class="text-muted mb-0" id="content-subtitle">Welcome to the administrative control center</p>
+                </div>
+                <div class="header-actions">
+                    <!-- Notification Bell -->
+                    <div class="dropdown me-3">
+                        <button class="btn btn-light position-relative" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-bell"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notification-count" style="display: none;">
+                                0
+                            </span>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationDropdown" style="width: 320px; max-height: 400px; overflow-y: auto;">
+                            <div class="dropdown-header d-flex justify-content-between align-items-center">
+                                <span>Notifications</span>
+                                <button class="btn btn-sm btn-link p-0" id="mark-all-read">Mark all as read</button>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <div id="notification-list">
+                                <div class="text-center py-3 text-muted">
+                                    <i class="bi bi-bell-slash"></i>
+                                    <p class="mb-0 mt-2">No notifications</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Theme Toggle -->
+                    <button class="btn btn-light" id="theme-toggle">
+                        <i class="bi bi-moon-fill" id="theme-icon"></i>
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Content Area -->
@@ -1558,11 +1778,244 @@
 
             <!-- Reports Content -->
             <div id="reports-content" class="content-section" style="display: none;">
-                <h4>Reports & Analytics</h4>
-                <p class="text-muted">View comprehensive reports and generate detailed analytics insights.</p>
-                <div class="alert alert-info">
-                    <i class="bi bi-info-circle me-2"></i>
-                    Reports and analytics features are currently under development.
+                <!-- Header Section -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h4 class="mb-1">Reports & Analytics</h4>
+                        <p class="text-muted mb-0">View comprehensive reports and generate detailed analytics insights</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary" onclick="exportReport()">
+                            <i class="bi bi-download me-2"></i>Export Report
+                        </button>
+                        <button class="btn btn-primary" onclick="refreshReports()">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="row g-4 mb-5">
+                    <div class="col-md-3">
+                        <div class="report-stat-card">
+                            <i class="bi bi-folder-fill stat-icon text-primary"></i>
+                            <h3 class="stat-number text-primary" id="reportTotalProjects">Loading...</h3>
+                            <p class="stat-label">Total Projects</p>
+                            <small class="text-muted">All projects</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="report-stat-card">
+                            <i class="bi bi-check-circle-fill stat-icon text-success"></i>
+                            <h3 class="stat-number text-success" id="reportCompletedProjects">Loading...</h3>
+                            <p class="stat-label">Completed Projects</p>
+                            <small class="text-muted">Successfully finished</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="report-stat-card">
+                            <i class="bi bi-clock-history stat-icon text-warning"></i>
+                            <h3 class="stat-number text-warning" id="reportInProgressProjects">Loading...</h3>
+                            <p class="stat-label">In Progress</p>
+                            <small class="text-muted">Currently active</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="report-stat-card">
+                            <i class="bi bi-people-fill stat-icon text-info"></i>
+                            <h3 class="stat-number text-info" id="reportActiveUsers">Loading...</h3>
+                            <p class="stat-label">Active Users</p>
+                            <small class="text-muted">Registered users</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters Section -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-funnel me-2 text-primary"></i>
+                            Report Filters
+                        </h5>
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label for="reportDateFrom" class="form-label">Date From</label>
+                                <input type="date" class="form-control" id="reportDateFrom">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="reportDateTo" class="form-label">Date To</label>
+                                <input type="date" class="form-control" id="reportDateTo">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="reportStatus" class="form-label">Project Status</label>
+                                <select class="form-select" id="reportStatus">
+                                    <option value="">All Status</option>
+                                    <option value="Planning">Planning</option>
+                                    <option value="In Progress">In Progress</option>
+                                    <option value="On Hold">On Hold</option>
+                                    <option value="Completed">Completed</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="reportRole" class="form-label">User Role</label>
+                                <select class="form-select" id="reportRole">
+                                    <option value="">All Roles</option>
+                                    <option value="admin">Admin</option>
+                                    <option value="team_lead">Team Lead</option>
+                                    <option value="member">Member</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <button class="btn btn-primary" onclick="applyReportFilters()">
+                                <i class="bi bi-search me-2"></i>Apply Filters
+                            </button>
+                            <button class="btn btn-outline-secondary ms-2" onclick="clearReportFilters()">
+                                <i class="bi bi-x-circle me-2"></i>Clear Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report Tabs -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-transparent border-0">
+                        <ul class="nav nav-tabs card-header-tabs" id="reportTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="projects-tab" data-bs-toggle="tab"
+                                        data-bs-target="#projects-report" type="button" role="tab">
+                                    <i class="bi bi-kanban me-2"></i>Projects Report
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="users-tab" data-bs-toggle="tab"
+                                        data-bs-target="#users-report" type="button" role="tab">
+                                    <i class="bi bi-people me-2"></i>Users Report
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="timeline-tab" data-bs-toggle="tab"
+                                        data-bs-target="#timeline-report" type="button" role="tab">
+                                    <i class="bi bi-graph-up me-2"></i>Timeline Report
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content" id="reportTabContent">
+                            <!-- Projects Report -->
+                            <div class="tab-pane fade show active" id="projects-report" role="tabpanel">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="mb-0">Projects Overview</h5>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="exportReport('projects')">
+                                        <i class="bi bi-download me-1"></i>Export CSV
+                                    </button>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Project ID</th>
+                                                <th>Project Name</th>
+                                                <th>Status</th>
+                                                <th>Start Date</th>
+                                                <th>Deadline</th>
+                                                <th>Members</th>
+                                                <th>Duration</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="projectsReportTable">
+                                            <tr>
+                                                <td colspan="7" class="text-center py-4">
+                                                    <div class="spinner-border text-primary" role="status">
+                                                        <span class="visually-hidden">Loading...</span>
+                                                    </div>
+                                                    <p class="mt-2 text-muted">Loading projects report...</p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div id="projectsPagination" class="d-flex justify-content-center mt-3"></div>
+                            </div>
+
+                            <!-- Users Report -->
+                            <div class="tab-pane fade" id="users-report" role="tabpanel">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="mb-0">Users Overview</h5>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="exportReport('users')">
+                                        <i class="bi bi-download me-1"></i>Export CSV
+                                    </button>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>User ID</th>
+                                                <th>Username</th>
+                                                <th>Full Name</th>
+                                                <th>Role</th>
+                                                <th>Projects Created</th>
+                                                <th>Projects Member</th>
+                                                <th>Joined Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="usersReportTable">
+                                            <tr>
+                                                <td colspan="7" class="text-center py-4">
+                                                    <div class="spinner-border text-primary" role="status">
+                                                        <span class="visually-hidden">Loading...</span>
+                                                    </div>
+                                                    <p class="mt-2 text-muted">Loading users report...</p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div id="usersPagination" class="d-flex justify-content-center mt-3"></div>
+                            </div>
+
+                            <!-- Timeline Report -->
+                            <div class="tab-pane fade" id="timeline-report" role="tabpanel">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="mb-0">Project Timeline</h5>
+                                    <small class="text-muted">Shows project creation and completion trends</small>
+                                </div>
+
+                                <!-- Chart placeholder -->
+                                <div class="mb-4">
+                                    <div class="chart-container bg-light rounded p-4 text-center" style="height: 300px;">
+                                        <i class="bi bi-bar-chart display-1 text-muted"></i>
+                                        <p class="text-muted mt-3">Timeline Chart</p>
+                                        <small class="text-muted">Chart visualization will be displayed here</small>
+                                    </div>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Event Type</th>
+                                                <th>Count</th>
+                                                <th>Details</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="timelineReportTable">
+                                            <tr>
+                                                <td colspan="4" class="text-center py-4">
+                                                    <div class="spinner-border text-primary" role="status">
+                                                        <span class="visually-hidden">Loading...</span>
+                                                    </div>
+                                                    <p class="mt-2 text-muted">Loading timeline report...</p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1690,6 +2143,65 @@
         </div>
     </div>
 
+    <!-- Edit Project Modal -->
+    <div class="modal fade" id="editProjectModal" tabindex="-1" aria-labelledby="editProjectModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editProjectModalLabel">
+                        <i class="bi bi-pencil-square me-2"></i>
+                        Edit Project
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="editProjectForm">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" id="editProjectId">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="editProjectName" class="form-label">Project Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="editProjectName" name="project_name" required maxlength="100">
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="editProjectDescription" class="form-label">Description</label>
+                                <textarea class="form-control" id="editProjectDescription" name="description" rows="4" placeholder="Describe your project..."></textarea>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="editProjectDeadline" class="form-label">Deadline</label>
+                                <input type="date" class="form-control" id="editProjectDeadline" name="deadline">
+                                <small class="form-text text-muted">Optional: Set a deadline for this project</small>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+
+                        <!-- Alert for form messages -->
+                        <div id="editFormAlert" class="alert" style="display: none;"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="editSubmitBtn">
+                            <span class="btn-text">Update Project</span>
+                            <span class="btn-loading" style="display: none;">
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                Updating...
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Project Detail Modal -->
     <div class="modal fade" id="projectDetailModal" tabindex="-1" aria-labelledby="projectDetailModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl">
@@ -1705,6 +2217,96 @@
                         <!-- Content will be loaded here -->
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Complete Project Modal -->
+    <div class="modal fade" id="completeProjectModal" tabindex="-1" aria-labelledby="completeProjectModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="completeProjectModalLabel">
+                        <i class="bi bi-check-circle me-2"></i>Complete Project
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="completeProjectForm">
+                    <div class="modal-body">
+                        <div id="completeProjectAlert" class="alert d-none"></div>
+
+                        <div class="mb-3">
+                            <p class="mb-3">Are you sure you want to mark this project as completed? This action will finalize the project status.</p>
+
+                            <label for="completionNotes" class="form-label">Completion Notes (Optional)</label>
+                            <textarea class="form-control" id="completionNotes" name="completion_notes" rows="4"
+                                      placeholder="Add any notes about the project completion..."></textarea>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Note:</strong> Once completed, the project status cannot be reverted.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success" id="completeProjectBtn">
+                            <span class="btn-text">
+                                <i class="bi bi-check-circle me-1"></i>Complete Project
+                            </span>
+                            <span class="btn-loading" style="display: none;">
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                Completing...
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cancel Project Modal -->
+    <div class="modal fade" id="cancelProjectModal" tabindex="-1" aria-labelledby="cancelProjectModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title" id="cancelProjectModalLabel">
+                        <i class="bi bi-x-circle me-2"></i>Cancel Project
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="cancelProjectForm">
+                    <div class="modal-body">
+                        <div id="cancelProjectAlert" class="alert d-none"></div>
+
+                        <div class="mb-3">
+                            <p class="mb-3">Are you sure you want to cancel this project? This will put the project on hold.</p>
+
+                            <label for="cancellationReason" class="form-label">Cancellation Reason *</label>
+                            <textarea class="form-control" id="cancellationReason" name="cancellation_reason" rows="4"
+                                      placeholder="Please provide a reason for cancelling this project..." required></textarea>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <strong>Note:</strong> Cancelled projects can be reactivated later if needed.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-warning" id="cancelProjectBtn">
+                            <span class="btn-text">
+                                <i class="bi bi-x-circle me-1"></i>Cancel Project
+                            </span>
+                            <span class="btn-loading" style="display: none;">
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                Cancelling...
+                            </span>
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -1922,6 +2524,111 @@
         </div>
     </div>
 
+    <!-- Add Member Modal -->
+    <div class="modal fade" id="addMemberModal" tabindex="-1" aria-labelledby="addMemberModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addMemberModalLabel">
+                        <i class="bi bi-person-plus me-2"></i>Add Team Member
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="addMemberAlert" class="alert d-none"></div>
+
+                    <form id="addMemberForm">
+                        <div class="mb-3">
+                            <label for="roleFilter" class="form-label">
+                                <i class="bi bi-funnel me-1"></i>Filter by Role
+                            </label>
+                            <select class="form-select" id="roleFilter" onchange="filterUsersByRole()">
+                                <option value="">All Roles</option>
+                                <option value="Project_Admin">Project Admin</option>
+                                <option value="Team_Lead">Team Lead</option>
+                                <option value="Developer">Developer</option>
+                                <option value="Designer">Designer</option>
+                                <option value="member">Member</option>
+                            </select>
+                            <small class="form-text text-muted">Select a role to filter available users</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="memberUser" class="form-label">Select User *</label>
+                            <select class="form-select" id="memberUser" name="user_id" required>
+                                <option value="">Loading users...</option>
+                            </select>
+                            <div class="invalid-feedback"></div>
+                            <small class="form-text text-muted">
+                                <span id="userCountInfo"></span>
+                            </small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" form="addMemberForm" class="btn btn-primary" id="addMemberSubmitBtn">
+                        <span class="btn-text">
+                            <i class="bi bi-check-circle me-2"></i>Add Member
+                        </span>
+                        <span class="btn-loading d-none">
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            Adding...
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Role Modal -->
+    <div class="modal fade" id="changeRoleModal" tabindex="-1" aria-labelledby="changeRoleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="changeRoleModalLabel">
+                        <i class="bi bi-pencil me-2"></i>Change Member Role
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="changeRoleAlert" class="alert d-none"></div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Member</label>
+                        <div id="memberInfo" class="d-flex align-items-center p-3 bg-light rounded">
+                            <!-- Member info will be loaded here -->
+                        </div>
+                    </div>
+
+                    <form id="changeRoleForm">
+                        <div class="mb-3">
+                            <label for="newRole" class="form-label">New Role *</label>
+                            <select class="form-select" id="newRole" name="role" required>
+                                <option value="">Select Role</option>
+                                <option value="member">Member</option>
+                                <option value="team_lead">Team Lead</option>
+                            </select>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" form="changeRoleForm" class="btn btn-primary" id="changeRoleSubmitBtn">
+                        <span class="btn-text">
+                            <i class="bi bi-check-circle me-2"></i>Update Role
+                        </span>
+                        <span class="btn-loading d-none">
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            Updating...
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -1949,6 +2656,10 @@
                 loadUsersList();
             } else if (section === 'projects') {
                 loadProjectStatistics();
+            } else if (section === 'reports') {
+                if (typeof loadReportData === 'function') {
+                    loadReportData();
+                }
             }
 
             // Update header based on section
@@ -1989,20 +2700,7 @@
         }
 
         // Load saved theme on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            const savedTheme = localStorage.getItem('theme');
-            const themeIcon = document.getElementById('theme-icon');
-
-            if (savedTheme === 'dark') {
-                document.body.classList.add('dark-theme');
-                themeIcon.className = 'bi bi-sun-fill';
-            } else {
-                themeIcon.className = 'bi bi-moon-fill';
-            }
-
-            // Initialize project filters
-            initializeProjectFilters();
-        });
+        // NOTE: Main DOMContentLoaded is at the end of the script
 
         // Project Filter Functions
         function initializeProjectFilters() {
@@ -2122,10 +2820,22 @@
                 createProjectForm.addEventListener('submit', handleCreateProject);
             }
 
+            // Handle edit project form submission
+            const editProjectForm = document.getElementById('editProjectForm');
+            if (editProjectForm) {
+                editProjectForm.addEventListener('submit', handleEditProject);
+            }
+
             // Reset form when modal is closed
             const createProjectModal = document.getElementById('createProjectModal');
             if (createProjectModal) {
                 createProjectModal.addEventListener('hidden.bs.modal', resetCreateProjectForm);
+            }
+
+            // Reset edit form when modal is closed
+            const editProjectModal = document.getElementById('editProjectModal');
+            if (editProjectModal) {
+                editProjectModal.addEventListener('hidden.bs.modal', resetEditProjectForm);
             }
         }
 
@@ -2215,6 +2925,122 @@
             }
         }
 
+        function handleEditProject(event) {
+            event.preventDefault();
+            console.log('Handle edit project form submission started');
+
+            const form = event.target;
+            const formData = new FormData(form);
+            const projectId = document.getElementById('editProjectId').value;
+            const submitBtn = document.getElementById('editSubmitBtn');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const btnLoading = submitBtn.querySelector('.btn-loading');
+
+            console.log('Project ID:', projectId);
+            console.log('Original form data:');
+            for (let [key, value] of formData.entries()) {
+                console.log(key, ':', value);
+            }
+
+            // Add method spoofing for Laravel
+            formData.append('_method', 'PUT');
+
+            console.log('Form data after adding _method:');
+            for (let [key, value] of formData.entries()) {
+                console.log(key, ':', value);
+            }
+
+            // Show loading state
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'inline-block';
+            submitBtn.disabled = true;
+
+            // Clear previous errors
+            clearFormErrors('editProjectForm');
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ||
+                             document.querySelector('input[name="_token"]')?.value;
+
+            console.log('CSRF Token:', csrfToken);
+
+            const requestUrl = `/api/projects/${projectId}`;
+            console.log('Request URL:', requestUrl);
+
+            fetch(requestUrl, {
+                method: 'POST', // Use POST with _method=PUT for Laravel
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken
+                }
+            })
+            .then(response => {
+                console.log('Response status:', response.status, response.statusText);
+                console.log('Response headers:', response.headers);
+
+                // Get response text first to see raw response
+                return response.text().then(text => {
+                    console.log('Raw response text:', text);
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}. Response: ${text}`);
+                    }
+
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        throw new Error(`Invalid JSON response: ${text}`);
+                    }
+                });
+            })
+            .then(data => {
+                console.log('Parsed response data:', data);
+                if (data.success) {
+                    // Show success message
+                    showEditFormAlert('success', data.message || 'Project updated successfully!');
+
+                    // Close modal and refresh data after delay
+                    setTimeout(() => {
+                        bootstrap.Modal.getInstance(document.getElementById('editProjectModal')).hide();
+
+                        // Refresh statistics and project list
+                        if (typeof loadProjectStatistics === 'function') {
+                            loadProjectStatistics();
+                        }
+                        if (typeof loadProjectsList === 'function') {
+                            loadProjectsList();
+                        }
+                    }, 1500);
+                } else {
+                    // Show error message
+                    showEditFormAlert('danger', data.message || 'Failed to update project');
+
+                    // Show validation errors
+                    if (data.errors) {
+                        showValidationErrors(data.errors, 'editProjectForm');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error updating project:', error);
+                showEditFormAlert('danger', 'Network error: ' + error.message);
+            })
+            .finally(() => {
+                // Reset button state
+                btnText.style.display = 'inline-block';
+                btnLoading.style.display = 'none';
+                submitBtn.disabled = false;
+            });
+        }
+
+        function resetEditProjectForm() {
+            const form = document.getElementById('editProjectForm');
+            if (form) {
+                form.reset();
+                clearFormErrors('editProjectForm');
+                hideAlert('editFormAlert');
+            }
+        }
+
         function showFormAlert(type, message) {
             const alertDiv = document.getElementById('formAlert');
             if (alertDiv) {
@@ -2231,18 +3057,36 @@
             }
         }
 
-        function clearFormErrors() {
-            document.querySelectorAll('.is-invalid').forEach(el => {
+        function showEditFormAlert(type, message) {
+            const alertDiv = document.getElementById('editFormAlert');
+            if (alertDiv) {
+                alertDiv.className = `alert alert-${type}`;
+                alertDiv.textContent = message;
+                alertDiv.style.display = 'block';
+            }
+        }
+
+        function hideAlert(alertId) {
+            const alertDiv = document.getElementById(alertId);
+            if (alertDiv) {
+                alertDiv.style.display = 'none';
+            }
+        }
+
+        function clearFormErrors(formId = null) {
+            const scope = formId ? document.getElementById(formId) : document;
+            scope.querySelectorAll('.is-invalid').forEach(el => {
                 el.classList.remove('is-invalid');
             });
-            document.querySelectorAll('.invalid-feedback').forEach(el => {
+            scope.querySelectorAll('.invalid-feedback').forEach(el => {
                 el.textContent = '';
             });
         }
 
-        function showValidationErrors(errors) {
+        function showValidationErrors(errors, formId = null) {
             Object.keys(errors).forEach(field => {
-                const input = document.querySelector(`[name="${field}"]`);
+                const scope = formId ? document.getElementById(formId) : document;
+                const input = scope.querySelector(`[name="${field}"]`);
                 const feedback = input?.nextElementSibling;
 
                 if (input && feedback && feedback.classList.contains('invalid-feedback')) {
@@ -2370,7 +3214,7 @@
             switch(status.toLowerCase()) {
                 case 'planning': return 'status-todo';
                 case 'in progress': return 'status-progress';
-                case 'on hold': return 'status-review';
+                case 'on hold': return 'status-cancelled';
                 case 'completed': return 'status-done';
                 default: return 'status-todo';
             }
@@ -2421,6 +3265,10 @@
         }
 
         function displayProjectDetail(project) {
+            // Store current project ID and status for member management
+            currentProjectId = project.project_id;
+            currentProjectStatus = project.status;
+
             const content = document.getElementById('projectDetailContent');
             const statusClass = project.status.toLowerCase().replace(' ', '-');
             const formattedDeadline = project.deadline ? new Date(project.deadline).toLocaleDateString('en-US', {
@@ -2445,10 +3293,29 @@
                                 <span class="project-status-badge ${statusClass}">${project.status}</span>
                             </div>
                             <div class="col-md-4 text-end">
-                                <div class="text-white">
+                                <div class="text-white mb-3">
                                     <small class="d-block opacity-75">Created by</small>
                                     <strong>${project.creator ? project.creator.full_name : 'Unknown'}</strong>
                                 </div>
+                                ${project.status !== 'Completed' && project.status !== 'On Hold' ? `
+                                    <div class="project-actions">
+                                        <button class="btn btn-success btn-sm me-2" onclick="showCompleteProjectModal(${project.project_id})"
+                                                title="Mark project as completed">
+                                            <i class="bi bi-check-circle me-1"></i>Complete Project
+                                        </button>
+                                        <button class="btn btn-warning btn-sm" onclick="showCancelProjectModal(${project.project_id})"
+                                                title="Cancel project">
+                                            <i class="bi bi-x-circle me-1"></i>Cancel Project
+                                        </button>
+                                    </div>
+                                ` : project.status === 'On Hold' ? `
+                                    <div class="project-actions">
+                                        <button class="btn btn-info btn-sm" onclick="reactivateProject(${project.project_id})"
+                                                title="Reactivate cancelled project">
+                                            <i class="bi bi-arrow-clockwise me-1"></i>Reactivate Project
+                                        </button>
+                                    </div>
+                                ` : ''}
                             </div>
                         </div>
                     </div>
@@ -2481,6 +3348,46 @@
                                     <span class="info-label">Project ID</span>
                                     <span class="info-value">#${project.project_id}</span>
                                 </div>
+                                ${project.completed_at ? `
+                                    <div class="info-item">
+                                        <span class="info-label">Completed Date</span>
+                                        <span class="info-value text-success">
+                                            ${new Date(project.completed_at).toLocaleDateString('en-US', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                            })}
+                                        </span>
+                                    </div>
+                                    ${project.completed_by_user ? `
+                                        <div class="info-item">
+                                            <span class="info-label">Completed By</span>
+                                            <span class="info-value text-success">${project.completed_by_user.full_name}</span>
+                                        </div>
+                                    ` : ''}
+                                ` : ''}
+                                ${project.cancelled_at ? `
+                                    <div class="info-item">
+                                        <span class="info-label">Cancelled Date</span>
+                                        <span class="info-value text-warning">
+                                            ${new Date(project.cancelled_at).toLocaleDateString('en-US', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                            })}
+                                        </span>
+                                    </div>
+                                    ${project.cancelled_by_user ? `
+                                        <div class="info-item">
+                                            <span class="info-label">Cancelled By</span>
+                                            <span class="info-value text-warning">${project.cancelled_by_user.full_name}</span>
+                                        </div>
+                                    ` : ''}
+                                ` : ''}
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -2498,6 +3405,32 @@
                         </div>
                     </div>
 
+                    ${project.completion_notes || project.cancellation_reason ? `
+                        <!-- Status Notes Section -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="project-info-card">
+                                    ${project.completion_notes ? `
+                                        <h5 class="mb-3 text-success">
+                                            <i class="bi bi-check-circle me-2"></i>Completion Notes
+                                        </h5>
+                                        <div class="alert alert-success">
+                                            <p class="mb-0">${project.completion_notes}</p>
+                                        </div>
+                                    ` : ''}
+                                    ${project.cancellation_reason ? `
+                                        <h5 class="mb-3 text-warning">
+                                            <i class="bi bi-x-circle me-2"></i>Cancellation Reason
+                                        </h5>
+                                        <div class="alert alert-warning">
+                                            <p class="mb-0">${project.cancellation_reason}</p>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+
                     <!-- Team Members Section -->
                     <div class="row mb-4">
                         <div class="col-12">
@@ -2506,9 +3439,15 @@
                                     <h5 class="mb-0">
                                         <i class="bi bi-people-fill me-2"></i>Team Members
                                     </h5>
-                                    <button class="btn btn-sm btn-primary" onclick="addTeamMember(${project.project_id})">
-                                        <i class="bi bi-person-plus me-1"></i>Add Member
-                                    </button>
+                                    ${project.status !== 'Completed' ? `
+                                        <button class="btn btn-sm btn-primary" onclick="addTeamMember(${project.project_id})">
+                                            <i class="bi bi-person-plus me-1"></i>Add Member
+                                        </button>
+                                    ` : `
+                                        <button class="btn btn-sm btn-secondary" disabled title="Cannot add members to completed project">
+                                            <i class="bi bi-person-plus me-1"></i>Add Member
+                                        </button>
+                                    `}
                                 </div>
                                 <div id="teamMembersList">
                                     <div class="text-center py-3">
@@ -2674,9 +3613,13 @@
                         <i class="bi bi-people" style="font-size: 3rem;"></i>
                         <h6 class="mt-3">No Team Members</h6>
                         <p class="mb-3">This project doesn't have any team members yet.</p>
-                        <button class="btn btn-primary btn-sm" onclick="addTeamMember()">
-                            <i class="bi bi-person-plus me-1"></i>Add First Member
-                        </button>
+                        ${currentProjectStatus !== 'Completed' ? `
+                            <button class="btn btn-primary btn-sm" onclick="addTeamMember(currentProjectId)">
+                                <i class="bi bi-person-plus me-1"></i>Add First Member
+                            </button>
+                        ` : `
+                            <small class="text-muted">Cannot add members to completed project</small>
+                        `}
                     </div>
                 `;
                 return;
@@ -2712,13 +3655,12 @@
                                                 <li><a class="dropdown-item" href="#" onclick="viewMemberDetails(${member.user.user_id})">
                                                     <i class="bi bi-eye me-2"></i>View Profile
                                                 </a></li>
-                                                <li><a class="dropdown-item" href="#" onclick="changeMemberRole(${member.member_id})">
-                                                    <i class="bi bi-pencil me-2"></i>Change Role
-                                                </a></li>
-                                                <li><hr class="dropdown-divider"></li>
-                                                <li><a class="dropdown-item text-danger" href="#" onclick="removeMember(${member.member_id}, '${member.user.full_name}')">
-                                                    <i class="bi bi-person-dash me-2"></i>Remove
-                                                </a></li>
+                                                ${currentProjectStatus !== 'Completed' ? `
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item text-danger" href="#" onclick="removeMember(${member.member_id}, '${member.user.full_name}')">
+                                                        <i class="bi bi-person-dash me-2"></i>Remove from Project
+                                                    </a></li>
+                                                ` : ''}
                                             </ul>
                                         </div>
                                     </div>
@@ -2730,8 +3672,84 @@
             `;
         }
 
+        // Global variable to store current project ID and available users
+        let currentProjectId = null;
+        let currentProjectStatus = null;
+        let availableUsersData = [];
+
         function addTeamMember(projectId) {
-            alert('Add team member functionality will be implemented soon');
+            currentProjectId = projectId;
+
+            // Reset filter
+            document.getElementById('roleFilter').value = '';
+
+            // Clear previous alert messages
+            hideMemberAlert('addMemberAlert');
+
+            // Reset form
+            const form = document.getElementById('addMemberForm');
+            if (form) {
+                form.reset();
+            }
+
+            // Clear any validation errors
+            clearMemberFormErrors('addMemberForm');
+
+            // Load available users
+            fetch(`/api/projects/${projectId}/available-users`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data.length > 0) {
+                        availableUsersData = data.data;
+                        populateUserSelect(availableUsersData);
+                    } else {
+                        availableUsersData = [];
+                        const userSelect = document.getElementById('memberUser');
+                        userSelect.innerHTML = '<option value="">No available users</option>';
+                        document.getElementById('userCountInfo').textContent = 'No users available to add';
+                    }
+
+                    // Show modal
+                    const modal = new bootstrap.Modal(document.getElementById('addMemberModal'));
+                    modal.show();
+                })
+                .catch(error => {
+                    console.error('Error loading available users:', error);
+                    showAlert('addMemberAlert', 'error', 'Failed to load available users');
+                });
+        }
+
+        function populateUserSelect(users) {
+            const userSelect = document.getElementById('memberUser');
+            const userCountInfo = document.getElementById('userCountInfo');
+
+            if (users.length > 0) {
+                userSelect.innerHTML = `
+                    <option value="">Select User</option>
+                    ${users.map(user => `
+                        <option value="${user.user_id}" data-role="${user.role}">
+                            ${user.full_name} (${user.email}) - ${user.role}
+                        </option>
+                    `).join('')}
+                `;
+                userCountInfo.textContent = `${users.length} user(s) available`;
+            } else {
+                userSelect.innerHTML = '<option value="">No users match the selected role</option>';
+                userCountInfo.textContent = 'No users found';
+            }
+        }
+
+        function filterUsersByRole() {
+            const selectedRole = document.getElementById('roleFilter').value;
+
+            if (!selectedRole) {
+                // Show all users if no filter selected
+                populateUserSelect(availableUsersData);
+            } else {
+                // Filter users by selected role
+                const filteredUsers = availableUsersData.filter(user => user.role === selectedRole);
+                populateUserSelect(filteredUsers);
+            }
         }
 
         function viewMemberDetails(userId) {
@@ -2739,18 +3757,104 @@
             viewUserDetail(userId);
         }
 
-        function changeMemberRole(memberId) {
-            alert('Change member role functionality will be implemented soon');
+        function changeMemberRole(memberId, memberName, currentRole) {
+            // Store current member data
+            window.currentMember = { id: memberId, name: memberName, role: currentRole };
+
+            // Update member info display
+            document.getElementById('memberInfo').innerHTML = `
+                <div class="member-avatar me-3 bg-primary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-radius: 50%; font-weight: bold;">
+                    ${memberName.split(' ').map(n => n[0]).join('').toUpperCase()}
+                </div>
+                <div>
+                    <h6 class="mb-1">${memberName}</h6>
+                    <small class="text-muted">Current role: ${currentRole}</small>
+                </div>
+            `;
+
+            // Set current role in select
+            const roleSelect = document.getElementById('newRole');
+            roleSelect.value = currentRole;
+
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('changeRoleModal'));
+            modal.show();
         }
 
         function removeMember(memberId, memberName) {
             if (confirm(`Are you sure you want to remove ${memberName} from this project?`)) {
-                alert('Remove member functionality will be implemented soon');
+                const projectId = currentProjectId;
+
+                fetch(`/api/projects/${projectId}/members/${memberId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert('projectDetailContent', 'success', data.message || 'Member removed successfully');
+                        // Reload team data
+                        loadProjectTeamData(projectId);
+                    } else {
+                        showAlert('projectDetailContent', 'error', data.message || 'Failed to remove member');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error removing member:', error);
+                    showAlert('projectDetailContent', 'error', 'An error occurred while removing member');
+                });
             }
         }
 
         function editProject(projectId) {
-            alert('Edit project functionality will be implemented soon');
+            console.log('Attempting to edit project:', projectId);
+
+            // Get project data first
+            fetch(`/api/projects/${projectId}`)
+                .then(response => {
+                    console.log('Fetch response status:', response.status, response.statusText);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Project data received:', data);
+                    if (data.success) {
+                        const project = data.data;
+
+                        // Populate the edit form - menggunakan project_id karena itu primary key sebenarnya
+                        document.getElementById('editProjectId').value = project.project_id;
+                        document.getElementById('editProjectName').value = project.project_name;
+                        document.getElementById('editProjectDescription').value = project.description || '';
+
+                        // Format deadline untuk input date
+                        if (project.deadline) {
+                            const deadlineDate = new Date(project.deadline);
+                            const formattedDate = deadlineDate.toISOString().split('T')[0];
+                            document.getElementById('editProjectDeadline').value = formattedDate;
+                        } else {
+                            document.getElementById('editProjectDeadline').value = '';
+                        }
+
+                        // Clear any previous form errors
+                        clearFormErrors('editProjectForm');
+                        hideAlert('editFormAlert');
+
+                        // Show the modal
+                        const modal = new bootstrap.Modal(document.getElementById('editProjectModal'));
+                        modal.show();
+                    } else {
+                        alert('Failed to load project data: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading project:', error);
+                    alert('Failed to load project data. Error: ' + error.message);
+                });
         }
 
         function deleteProject(projectId, projectName) {
@@ -3140,16 +4244,49 @@
             // Clear previous errors
             clearEditUserFormErrors();
 
+            // Convert FormData to JSON object for PUT request
+            const userData = {
+                username: formData.get('username'),
+                full_name: formData.get('full_name'),
+                email: formData.get('email'),
+                role: formData.get('role'),
+                current_task_status: formData.get('current_task_status')
+            };
+
+            // Only include password if provided
+            const password = formData.get('password');
+            if (password && password.trim() !== '') {
+                userData.password = password;
+            }
+
+            // Debug log
+            console.log('Sending user data:', userData);
+            console.log('User ID:', userId);
+
             fetch(`/api/users/${userId}`, {
                 method: 'PUT',
-                body: formData,
                 headers: {
+                    'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ||
                                    document.querySelector('input[name="_token"]')?.value
-                }
+                },
+                body: JSON.stringify(userData)
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (response.status === 403) {
+                    throw new Error('Access denied. Admin privileges required.');
+                }
+                if (response.status === 401) {
+                    throw new Error('Authentication required. Please login again.');
+                }
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log('Response data:', data);
                 if (data.success) {
                     // Show success message
                     showEditUserFormAlert('success', data.message || 'User updated successfully!');
@@ -3158,6 +4295,11 @@
                     setTimeout(() => {
                         bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
                         loadUsersList(); // Refresh user list
+
+                        // Refresh project team data if project detail modal is open
+                        if (currentProjectId && document.getElementById('projectDetailModal').classList.contains('show')) {
+                            loadProjectTeamData(currentProjectId);
+                        }
                     }, 1500);
                 } else {
                     // Show error message
@@ -3776,65 +4918,6 @@
             });
         }
 
-        function handleEditUser(event) {
-            event.preventDefault();
-
-            const form = event.target;
-            const formData = new FormData(form);
-            const userId = formData.get('user_id');
-            const submitBtn = document.getElementById('editUserSubmitBtn');
-            const btnText = submitBtn.querySelector('.btn-text');
-            const btnLoading = submitBtn.querySelector('.btn-loading');
-
-            // Show loading state
-            btnText.classList.add('d-none');
-            btnLoading.classList.remove('d-none');
-            submitBtn.disabled = true;
-
-            // Clear previous errors
-            clearEditUserFormErrors();
-
-            fetch(`/api/users/${userId}`, {
-                method: 'PUT',
-                body: formData,
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ||
-                                   document.querySelector('input[name="_token"]')?.value
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Show success message
-                    showEditUserFormAlert('success', data.message || 'User updated successfully!');
-
-                    // Close modal after delay
-                    setTimeout(() => {
-                        bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
-                        loadUsersList(); // Refresh user list
-                    }, 1500);
-                } else {
-                    // Show error message
-                    showEditUserFormAlert('danger', data.message || 'Failed to update user');
-
-                    // Show validation errors
-                    if (data.errors) {
-                        showEditUserValidationErrors(data.errors);
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error updating user:', error);
-                showEditUserFormAlert('danger', 'Network error. Please try again.');
-            })
-            .finally(() => {
-                // Reset button state
-                btnText.classList.remove('d-none');
-                btnLoading.classList.add('d-none');
-                submitBtn.disabled = false;
-            });
-        }
-
         // Utility functions for user forms
         function showCreateUserFormAlert(type, message) {
             const alertDiv = document.getElementById('createUserFormAlert');
@@ -3928,7 +5011,898 @@
             initializeProjectFilters();
             initializeProjectManagement();
             initializeUserManagement();
+            initializeMemberManagement();
         });
+
+        // Member Management System
+        function initializeMemberManagement() {
+            // Add Member Form
+            const addMemberForm = document.getElementById('addMemberForm');
+            if (addMemberForm) {
+                addMemberForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    submitAddMemberForm();
+                });
+            }
+
+            // Note: Change Role feature removed - roles are automatically taken from user system
+            // Keeping the form for potential future use
+
+            // Reset alerts when modals are hidden
+            const addMemberModal = document.getElementById('addMemberModal');
+            if (addMemberModal) {
+                addMemberModal.addEventListener('hidden.bs.modal', function() {
+                    hideMemberAlert('addMemberAlert');
+                    clearMemberFormErrors('addMemberForm');
+                });
+            }
+        }
+
+        function submitAddMemberForm() {
+            const form = document.getElementById('addMemberForm');
+            const formData = new FormData(form);
+            const submitBtn = document.getElementById('addMemberSubmitBtn');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const btnLoading = submitBtn.querySelector('.btn-loading');
+
+            // Show loading state
+            btnText.classList.add('d-none');
+            btnLoading.classList.remove('d-none');
+            submitBtn.disabled = true;
+
+            // Clear previous errors
+            clearMemberFormErrors('addMemberForm');
+            hideMemberAlert('addMemberAlert');
+
+            const projectId = currentProjectId;
+
+            fetch(`/api/projects/${projectId}/members`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    user_id: formData.get('user_id')
+                    // Role will be taken from user's system role in backend
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMemberAlert('addMemberAlert', 'success', data.message || 'Member added successfully');
+                    form.reset();
+
+                    // Close modal after success
+                    setTimeout(() => {
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('addMemberModal'));
+                        modal.hide();
+
+                        // Reload team data
+                        loadProjectTeamData(projectId);
+                    }, 1500);
+                } else {
+                    if (data.errors) {
+                        showMemberValidationErrors('addMemberForm', data.errors);
+                    } else {
+                        showMemberAlert('addMemberAlert', 'error', data.message || 'Failed to add member');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error adding member:', error);
+                showMemberAlert('addMemberAlert', 'error', 'An error occurred while adding member');
+            })
+            .finally(() => {
+                // Hide loading state
+                btnText.classList.remove('d-none');
+                btnLoading.classList.add('d-none');
+                submitBtn.disabled = false;
+            });
+        }
+
+        function submitChangeRoleForm() {
+            const form = document.getElementById('changeRoleForm');
+            const formData = new FormData(form);
+            const submitBtn = document.getElementById('changeRoleSubmitBtn');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const btnLoading = submitBtn.querySelector('.btn-loading');
+
+            // Show loading state
+            btnText.classList.add('d-none');
+            btnLoading.classList.remove('d-none');
+            submitBtn.disabled = true;
+
+            // Clear previous errors
+            clearMemberFormErrors('changeRoleForm');
+            hideMemberAlert('changeRoleAlert');
+
+            const memberId = window.currentMember.id;
+            const projectId = currentProjectId;
+
+            fetch(`/api/projects/${projectId}/members/${memberId}/role`, {
+                method: 'PUT',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    role: formData.get('role')
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMemberAlert('changeRoleAlert', 'success', data.message || 'Role updated successfully');
+
+                    // Close modal after success
+                    setTimeout(() => {
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('changeRoleModal'));
+                        modal.hide();
+
+                        // Reload team data
+                        loadProjectTeamData(projectId);
+                    }, 1500);
+                } else {
+                    if (data.errors) {
+                        showMemberValidationErrors('changeRoleForm', data.errors);
+                    } else {
+                        showMemberAlert('changeRoleAlert', 'error', data.message || 'Failed to update role');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error updating role:', error);
+                showMemberAlert('changeRoleAlert', 'error', 'An error occurred while updating role');
+            })
+            .finally(() => {
+                // Hide loading state
+                btnText.classList.remove('d-none');
+                btnLoading.classList.add('d-none');
+                submitBtn.disabled = false;
+            });
+        }
+
+        // Utility functions for member management
+        function showMemberAlert(alertId, type, message) {
+            const alertDiv = document.getElementById(alertId);
+            if (alertDiv) {
+                alertDiv.className = `alert alert-${type === 'error' ? 'danger' : type}`;
+                alertDiv.textContent = message;
+                alertDiv.classList.remove('d-none');
+            }
+        }
+
+        function hideMemberAlert(alertId) {
+            const alertDiv = document.getElementById(alertId);
+            if (alertDiv) {
+                alertDiv.classList.add('d-none');
+            }
+        }
+
+        function clearMemberFormErrors(formId) {
+            const form = document.getElementById(formId);
+            if (form) {
+                form.querySelectorAll('.is-invalid').forEach(el => {
+                    el.classList.remove('is-invalid');
+                });
+                form.querySelectorAll('.invalid-feedback').forEach(el => {
+                    el.textContent = '';
+                });
+            }
+        }
+
+        function showMemberValidationErrors(formId, errors) {
+            const form = document.getElementById(formId);
+            if (form) {
+                Object.keys(errors).forEach(fieldName => {
+                    const field = form.querySelector(`[name="${fieldName}"]`);
+                    const feedback = form.querySelector(`[name="${fieldName}"] + .invalid-feedback`);
+
+                    if (field) {
+                        field.classList.add('is-invalid');
+                        if (feedback) {
+                            feedback.textContent = errors[fieldName][0];
+                        }
+                    }
+                });
+            }
+        }
+
+        // Project Status Management Functions
+        let currentProjectIdForStatus = null;
+
+        function showCompleteProjectModal(projectId) {
+            currentProjectIdForStatus = projectId;
+            const modal = new bootstrap.Modal(document.getElementById('completeProjectModal'));
+            modal.show();
+        }
+
+        function showCancelProjectModal(projectId) {
+            currentProjectIdForStatus = projectId;
+            const modal = new bootstrap.Modal(document.getElementById('cancelProjectModal'));
+            modal.show();
+        }
+
+        // Handle Complete Project Form
+        document.getElementById('completeProjectForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const btn = document.getElementById('completeProjectBtn');
+            const btnText = btn.querySelector('.btn-text');
+            const btnLoading = btn.querySelector('.btn-loading');
+
+            // Show loading state
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'inline-block';
+            btn.disabled = true;
+
+            const formData = {
+                completion_notes: document.getElementById('completionNotes').value
+            };
+
+            fetch(`/api/projects/${currentProjectIdForStatus}/complete`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('completeProjectAlert', 'success', data.message || 'Project completed successfully');
+                    setTimeout(() => {
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('completeProjectModal'));
+                        modal.hide();
+                        viewProjectDetail(currentProjectIdForStatus);
+                        if (typeof loadProjectsList === 'function') {
+                            loadProjectsList();
+                        }
+                    }, 1500);
+                } else {
+                    showAlert('completeProjectAlert', 'error', data.message || 'Failed to complete project');
+                }
+            })
+            .catch(error => {
+                console.error('Error completing project:', error);
+                showAlert('completeProjectAlert', 'error', 'An error occurred while completing the project');
+            })
+            .finally(() => {
+                // Reset loading state
+                btnText.style.display = 'inline-block';
+                btnLoading.style.display = 'none';
+                btn.disabled = false;
+            });
+        });
+
+        // Handle Cancel Project Form
+        document.getElementById('cancelProjectForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const btn = document.getElementById('cancelProjectBtn');
+            const btnText = btn.querySelector('.btn-text');
+            const btnLoading = btn.querySelector('.btn-loading');
+
+            // Show loading state
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'inline-block';
+            btn.disabled = true;
+
+            const formData = {
+                cancellation_reason: document.getElementById('cancellationReason').value
+            };
+
+            fetch(`/api/projects/${currentProjectIdForStatus}/cancel`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('cancelProjectAlert', 'success', data.message || 'Project cancelled successfully');
+                    setTimeout(() => {
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('cancelProjectModal'));
+                        modal.hide();
+                        viewProjectDetail(currentProjectIdForStatus);
+                        if (typeof loadProjectsList === 'function') {
+                            loadProjectsList();
+                        }
+                    }, 1500);
+                } else {
+                    showAlert('cancelProjectAlert', 'error', data.message || 'Failed to cancel project');
+                }
+            })
+            .catch(error => {
+                console.error('Error cancelling project:', error);
+                showAlert('cancelProjectAlert', 'error', 'An error occurred while cancelling the project');
+            })
+            .finally(() => {
+                // Reset loading state
+                btnText.style.display = 'inline-block';
+                btnLoading.style.display = 'none';
+                btn.disabled = false;
+            });
+        });
+
+        function reactivateProject(projectId) {
+            if (!confirm('Are you sure you want to reactivate this project? This will change the status back to In Progress.')) {
+                return;
+            }
+
+            fetch(`/api/projects/${projectId}/reactivate`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('projectDetailContent', 'success', data.message || 'Project reactivated successfully');
+                    setTimeout(() => {
+                        viewProjectDetail(projectId);
+                    }, 1500);
+                    if (typeof loadProjectsList === 'function') {
+                        loadProjectsList();
+                    }
+                } else {
+                    showAlert('projectDetailContent', 'error', data.message || 'Failed to reactivate project');
+                }
+            })
+            .catch(error => {
+                console.error('Error reactivating project:', error);
+                showAlert('projectDetailContent', 'error', 'An error occurred while reactivating the project');
+            });
+        }
+
+        // Report Management Functions
+        let activeReport = 'projects';
+
+        function initializeReportManagement() {
+            // Set default date range (last 30 days)
+            const today = new Date();
+            const thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
+
+            document.getElementById('reportDateFrom').value = thirtyDaysAgo.toISOString().split('T')[0];
+            document.getElementById('reportDateTo').value = today.toISOString().split('T')[0];
+
+            // Initialize tab change listeners
+            const reportTabs = document.querySelectorAll('#reportTabs button');
+            reportTabs.forEach(tab => {
+                tab.addEventListener('shown.bs.tab', function(event) {
+                    activeReport = event.target.getAttribute('data-bs-target').replace('#', '').replace('-report', '');
+                    loadReportData();
+                });
+            });
+
+            // Load initial data
+            if (document.getElementById('reports-content').style.display !== 'none') {
+                loadReportStatistics();
+                loadReportData();
+            }
+        }
+
+        function loadReportData() {
+            loadReportStatistics();
+
+            switch(activeReport) {
+                case 'projects':
+                    loadProjectsReport();
+                    break;
+                case 'users':
+                    loadUsersReport();
+                    break;
+                case 'timeline':
+                    loadTimelineReport();
+                    break;
+            }
+        }
+
+        function refreshReports() {
+            showAlert('reports-content', 'info', 'Refreshing reports...');
+            loadReportData();
+        }
+
+        function clearReportFilters() {
+            document.getElementById('reportDateFrom').value = '';
+            document.getElementById('reportDateTo').value = '';
+            document.getElementById('reportStatus').value = '';
+            document.getElementById('reportRole').value = '';
+            loadReportData();
+            showAlert('reports-content', 'info', 'Filters cleared successfully!');
+        }
+
+        function exportReport(type = null) {
+            const reportType = type || activeReport;
+            const dateFrom = document.getElementById('reportDateFrom').value;
+            const dateTo = document.getElementById('reportDateTo').value;
+            const status = document.getElementById('reportStatus').value;
+            const role = document.getElementById('reportRole').value;
+
+            const params = new URLSearchParams({
+                type: reportType,
+                date_from: dateFrom,
+                date_to: dateTo,
+                status: status,
+                role: role
+            });
+
+            // Download file
+            const url = `/admin/reports/export?${params.toString()}`;
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${reportType}_report_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function applyReportFilters() {
+            loadReportData();
+            showAlert('reports-content', 'info', 'Filters applied successfully!');
+        }
+
+        function loadReportStatistics() {
+            const dateFrom = document.getElementById('reportDateFrom').value;
+            const dateTo = document.getElementById('reportDateTo').value;
+            const status = document.getElementById('reportStatus').value;
+
+            const params = new URLSearchParams({
+                date_from: dateFrom,
+                date_to: dateTo,
+                status: status
+            });
+
+            fetch(`/api/reports/statistics?${params.toString()}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('reportTotalProjects').textContent = data.data.total_projects || 0;
+                        document.getElementById('reportCompletedProjects').textContent = data.data.completed_projects || 0;
+                        document.getElementById('reportInProgressProjects').textContent = data.data.in_progress_projects || 0;
+                        document.getElementById('reportActiveUsers').textContent = data.data.active_users || 0;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading report statistics:', error);
+                });
+        }
+
+        function loadProjectsReport() {
+            const dateFrom = document.getElementById('reportDateFrom').value;
+            const dateTo = document.getElementById('reportDateTo').value;
+            const status = document.getElementById('reportStatus').value;
+
+            const params = new URLSearchParams({
+                date_from: dateFrom,
+                date_to: dateTo,
+                status: status
+            });
+
+            fetch(`/api/reports/projects?${params.toString()}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const tbody = document.getElementById('projectsReportTable');
+                        tbody.innerHTML = '';
+
+                        if (data.data.data.length === 0) {
+                            tbody.innerHTML = `
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted">
+                                        <i class="bi bi-folder-x display-6"></i>
+                                        <p class="mt-2">No projects found</p>
+                                    </td>
+                                </tr>
+                            `;
+                            return;
+                        }
+
+                        data.data.data.forEach(project => {
+                            const statusBadge = getProjectStatusBadge(project.status);
+                            const duration = project.duration_days ? `${project.duration_days} days` : 'N/A';
+
+                            tbody.innerHTML += `
+                                <tr>
+                                    <td>${project.project_id}</td>
+                                    <td>${project.project_name}</td>
+                                    <td>${statusBadge}</td>
+                                    <td>${formatDate(project.start_date)}</td>
+                                    <td>${formatDate(project.deadline)}</td>
+                                    <td>${project.member_count}</td>
+                                    <td>${duration}</td>
+                                </tr>
+                            `;
+                        });
+
+                        // Update pagination
+                        updatePagination('projectsPagination', data.data);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading projects report:', error);
+                    document.getElementById('projectsReportTable').innerHTML = `
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-danger">
+                                <i class="bi bi-exclamation-circle display-6"></i>
+                                <p class="mt-2">Error loading projects report</p>
+                            </td>
+                        </tr>
+                    `;
+                });
+        }
+
+        function loadUsersReport() {
+            const role = document.getElementById('reportRole').value;
+
+            const params = new URLSearchParams({
+                role: role
+            });
+
+            fetch(`/api/reports/users?${params.toString()}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const tbody = document.getElementById('usersReportTable');
+                        tbody.innerHTML = '';
+
+                        if (data.data.data.length === 0) {
+                            tbody.innerHTML = `
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted">
+                                        <i class="bi bi-person-x display-6"></i>
+                                        <p class="mt-2">No users found</p>
+                                    </td>
+                                </tr>
+                            `;
+                            return;
+                        }
+
+                        data.data.data.forEach(user => {
+                            const roleBadge = getUserRoleBadge(user.role);
+
+                            tbody.innerHTML += `
+                                <tr>
+                                    <td>${user.user_id}</td>
+                                    <td>${user.username}</td>
+                                    <td>${user.full_name}</td>
+                                    <td>${roleBadge}</td>
+                                    <td>${user.projects_created}</td>
+                                    <td>${user.projects_member}</td>
+                                    <td>${formatDate(user.created_at)}</td>
+                                </tr>
+                            `;
+                        });
+
+                        // Update pagination
+                        updatePagination('usersPagination', data.data);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading users report:', error);
+                    document.getElementById('usersReportTable').innerHTML = `
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-danger">
+                                <i class="bi bi-exclamation-circle display-6"></i>
+                                <p class="mt-2">Error loading users report</p>
+                            </td>
+                        </tr>
+                    `;
+                });
+        }
+
+        function loadTimelineReport() {
+            const dateFrom = document.getElementById('reportDateFrom').value;
+            const dateTo = document.getElementById('reportDateTo').value;
+
+            const params = new URLSearchParams({
+                date_from: dateFrom,
+                date_to: dateTo
+            });
+
+            fetch(`/api/reports/timeline?${params.toString()}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const tbody = document.getElementById('timelineReportTable');
+                        tbody.innerHTML = '';
+
+                        if (data.data.length === 0) {
+                            tbody.innerHTML = `
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">
+                                        <i class="bi bi-calendar-x display-6"></i>
+                                        <p class="mt-2">No timeline data found</p>
+                                    </td>
+                                </tr>
+                            `;
+                            return;
+                        }
+
+                        data.data.forEach(item => {
+                            const eventType = item.type === 'created' ? 'Project Created' : 'Project Completed';
+                            const eventIcon = item.type === 'created' ? 'bi-plus-circle text-primary' : 'bi-check-circle text-success';
+
+                            tbody.innerHTML += `
+                                <tr>
+                                    <td>${formatDate(item.date)}</td>
+                                    <td>
+                                        <i class="bi ${eventIcon} me-2"></i>
+                                        ${eventType}
+                                    </td>
+                                    <td>${item.count}</td>
+                                    <td>${item.count} project(s) ${item.type}</td>
+                                </tr>
+                            `;
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading timeline report:', error);
+                    document.getElementById('timelineReportTable').innerHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center py-4 text-danger">
+                                <i class="bi bi-exclamation-circle display-6"></i>
+                                <p class="mt-2">Error loading timeline report</p>
+                            </td>
+                        </tr>
+                    `;
+                });
+        }
+
+        function getProjectStatusBadge(status) {
+            const statusMap = {
+                'Planning': { class: 'bg-info', text: 'Planning' },
+                'In Progress': { class: 'bg-primary', text: 'In Progress' },
+                'On Hold': { class: 'bg-warning', text: 'On Hold' },
+                'Completed': { class: 'bg-success', text: 'Completed' }
+            };
+            const s = statusMap[status] || { class: 'bg-secondary', text: status };
+            return `<span class="badge ${s.class}">${s.text}</span>`;
+        }
+
+        function getUserRoleBadge(role) {
+            const roleMap = {
+                'admin': { class: 'bg-danger', text: 'Admin' },
+                'team_lead': { class: 'bg-warning', text: 'Team Lead' },
+                'member': { class: 'bg-info', text: 'Member' }
+            };
+            const r = roleMap[role] || { class: 'bg-secondary', text: role };
+            return `<span class="badge ${r.class}">${r.text}</span>`;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('id-ID', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function updatePagination(containerId, paginationData) {
+            const container = document.getElementById(containerId);
+            if (!paginationData.links || paginationData.links.length <= 3) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let paginationHtml = '<nav><ul class="pagination justify-content-center">';
+
+            paginationData.links.forEach(link => {
+                const isActive = link.active ? 'active' : '';
+                const isDisabled = !link.url ? 'disabled' : '';
+
+                paginationHtml += `
+                    <li class="page-item ${isActive} ${isDisabled}">
+                        <button class="page-link" onclick="loadReportPage('${link.url}')" ${!link.url ? 'disabled' : ''}>
+                            ${link.label}
+                        </button>
+                    </li>
+                `;
+            });
+
+            paginationHtml += '</ul></nav>';
+            container.innerHTML = paginationHtml;
+        }
+
+        function loadReportPage(url) {
+            if (!url) return;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Reload the appropriate report based on active tab
+                        switch(activeReport) {
+                            case 'projects':
+                                loadProjectsReport();
+                                break;
+                            case 'users':
+                                loadUsersReport();
+                                break;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading page:', error);
+                });
+        }
+
+        // Initialize everything when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme');
+            const themeIcon = document.getElementById('theme-icon');
+
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+                themeIcon.className = 'bi bi-sun-fill';
+            } else {
+                themeIcon.className = 'bi bi-moon-fill';
+            }
+
+            // Initialize all modules
+            initializeProjectFilters();
+            initializeProjectManagement();
+            initializeUserManagement();
+            initializeMemberManagement();
+            initializeNotifications();
+        });
+
+        // Notification Management
+        function initializeNotifications() {
+            loadNotificationCount();
+            setInterval(loadNotificationCount, 30000); // Check every 30 seconds
+
+            // Load recent notifications when dropdown is opened
+            document.getElementById('notificationDropdown').addEventListener('click', function() {
+                loadRecentNotifications();
+            });
+
+            // Mark all as read
+            document.getElementById('mark-all-read').addEventListener('click', function() {
+                markAllNotificationsAsRead();
+            });
+        }
+
+        function loadNotificationCount() {
+            fetch('/api/notifications/count', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const badge = document.getElementById('notification-count');
+                    if (data.count > 0) {
+                        badge.textContent = data.count > 99 ? '99+' : data.count;
+                        badge.style.display = 'block';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error loading notification count:', error);
+            });
+        }
+
+        function loadRecentNotifications() {
+            fetch('/api/notifications/recent?limit=10', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    renderNotifications(data.data);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading notifications:', error);
+            });
+        }
+
+        function renderNotifications(notifications) {
+            const container = document.getElementById('notification-list');
+
+            if (!notifications || notifications.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-3 text-muted">
+                        <i class="bi bi-bell-slash"></i>
+                        <p class="mb-0 mt-2">No notifications</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = notifications.map(notification => `
+                <div class="notification-item ${!notification.is_read ? 'unread' : ''}" data-id="${notification.notification_id}">
+                    <div class="d-flex">
+                        <div class="notification-icon ${notification.type} me-3">
+                            <i class="bi ${getNotificationIcon(notification.type)}"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="notification-title">${notification.title}</div>
+                            <div class="notification-message">${notification.message}</div>
+                            <div class="notification-time">${notification.time_ago}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Add click listeners to mark as read
+            container.querySelectorAll('.notification-item.unread').forEach(item => {
+                item.addEventListener('click', function() {
+                    markNotificationAsRead(this.dataset.id);
+                    this.classList.remove('unread');
+                });
+            });
+        }
+
+        function getNotificationIcon(type) {
+            const iconMap = {
+                'task_update': 'bi-list-task',
+                'status_change': 'bi-arrow-repeat',
+                'project_update': 'bi-folder'
+            };
+            return iconMap[type] || 'bi-bell';
+        }
+
+        function markNotificationAsRead(notificationId) {
+            fetch(`/api/notifications/${notificationId}/read`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadNotificationCount();
+                }
+            })
+            .catch(error => {
+                console.error('Error marking notification as read:', error);
+            });
+        }
+
+        function markAllNotificationsAsRead() {
+            fetch('/api/notifications/read-all', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadNotificationCount();
+                    loadRecentNotifications();
+                }
+            })
+            .catch(error => {
+                console.error('Error marking all notifications as read:', error);
+            });
+        }
     </script>
 </body>
 </html>

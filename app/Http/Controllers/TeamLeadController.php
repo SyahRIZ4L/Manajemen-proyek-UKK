@@ -40,6 +40,14 @@ class TeamLeadController extends Controller
     }
 
     /**
+     * Team Lead Panel - New comprehensive interface
+     */
+    public function panel()
+    {
+        return view('teamlead.panel');
+    }
+
+    /**
      * Task Assignment Interface
      */
     public function tasks()

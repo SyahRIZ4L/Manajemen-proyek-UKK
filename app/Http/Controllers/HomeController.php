@@ -14,11 +14,11 @@ class HomeController extends Controller
 
         switch ($userRole) {
             case 'Project_Admin':
-                return view('dashboard.admin', compact('user'));
+                return redirect()->route('admin.panel');
             case 'Team_Lead':
-                return view('dashboard.teamlead', compact('user'));
+                return redirect()->route('teamlead.panel');
             case 'Developer':
-                return view('dashboard.developer', compact('user'));
+                return redirect()->route('developer.panel');
             case 'Designer':
                 return view('dashboard.designer', compact('user'));
             case 'Member':

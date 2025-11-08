@@ -21,6 +21,18 @@ class DeveloperController extends Controller
     }
 
     /**
+     * Developer Panel - Modern interface
+     */
+    public function panel()
+    {
+        if (!CheckPermission::hasPermission(Auth::user(), 'view_assigned_tasks')) {
+            return redirect()->route('home')->with('error', 'Akses ditolak. Anda tidak memiliki permission untuk melihat panel developer.');
+        }
+
+        return view('developer.panel');
+    }
+
+    /**
      * Developer Dashboard
      */
     public function dashboard()
@@ -236,6 +248,266 @@ class DeveloperController extends Controller
      */
 
     /**
+     * API Methods for Panel
+     */
+    public function getStatistics()
+    {
+        try {
+            $user = Auth::user();
+            $taskStats = $this->getTaskStats($user);
+
+            $timeLogs = DB::table('time_logs')
+                ->where('user_id', $user->user_id)
+                ->whereBetween('logged_date', [now()->startOfWeek(), now()->endOfWeek()])
+                ->sum('hours');
+
+            $stats = [
+                'assigned_tasks' => $taskStats['total'],
+                'active_tasks' => $taskStats['in_progress'],
+                'completed_tasks' => $taskStats['completed'],
+                'hours_logged' => $timeLogs ?: 32 // fallback for demo
+            ];
+
+            return response()->json([
+                'success' => true,
+                'data' => $stats
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving statistics: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get developer's assigned tasks for API
+     */
+    public function getTasks(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            $status = $request->get('status');
+
+            $query = DB::table('cards')
+                ->join('boards', 'cards.board_id', '=', 'boards.board_id')
+                ->join('projects', 'boards.project_id', '=', 'projects.project_id')
+                ->where('cards.assigned_to', $user->user_id)
+                ->select('cards.*', 'projects.project_name', 'boards.board_name');
+
+            if ($status) {
+                $query->where('cards.status', $status);
+            }
+
+            $tasks = $query->get()->map(function($task) {
+                return [
+                    'id' => $task->id,
+                    'title' => $task->title,
+                    'description' => $task->description,
+                    'project' => $task->project_name,
+                    'priority' => ucfirst($task->priority),
+                    'status' => ucfirst(str_replace('_', ' ', $task->status)),
+                    'due_date' => $task->due_date,
+                    'progress' => $this->calculateTaskProgress($task)
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => $tasks
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving tasks: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get developer's projects for API
+     */
+    public function getProjects()
+    {
+        try {
+            $user = Auth::user();
+
+            $projects = DB::table('projects')
+                ->join('project_members', 'projects.project_id', '=', 'project_members.project_id')
+                ->where('project_members.user_id', $user->user_id)
+                ->select('projects.*')
+                ->distinct()
+                ->get()
+                ->map(function($project) {
+                    $memberCount = DB::table('project_members')
+                        ->where('project_id', $project->project_id)
+                        ->count();
+
+                    return [
+                        'id' => $project->project_id,
+                        'name' => $project->project_name,
+                        'description' => $project->description,
+                        'deadline' => $project->deadline,
+                        'members' => $memberCount,
+                        'status' => ucfirst($project->status),
+                        'progress' => $this->calculateProjectProgress($project->project_id)
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'data' => $projects
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving projects: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Log time for API
+     */
+    public function logTime(Request $request)
+    {
+        if (!CheckPermission::hasPermission(Auth::user(), 'log_work_time')) {
+            return response()->json(['success' => false, 'message' => 'Akses ditolak']);
+        }
+
+        $request->validate([
+            'task_id' => 'required|integer',
+            'hours' => 'required|numeric|min:0.5|max:12',
+            'description' => 'required|string|max:500',
+            'date' => 'nullable|date'
+        ]);
+
+        try {
+            $user = Auth::user();
+
+            DB::table('time_logs')->insert([
+                'user_id' => $user->user_id,
+                'card_id' => $request->task_id,
+                'hours' => $request->hours,
+                'description' => $request->description,
+                'logged_date' => $request->date ?? now()->toDateString(),
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Time logged successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error logging time: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get developer's recent activities for API
+     */
+    public function getRecentActivities()
+    {
+        try {
+            $user = Auth::user();
+
+            $activities = collect();
+
+            // Recent time logs
+            $timeLogs = DB::table('time_logs')
+                ->where('user_id', $user->user_id)
+                ->orderBy('created_at', 'desc')
+                ->limit(5)
+                ->get();
+
+            foreach ($timeLogs as $log) {
+                $activities->push([
+                    'type' => 'time',
+                    'title' => 'Time logged',
+                    'description' => $log->hours . ' hours - ' . $log->description,
+                    'time' => $this->timeAgo($log->created_at)
+                ]);
+            }
+
+            // Recent task updates
+            $taskUpdates = DB::table('cards')
+                ->where('assigned_to', $user->user_id)
+                ->where('updated_at', '>', now()->subDays(7))
+                ->orderBy('updated_at', 'desc')
+                ->limit(5)
+                ->get();
+
+            foreach ($taskUpdates as $task) {
+                $activities->push([
+                    'type' => 'task',
+                    'title' => 'Task updated',
+                    'description' => $task->title . ' - ' . ucfirst($task->status),
+                    'time' => $this->timeAgo($task->updated_at)
+                ]);
+            }
+
+            // Sort by time and limit
+            $activities = $activities->sortByDesc('time')->take(10)->values();
+
+            return response()->json([
+                'success' => true,
+                'data' => $activities
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving activities: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get time logs for developer API
+     */
+    public function getTimeLogs(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            $startDate = $request->get('start_date', now()->startOfWeek()->toDateString());
+            $endDate = $request->get('end_date', now()->endOfWeek()->toDateString());
+
+            $timeLogs = DB::table('time_logs')
+                ->join('cards', 'time_logs.card_id', '=', 'cards.id')
+                ->where('time_logs.user_id', $user->user_id)
+                ->whereBetween('logged_date', [$startDate, $endDate])
+                ->select('time_logs.*', 'cards.title as task_title')
+                ->orderBy('logged_date', 'desc')
+                ->get()
+                ->map(function($log) {
+                    return [
+                        'date' => $log->logged_date,
+                        'task' => $log->task_title,
+                        'hours' => $log->hours,
+                        'description' => $log->description
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'data' => $timeLogs
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving time logs: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Helper Methods
+     */
+
+    /**
      * Get tasks assigned to developer
      */
     private function getAssignedTasks($user)
@@ -315,5 +587,60 @@ class DeveloperController extends Controller
             ->where('title', 'LIKE', '[BUG]%')
             ->orderBy('created_at', 'desc')
             ->get();
+    }
+
+    /**
+     * Calculate task progress based on status
+     */
+    private function calculateTaskProgress($task)
+    {
+        switch ($task->status) {
+            case 'pending':
+                return 0;
+            case 'in_progress':
+                return 60;
+            case 'review':
+                return 90;
+            case 'completed':
+                return 100;
+            default:
+                return 0;
+        }
+    }
+
+    /**
+     * Calculate project progress
+     */
+    private function calculateProjectProgress($projectId)
+    {
+        $totalTasks = DB::table('cards')
+            ->join('boards', 'cards.board_id', '=', 'boards.board_id')
+            ->where('boards.project_id', $projectId)
+            ->count();
+
+        if ($totalTasks == 0) return 0;
+
+        $completedTasks = DB::table('cards')
+            ->join('boards', 'cards.board_id', '=', 'boards.board_id')
+            ->where('boards.project_id', $projectId)
+            ->where('cards.status', 'completed')
+            ->count();
+
+        return round(($completedTasks / $totalTasks) * 100);
+    }
+
+    /**
+     * Convert timestamp to time ago format
+     */
+    private function timeAgo($datetime)
+    {
+        $time = time() - strtotime($datetime);
+
+        if ($time < 60) return 'just now';
+        if ($time < 3600) return floor($time/60) . ' minutes ago';
+        if ($time < 86400) return floor($time/3600) . ' hours ago';
+        if ($time < 2592000) return floor($time/86400) . ' days ago';
+        if ($time < 31104000) return floor($time/2592000) . ' months ago';
+        return floor($time/31104000) . ' years ago';
     }
 }

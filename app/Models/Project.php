@@ -18,17 +18,44 @@ class Project extends Model
         'description',
         'created_by',
         'deadline',
+        'status',
+        'completed_at',
+        'cancelled_at',
+        'completed_by',
+        'cancelled_by',
+        'completion_notes',
+        'cancellation_reason'
     ];
 
     protected $casts = [
-        'deadline' => 'date',
+        'deadline' => 'datetime',
         'created_at' => 'datetime',
+        'completed_at' => 'datetime',
+        'cancelled_at' => 'datetime',
     ];
+
+    // Accessor untuk id agar konsisten dengan frontend
+    public function getIdAttribute()
+    {
+        return $this->project_id;
+    }
 
     // Relasi dengan User
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    // Relasi dengan user yang complete project
+    public function completedByUser()
+    {
+        return $this->belongsTo(User::class, 'completed_by');
+    }
+
+    // Relasi dengan user yang cancel project
+    public function cancelledByUser()
+    {
+        return $this->belongsTo(User::class, 'cancelled_by');
     }
 
     // Relasi dengan ProjectMembers

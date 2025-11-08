@@ -4,17 +4,103 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Notification;
+use App\Models\User;
 
 class NotificationController extends Controller
 {
     /**
      * Get all notifications for the authenticated user.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $notifications = $this->getUserNotifications(Auth::id());
+        try {
+            $user = Auth::user();
+            $perPage = $request->get('per_page', 10);
+            $type = $request->get('type');
 
-        return view('notifications.index', compact('notifications'));
+            $query = Notification::forUser($user->user_id)
+                ->with(['project', 'triggeredBy'])
+                ->orderBy('created_at', 'desc');
+
+            if ($type) {
+                $query->byType($type);
+            }
+
+            $notifications = $query->paginate($perPage);
+
+            return response()->json([
+                'success' => true,
+                'data' => $notifications
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving notifications: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get unread notifications count for the authenticated user.
+     */
+    public function getUnreadCount()
+    {
+        try {
+            $user = Auth::user();
+            $count = Notification::forUser($user->user_id)->unread()->count();
+
+            return response()->json([
+                'success' => true,
+                'count' => $count
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving notification count: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get recent unread notifications for dropdown/bell icon
+     */
+    public function getRecent(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            $limit = $request->get('limit', 5);
+
+            $notifications = Notification::forUser($user->user_id)
+                ->unread()
+                ->with(['project', 'triggeredBy'])
+                ->orderBy('created_at', 'desc')
+                ->limit($limit)
+                ->get()
+                ->map(function ($notification) {
+                    return [
+                        'notification_id' => $notification->notification_id,
+                        'type' => $notification->type,
+                        'title' => $notification->title,
+                        'message' => $notification->message,
+                        'time_ago' => $notification->time_ago,
+                        'project_name' => $notification->project ? $notification->project->project_name : null,
+                        'triggered_by' => $notification->triggeredBy ? $notification->triggeredBy->full_name : null,
+                        'is_read' => $notification->is_read,
+                        'created_at' => $notification->created_at
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'data' => $notifications
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error retrieving recent notifications: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -22,121 +108,132 @@ class NotificationController extends Controller
      */
     public function markAsRead($notificationId)
     {
-        // Mock implementation - will be replaced with actual database logic
-        return response()->json([
-            'success' => true,
-            'message' => 'Notifikasi berhasil ditandai sebagai dibaca'
-        ]);
+        try {
+            $user = Auth::user();
+            $notification = Notification::where('notification_id', $notificationId)
+                ->where('user_id', $user->user_id)
+                ->first();
+
+            if (!$notification) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Notification not found'
+                ], 404);
+            }
+
+            $notification->markAsRead();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Notification marked as read'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error marking notification as read: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
-     * Mark all notifications as read.
+     * Mark all notifications as read for the authenticated user.
      */
     public function markAllAsRead()
     {
-        // Mock implementation - will be replaced with actual database logic
-        return response()->json([
-            'success' => true,
-            'message' => 'Semua notifikasi berhasil ditandai sebagai dibaca'
-        ]);
+        try {
+            $user = Auth::user();
+            $count = Notification::markAllAsReadForUser($user->user_id);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Marked {$count} notifications as read"
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error marking all notifications as read: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
-     * Delete notification.
+     * Delete a notification.
      */
     public function destroy($notificationId)
     {
-        // Mock implementation - will be replaced with actual database logic
-        return response()->json([
-            'success' => true,
-            'message' => 'Notifikasi berhasil dihapus'
-        ]);
+        try {
+            $user = Auth::user();
+            $notification = Notification::where('notification_id', $notificationId)
+                ->where('user_id', $user->user_id)
+                ->first();
+
+            if (!$notification) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Notification not found'
+                ], 404);
+            }
+
+            $notification->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Notification deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error deleting notification: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
-     * Get unread notification count.
+     * Test notification creation (for development)
      */
-    public function getUnreadCount()
+    public function testNotification(Request $request)
     {
-        $notifications = $this->getUserNotifications(Auth::id());
-        $unreadCount = count(array_filter($notifications, fn($n) => !$n['read']));
+        try {
+            $user = Auth::user();
+            $projectId = $request->get('project_id', 1);
+            $type = $request->get('type', 'task_update');
 
-        return response()->json([
-            'count' => $unreadCount
-        ]);
-    }
+            switch ($type) {
+                case 'task_update':
+                    Notification::createTaskUpdateNotification(
+                        $projectId,
+                        $user->user_id,
+                        'Test task update notification'
+                    );
+                    break;
 
-    /**
-     * Send notification (helper method).
-     */
-    public static function sendNotification($userId, $type, $title, $message, $data = [])
-    {
-        // Mock implementation - will be replaced with actual database logic
-        // This would typically save to database and potentially send real-time notifications
+                case 'status_change':
+                    Notification::createStatusChangeNotification(
+                        $projectId,
+                        $user->user_id,
+                        'In Progress',
+                        'Completed'
+                    );
+                    break;
 
-        return [
-            'id' => rand(1000, 9999),
-            'user_id' => $userId,
-            'type' => $type,
-            'title' => $title,
-            'message' => $message,
-            'data' => $data,
-            'read' => false,
-            'created_at' => now(),
-        ];
-    }
+                default:
+                    Notification::createProjectUpdateNotification(
+                        $projectId,
+                        $user->user_id,
+                        'general',
+                        'Test project update notification'
+                    );
+            }
 
-    /**
-     * Get user notifications (mock data).
-     */
-    private function getUserNotifications($userId)
-    {
-        return [
-            [
-                'id' => 1,
-                'type' => 'task_assigned',
-                'title' => 'Task Baru Ditugaskan',
-                'message' => 'Anda telah ditugaskan untuk task "Develop payment gateway"',
-                'data' => ['task_id' => 5, 'assigned_by' => 'Project Manager'],
-                'read' => false,
-                'created_at' => now()->subMinutes(30),
-            ],
-            [
-                'id' => 2,
-                'type' => 'task_status_changed',
-                'title' => 'Status Task Diubah',
-                'message' => 'Status task "Database optimization" diubah menjadi "Completed"',
-                'data' => ['task_id' => 3, 'old_status' => 'In Progress', 'new_status' => 'Completed'],
-                'read' => false,
-                'created_at' => now()->subHours(2),
-            ],
-            [
-                'id' => 3,
-                'type' => 'project_deadline',
-                'title' => 'Deadline Mendekat',
-                'message' => 'Proyek "E-commerce Website" deadline dalam 3 hari',
-                'data' => ['project_id' => 1, 'deadline' => '2025-09-24'],
-                'read' => true,
-                'created_at' => now()->subHours(4),
-            ],
-            [
-                'id' => 4,
-                'type' => 'task_comment',
-                'title' => 'Komentar Baru',
-                'message' => 'Admin menambahkan komentar pada task "API Documentation"',
-                'data' => ['task_id' => 4, 'comment_by' => 'Admin'],
-                'read' => true,
-                'created_at' => now()->subDay(),
-            ],
-            [
-                'id' => 5,
-                'type' => 'time_log_approved',
-                'title' => 'Time Log Disetujui',
-                'message' => 'Time log 8 jam untuk task "Authentication System" telah disetujui',
-                'data' => ['task_id' => 1, 'hours' => 8],
-                'read' => true,
-                'created_at' => now()->subDays(2),
-            ],
-        ];
+            return response()->json([
+                'success' => true,
+                'message' => 'Test notification created successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error creating test notification: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

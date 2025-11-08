@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
+use App\Models\ProjectMember;
 use App\Models\User;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 class ProjectController extends Controller
 {
@@ -74,7 +77,7 @@ class ProjectController extends Controller
      */
     public function show($id)
     {
-        $project = Project::with(['creator', 'members.user'])
+        $project = Project::with(['creator', 'members.user', 'completedByUser', 'cancelledByUser'])
             ->findOrFail($id);
 
         return response()->json([
@@ -92,16 +95,39 @@ class ProjectController extends Controller
             'project_name' => 'required|string|max:100',
             'description' => 'nullable|string',
             'deadline' => 'nullable|date',
+            'status' => 'nullable|in:Planning,In Progress,On Hold,Completed'
         ]);
 
         try {
             $project = Project::findOrFail($id);
+            $oldStatus = $project->status;
+            $oldDeadline = $project->deadline;
 
             $project->update([
                 'project_name' => $request->project_name,
                 'description' => $request->description,
                 'deadline' => $request->deadline,
+                'status' => $request->status ?? $project->status,
             ]);
+
+            // Send notification for status change (only if status actually changed)
+            if ($request->status && $oldStatus !== $request->status) {
+                Notification::createStatusChangeNotification(
+                    $project->project_id,
+                    Auth::id(),
+                    $oldStatus,
+                    $request->status
+                );
+            }
+
+            // Send notification for deadline change (only if deadline actually changed)
+            if ($request->deadline && $oldDeadline !== $request->deadline) {
+                Notification::createTaskUpdateNotification(
+                    $project->project_id,
+                    Auth::id(),
+                    "Project deadline updated to " . date('Y-m-d', strtotime($request->deadline))
+                );
+            }
 
             return response()->json([
                 'success' => true,
@@ -175,7 +201,12 @@ class ProjectController extends Controller
         try {
             $project = Project::findOrFail($id);
 
-            $members = $project->members()->with('user')->get();
+            // Get members with fresh user role data
+            $members = $project->members()->with('user')->get()->map(function ($member) {
+                // Use user's current system role instead of stored member role
+                $member->role = $member->user->role;
+                return $member;
+            });
 
             return response()->json([
                 'success' => true,
@@ -231,6 +262,312 @@ class ProjectController extends Controller
                     'done' => 0,
                 ]
             ]);
+        }
+    }
+
+    /**
+     * Add member to project
+     */
+    public function addMember(Request $request, $id)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,user_id'
+        ]);
+
+        try {
+            $project = Project::findOrFail($id);
+
+            // Check if project is completed
+            if ($project->status === 'Completed') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot add members to completed project'
+                ], 400);
+            }
+
+            // Get the user to add
+            $user = User::findOrFail($request->user_id);
+
+            // Check if user is already a member
+            $existingMember = $project->members()->where('user_id', $request->user_id)->first();
+            if ($existingMember) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User is already a member of this project'
+                ], 400);
+            }
+
+            // Add member with their system role
+            $project->members()->create([
+                'user_id' => $request->user_id,
+                'role' => $user->role, // Use user's system role
+                'joined_at' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Member added successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to add member: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Remove member from project
+     */
+    public function removeMember($id, $memberId)
+    {
+        try {
+            $project = Project::findOrFail($id);
+
+            // Check if project is completed
+            if ($project->status === 'Completed') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot remove members from completed project'
+                ], 400);
+            }
+
+            $member = $project->members()->findOrFail($memberId);
+
+            $member->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Member removed successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to remove member: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update member role
+     */
+    public function updateMemberRole(Request $request, $id, $memberId)
+    {
+        $request->validate([
+            'role' => 'required|in:member,team_lead'
+        ]);
+
+        try {
+            $project = Project::findOrFail($id);
+            $member = $project->members()->findOrFail($memberId);
+
+            $member->update([
+                'role' => $request->role
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Member role updated successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update member role: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get available users to add as members
+     */
+    public function getAvailableUsers($id)
+    {
+        try {
+            $project = Project::findOrFail($id);
+
+            // Get users who are not already members of this project
+            $existingMemberIds = $project->members()->pluck('user_id')->toArray();
+
+            $availableUsers = User::whereNotIn('user_id', $existingMemberIds)
+                ->where('user_id', '!=', $project->created_by) // Exclude project creator
+                ->select('user_id', 'full_name', 'email', 'role')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $availableUsers
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to get available users: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Complete a project
+     */
+    public function completeProject(Request $request, $id)
+    {
+        try {
+            // Check if user has permission
+            if (!Gate::allows('manage-projects')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized. Only Project Admin and Team Lead can complete projects.'
+                ], 403);
+            }
+
+            $project = Project::findOrFail($id);
+
+            // Check if project is already completed or cancelled
+            if (in_array($project->status, ['Completed', 'On Hold'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Project is already completed or cancelled.'
+                ], 400);
+            }
+
+            // Validate completion notes if provided
+            $request->validate([
+                'completion_notes' => 'nullable|string|max:1000'
+            ]);
+
+            $project->update([
+                'status' => 'Completed',
+                'completed_at' => now(),
+                'completed_by' => Auth::id(),
+                'completion_notes' => $request->completion_notes,
+                'updated_at' => now()
+            ]);
+
+            // Create notification for project completion
+            Notification::createStatusChangeNotification(
+                $project->project_id,
+                Auth::id(),
+                'In Progress',
+                'Completed'
+            );
+
+            // Load relationships for response
+            $project->load(['creator', 'completedByUser']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Project completed successfully.',
+                'data' => $project
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to complete project: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Cancel a project
+     */
+    public function cancelProject(Request $request, $id)
+    {
+        try {
+            // Check if user has permission
+            if (!Gate::allows('manage-projects')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized. Only Project Admin and Team Lead can cancel projects.'
+                ], 403);
+            }
+
+            $project = Project::findOrFail($id);
+
+            // Check if project is already completed or cancelled
+            if (in_array($project->status, ['Completed', 'On Hold'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Project is already completed or cancelled.'
+                ], 400);
+            }
+
+            // Validate cancellation reason
+            $request->validate([
+                'cancellation_reason' => 'required|string|max:1000'
+            ]);
+
+            $project->update([
+                'status' => 'On Hold',
+                'cancelled_at' => now(),
+                'cancelled_by' => Auth::id(),
+                'cancellation_reason' => $request->cancellation_reason,
+                'updated_at' => now()
+            ]);
+
+            // Load relationships for response
+            $project->load(['creator', 'cancelledByUser']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Project cancelled successfully.',
+                'data' => $project
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to cancel project: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Reactivate a cancelled project
+     */
+    public function reactivateProject($id)
+    {
+        try {
+            // Check if user has permission
+            if (!Gate::allows('manage-projects')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized. Only Project Admin and Team Lead can reactivate projects.'
+                ], 403);
+            }
+
+            $project = Project::findOrFail($id);
+
+            // Check if project is cancelled
+            if ($project->status !== 'On Hold') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Only cancelled projects can be reactivated.'
+                ], 400);
+            }
+
+            $project->update([
+                'status' => 'In Progress',
+                'cancelled_at' => null,
+                'cancelled_by' => null,
+                'cancellation_reason' => null,
+                'updated_at' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Project reactivated successfully.',
+                'data' => $project
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to reactivate project: ' . $e->getMessage()
+            ], 500);
         }
     }
 }
