@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Http\Middleware\CheckPermission;
 
 class DesignerController extends Controller
@@ -745,5 +746,272 @@ class DesignerController extends Controller
         ];
 
         return response()->json($activities);
+    }
+
+    /**
+     * Get cards assigned to designer (same workflow as developer)
+     */
+    public function getCards()
+    {
+        try {
+            $user = Auth::user();
+
+            // Dummy data untuk testing - nanti akan diganti dengan query database
+            $cards = [
+                [
+                    'card_id' => 6,
+                    'title' => 'UI Design Mockup',
+                    'description' => 'Create responsive design mockups for user dashboard',
+                    'status' => 'todo',
+                    'priority' => 'high',
+                    'assigned_by' => 'TeamLead Alpha',
+                    'board_name' => 'Design Board',
+                    'project_name' => 'E-Commerce Platform',
+                    'created_at' => '2025-11-10 09:00:00',
+                    'due_date' => '2025-11-16 17:00:00'
+                ],
+                [
+                    'card_id' => 7,
+                    'title' => 'Logo Design Variations',
+                    'description' => 'Create 5 different logo variations for the brand',
+                    'status' => 'in_progress',
+                    'priority' => 'medium',
+                    'assigned_by' => 'TeamLead Beta',
+                    'board_name' => 'Branding Board',
+                    'project_name' => 'Mobile App Backend',
+                    'created_at' => '2025-11-08 14:30:00',
+                    'due_date' => '2025-11-14 17:00:00'
+                ],
+                [
+                    'card_id' => 8,
+                    'title' => 'Icon Set Design',
+                    'description' => 'Design consistent icon set for mobile application',
+                    'status' => 'review',
+                    'priority' => 'medium',
+                    'assigned_by' => 'TeamLead Alpha',
+                    'board_name' => 'Design Board',
+                    'project_name' => 'E-Commerce Platform',
+                    'created_at' => '2025-11-05 11:00:00',
+                    'due_date' => '2025-11-15 17:00:00'
+                ],
+                [
+                    'card_id' => 9,
+                    'title' => 'Color Palette Definition',
+                    'description' => 'Define primary and secondary color palettes for the project',
+                    'status' => 'done',
+                    'priority' => 'low',
+                    'assigned_by' => 'TeamLead Beta',
+                    'board_name' => 'Branding Board',
+                    'project_name' => 'Mobile App Backend',
+                    'created_at' => '2025-11-01 08:00:00',
+                    'due_date' => '2025-11-08 17:00:00'
+                ]
+            ];
+
+            return response()->json([
+                'success' => true,
+                'data' => $cards
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching cards: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update card status (todo -> in_progress -> review)
+     */
+    public function updateCardStatus(Request $request, $cardId)
+    {
+        try {
+            $user = Auth::user();
+            $status = $request->input('status');
+
+            // Validasi status yang diizinkan untuk designer
+            $allowedStatuses = ['todo', 'in_progress', 'review'];
+            if (!in_array($status, $allowedStatuses)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid status. Allowed statuses: todo, in_progress, review'
+                ], 400);
+            }
+
+            // TODO: Update database
+            // DB::table('cards')->where('card_id', $cardId)->update(['status' => $status]);
+
+            // Create notification for TeamLead if status is 'review'
+            if ($status === 'review') {
+                $this->createReviewNotification($cardId, $user);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Card status updated successfully',
+                'data' => [
+                    'card_id' => $cardId,
+                    'status' => $status,
+                    'updated_by' => $user->username
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating card status: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Submit card to TeamLead for review
+     */
+    public function submitCardToTeamLead(Request $request, $cardId)
+    {
+        try {
+            $user = Auth::user();
+            $comment = $request->input('comment', '');
+
+            // Update card status to 'review'
+            // TODO: Update database
+            // DB::table('cards')->where('card_id', $cardId)->update(['status' => 'review']);
+
+            // Create notification for TeamLead
+            $this->createReviewNotification($cardId, $user, $comment);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Card submitted for review successfully',
+                'data' => [
+                    'card_id' => $cardId,
+                    'status' => 'review',
+                    'submitted_by' => $user->username,
+                    'comment' => $comment
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error submitting card: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Create notification for TeamLead when card is submitted for review
+     */
+    private function createReviewNotification($cardId, $user, $comment = '')
+    {
+        try {
+            // TODO: Create notification in database
+            // DB::table('notifications')->insert([
+            //     'user_id' => $teamLeadId, // Get from card assignment
+            //     'type' => 'card_review',
+            //     'title' => 'Design Card Ready for Review',
+            //     'message' => $user->username . ' has submitted a design card for review',
+            //     'data' => json_encode(['card_id' => $cardId, 'comment' => $comment]),
+            //     'created_at' => now()
+            // ]);
+
+            // For now, just log the notification
+            Log::info("Design review notification created for card $cardId by user {$user->username}");
+
+        } catch (\Exception $e) {
+            Log::error("Error creating design review notification: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get cards specifically assigned to the designer (for My Cards section)
+     */
+    public function getMyCards()
+    {
+        try {
+            $user = Auth::user();
+
+            // Get cards assigned to this user using CardAssignment table
+            $cards = DB::table('cards as c')
+                ->join('card_assignments as ca', 'c.card_id', '=', 'ca.card_id')
+                ->leftJoin('boards as b', 'c.board_id', '=', 'b.board_id')
+                ->leftJoin('projects as p', 'b.project_id', '=', 'p.project_id')
+                ->leftJoin('users as u', 'c.created_by', '=', 'u.user_id')
+                ->where('ca.user_id', $user->user_id)
+                ->select(
+                    'c.card_id',
+                    'c.card_title',
+                    'c.description',
+                    'c.status',
+                    'c.priority',
+                    'c.due_date',
+                    'c.deadline',
+                    'c.estimated_hours',
+                    'c.actual_hours',
+                    'c.created_at',
+                    'b.board_name',
+                    'p.project_name',
+                    'u.username as assigned_by'
+                )
+                ->orderBy('c.created_at', 'desc')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'cards' => $cards
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load cards: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get dashboard statistics for designer
+     */
+    public function getDashboardStats()
+    {
+        try {
+            $user = Auth::user();
+
+            // Get all cards assigned to this user
+            $totalCards = DB::table('cards')
+                ->join('card_assignments', 'cards.card_id', '=', 'card_assignments.card_id')
+                ->where('card_assignments.user_id', $user->user_id)
+                ->count();
+
+            // Count pending cards (todo and in_progress)
+            $pendingCards = DB::table('cards')
+                ->join('card_assignments', 'cards.card_id', '=', 'card_assignments.card_id')
+                ->where('card_assignments.user_id', $user->user_id)
+                ->whereIn('cards.status', ['todo', 'in_progress'])
+                ->count();
+
+            // Count completed cards
+            $completedCards = DB::table('cards')
+                ->join('card_assignments', 'cards.card_id', '=', 'card_assignments.card_id')
+                ->where('card_assignments.user_id', $user->user_id)
+                ->where('cards.status', 'done')
+                ->count();
+
+            return response()->json([
+                'success' => true,
+                'stats' => [
+                    'total' => $totalCards,
+                    'pending' => $pendingCards,
+                    'completed' => $completedCards
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load dashboard stats: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

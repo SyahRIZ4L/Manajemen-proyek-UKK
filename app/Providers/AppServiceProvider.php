@@ -5,6 +5,8 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Card;
+use App\Observers\CardObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,6 +23,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Register Model Observers
+        Card::observe(CardObserver::class);
+
         // Define Gates for authorization
         Gate::define('manage-projects', function ($user) {
             return in_array($user->role, ['Project_Admin', 'Team_Lead']);

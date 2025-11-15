@@ -1128,7 +1128,7 @@
                     <a href="#profile" onclick="showContent('profile')" class="btn-action" title="Profile Settings">
                         <i class="bi bi-person-gear"></i>
                     </a>
-                   
+
                     <form action="{{ route('logout') }}" method="POST" style="display: inline;">
                         @csrf
                         <button type="submit" class="btn-action logout-btn" title="Logout">
@@ -5055,18 +5055,28 @@
             hideMemberAlert('addMemberAlert');
 
             const projectId = currentProjectId;
+            const userId = formData.get('user_id');
 
-            fetch(`/api/projects/${projectId}/members`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    user_id: formData.get('user_id')
-                    // Role will be taken from user's system role in backend
+            // First, check if the user is a Team Lead and if they're available
+            checkTeamLeadAvailabilityBeforeAdd(userId, projectId)
+                .then(canProceed => {
+                    if (!canProceed) {
+                        return; // User declined to proceed or other issue
+                    }
+
+                    // Proceed with adding member
+                    return fetch(`/api/projects/${projectId}/members`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            user_id: userId
+                            // Role will be taken from user's system role in backend
+                        })
+                    });
                 })
-            })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
@@ -5901,6 +5911,164 @@
             })
             .catch(error => {
                 console.error('Error marking all notifications as read:', error);
+            });
+        }
+
+        // Team Lead Availability Management Functions
+        async function checkTeamLeadAvailabilityBeforeAdd(userId, projectId) {
+            try {
+                // Check if user is Team Lead first
+                const userResponse = await fetch(`/api/users/${userId}`);
+                const userData = await userResponse.json();
+
+                if (!userData.success || userData.data.role !== 'Team_Lead') {
+                    return true; // Not a Team Lead, proceed normally
+                }
+
+                // Check Team Lead availability
+                const availabilityResponse = await fetch(`/api/admin/team-leads/availability?team_lead_id=${userId}&project_id=${projectId}`);
+                const availabilityData = await availabilityResponse.json();
+
+                if (availabilityData.success && availabilityData.data.is_available) {
+                    return true; // Team Lead is available
+                }
+
+                // Team Lead is busy, show alert and ask for confirmation
+                const currentProject = availabilityData.data.current_project;
+
+                const result = await showTeamLeadBusyAlert(
+                    availabilityData.data.team_lead.full_name,
+                    currentProject.project_name,
+                    currentProject.status
+                );
+
+                return result; // Return user's decision
+
+            } catch (error) {
+                console.error('Error checking Team Lead availability:', error);
+                return true; // Proceed on error to not block workflow
+            }
+        }
+
+        function showTeamLeadBusyAlert(teamLeadName, currentProjectName, projectStatus) {
+            return new Promise((resolve) => {
+                // Create custom alert modal
+                const alertModal = document.createElement('div');
+                alertModal.className = 'modal fade';
+                alertModal.innerHTML = `
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header bg-warning text-dark">
+                                <h5 class="modal-title">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                    Team Lead Already Assigned
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="alert alert-warning mb-3">
+                                    <h6 class="alert-heading">⚠️ Team Lead Status: BUSY</h6>
+                                    <hr>
+                                    <p class="mb-2"><strong>${teamLeadName}</strong> is currently assigned as Team Lead for:</p>
+                                    <ul class="mb-2">
+                                        <li><strong>Project:</strong> ${currentProjectName}</li>
+                                        <li><strong>Status:</strong> <span class="badge bg-info">${projectStatus}</span></li>
+                                    </ul>
+                                    <p class="mb-0"><strong>Recommendation:</strong> Wait for current project to complete, or reassign Team Lead if urgent.</p>
+                                </div>
+                                <p><strong>Do you want to force assign this Team Lead to the new project?</strong></p>
+                                <div class="text-muted small">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    This will remove them from their current project and assign them to this project.
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-action="cancel" data-bs-dismiss="modal">
+                                    <i class="bi bi-x-lg me-2"></i>Cancel
+                                </button>
+                                <button type="button" class="btn btn-warning" data-action="force">
+                                    <i class="bi bi-arrow-repeat me-2"></i>Force Assign
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                document.body.appendChild(alertModal);
+                const modal = new bootstrap.Modal(alertModal);
+
+                // Handle button clicks
+                alertModal.addEventListener('click', (e) => {
+                    const action = e.target.getAttribute('data-action');
+                    if (action === 'cancel') {
+                        resolve(false);
+                        modal.hide();
+                    } else if (action === 'force') {
+                        resolve(true);
+                        modal.hide();
+                    }
+                });
+
+                // Clean up when modal is hidden
+                alertModal.addEventListener('hidden.bs.modal', () => {
+                    document.body.removeChild(alertModal);
+                });
+
+                modal.show();
+            });
+        }
+
+        // Function to update Team Lead status when project is completed
+        function updateTeamLeadStatusOnProjectComplete(projectId) {
+            fetch(`/api/teamlead/status-update/project-complete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ project_id: projectId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Team Lead status updated on project completion');
+                } else {
+                    console.warn('Failed to update Team Lead status:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error updating Team Lead status:', error);
+            });
+        }
+
+        // Enhanced project completion function
+        function completeProjectWithStatusUpdate(projectId) {
+            // First complete the project
+            fetch(`/api/projects/${projectId}/complete`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update Team Lead status
+                    updateTeamLeadStatusOnProjectComplete(projectId);
+
+                    // Show success message
+                    showNotification('success', 'Project Completed', 'Project completed successfully and Team Lead status updated');
+
+                    // Reload project data
+                    loadProjectsData();
+                } else {
+                    showNotification('error', 'Error', data.message || 'Failed to complete project');
+                }
+            })
+            .catch(error => {
+                console.error('Error completing project:', error);
+                showNotification('error', 'Error', 'An error occurred while completing project');
             });
         }
     </script>

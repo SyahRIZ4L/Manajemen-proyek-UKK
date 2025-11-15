@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 
 class ProjectController extends Controller
 {
@@ -454,6 +455,9 @@ class ProjectController extends Controller
                 'Completed'
             );
 
+            // Update Team Lead status when project is completed
+            $this->updateTeamLeadStatusOnCompletion($project->project_id);
+
             // Load relationships for response
             $project->load(['creator', 'completedByUser']);
 
@@ -568,6 +572,59 @@ class ProjectController extends Controller
                 'success' => false,
                 'message' => 'Failed to reactivate project: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Update Team Lead status when project is completed
+     */
+    private function updateTeamLeadStatusOnCompletion($projectId)
+    {
+        try {
+            // Get Team Lead from this project
+            $teamLead = DB::table('members')
+                ->where('project_id', $projectId)
+                ->where('role', 'Team_Lead')
+                ->first();
+
+            if (!$teamLead) {
+                return; // No Team Lead found for this project
+            }
+
+            // Check if Team Lead has other active projects
+            $otherActiveProjects = DB::table('members')
+                ->join('projects', 'members.project_id', '=', 'projects.project_id')
+                ->where('members.user_id', $teamLead->user_id)
+                ->where('members.role', 'Team_Lead')
+                ->where('projects.project_id', '!=', $projectId)
+                ->where('projects.status', '!=', 'Completed')
+                ->count();
+
+            // If no other active projects, set status to idle
+            if ($otherActiveProjects == 0) {
+                DB::table('users')
+                    ->where('user_id', $teamLead->user_id)
+                    ->update([
+                        'current_task_status' => 'idle',
+                        'updated_at' => now()
+                    ]);
+
+                // Create notification for Team Lead status change
+                if (class_exists('App\Models\Notification')) {
+                    Notification::create([
+                        'user_id' => $teamLead->user_id,
+                        'type' => 'status_change',
+                        'title' => 'Status Updated to Idle',
+                        'message' => 'Your status has been updated to idle as all assigned projects are completed.',
+                        'is_read' => false,
+                        'created_at' => now()
+                    ]);
+                }
+            }
+
+        } catch (\Exception $e) {
+            // Log error but don't break project completion
+            Log::warning('Failed to update Team Lead status on project completion: ' . $e->getMessage());
         }
     }
 }

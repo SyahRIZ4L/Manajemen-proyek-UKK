@@ -5,14 +5,18 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Http\Middleware\CheckPermission;
+use App\Http\Middleware\TeamLeadMiddleware;
+use App\Models\Card;
+use App\Models\CardReview;
+use App\Models\User;
 
 class TeamLeadController extends Controller
 {
     public function __construct()
     {
         $this->middleware('auth');
-        // Simplified middleware - hanya cek role Team_Lead
         $this->middleware(function ($request, $next) {
             if (Auth::user()->role !== 'Team_Lead') {
                 return redirect()->route('home')->with('error', 'Akses ditolak. Anda bukan Team Lead.');
@@ -26,16 +30,36 @@ class TeamLeadController extends Controller
      */
     public function dashboard()
     {
-        $user = Auth::user();
+        if (!CheckPermission::hasPermission(Auth::user(), 'view_team_progress')) {
+            return redirect()->route('home')->with('error', 'Akses ditolak. Anda tidak memiliki permission untuk melihat dashboard tim.');
+        }
 
-        // Get basic data without complex permission checks
+        $user = Auth::user();
+        $userRole = 'Team Lead';
+
+        // Get projects where user is team lead
         $teamLeadProjects = $this->getTeamLeadProjects($user);
+
+        // Get team statistics
         $stats = $this->getTeamStats($user);
+
+        // Get recent activities
+        $recentActivities = $this->getRecentActivitiesOld($user);
+
+        // Get pending tasks that need review
+        $pendingReviews = $this->getPendingReviews($user);
+
+        // Get team performance data
+        $teamPerformance = $this->getTeamPerformance($user);
 
         return view('teamlead.dashboard', compact(
             'user',
+            'userRole',
             'teamLeadProjects',
-            'stats'
+            'stats',
+            'recentActivities',
+            'pendingReviews',
+            'teamPerformance'
         ));
     }
 
@@ -44,7 +68,8 @@ class TeamLeadController extends Controller
      */
     public function panel()
     {
-        return view('teamlead.panel');
+        $user = Auth::user();
+        return view('teamlead.panel', compact('user'));
     }
 
     /**
@@ -52,23 +77,39 @@ class TeamLeadController extends Controller
      */
     public function tasks()
     {
+        if (!CheckPermission::hasPermission(Auth::user(), 'assign_tasks_to_team')) {
+            return redirect()->route('home')->with('error', 'Akses ditolak. Anda tidak memiliki permission untuk assign tasks.');
+        }
+
         $user = Auth::user();
         $projects = $this->getTeamLeadProjects($user);
+
+        // Get all tasks in projects where user is Team Lead
         $tasks = $this->getTeamTasks($user);
+
+        // Get team members for task assignment
         $teamMembers = $this->getTeamMembers($user);
+
+        // Get task statistics
+        $taskStats = $this->getTaskStats($user);
 
         return view('teamlead.tasks.index', compact(
             'projects',
             'tasks',
-            'teamMembers'
+            'teamMembers',
+            'taskStats'
         ));
     }
 
     /**
-     * Create new task
+     * Create new task (Team Lead can create tasks)
      */
     public function createTask()
     {
+        if (!CheckPermission::hasPermission(Auth::user(), 'create_team_tasks')) {
+            return redirect()->route('teamlead.tasks')->with('error', 'Akses ditolak. Anda tidak memiliki permission untuk membuat tasks.');
+        }
+
         $user = Auth::user();
         $projects = $this->getTeamLeadProjects($user);
         $teamMembers = $this->getTeamMembers($user);
@@ -81,79 +122,385 @@ class TeamLeadController extends Controller
      */
     public function storeTask(Request $request)
     {
-        $user = Auth::user();
+        if (!TeamLeadMiddleware::userHasTeamLeadPermission(Auth::user(), 'assign_tasks')) {
+            return redirect()->route('teamlead.tasks')->with('error', 'Akses ditolak.');
+        }
 
-        $validated = $request->validate([
-            'project_id' => 'required|exists:projects,project_id',
-            'board_id' => 'required|exists:boards,board_id',
+        $request->validate([
             'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'assigned_to' => 'nullable|exists:users,user_id',
-            'priority' => 'required|in:low,medium,high,urgent',
-            'due_date' => 'nullable|date|after:today'
+            'description' => 'required|string',
+            'project_id' => 'required|exists:projects,id',
+            'assigned_to' => 'required|exists:users,id',
+            'priority' => 'required|in:Low,Medium,High,Critical',
+            'due_date' => 'required|date|after:today',
+            'estimated_hours' => 'nullable|numeric|min:0'
         ]);
 
+        $user = Auth::user();
+
+        // Verify user is Team Lead in this project
+        if (!TeamLeadMiddleware::canAccessProject($user, $request->project_id)) {
+            return redirect()->route('teamlead.tasks')->with('error', 'Anda tidak memiliki akses ke proyek ini.');
+        }
+
         try {
-            $taskId = DB::table('cards')->insertGetId([
-                'board_id' => $validated['board_id'],
-                'title' => $validated['title'],
-                'description' => $validated['description'] ?? '',
-                'priority' => $validated['priority'],
-                'status' => 'pending',
-                'assigned_to' => $validated['assigned_to'],
-                'assigned_by' => $user->user_id,
-                'due_date' => $validated['due_date'],
+            DB::beginTransaction();
+
+            // Create task
+            $task = DB::table('cards')->insertGetId([
+                'title' => $request->title,
+                'description' => $request->description,
+                'project_id' => $request->project_id,
+                'board_id' => $this->getDefaultBoardId($request->project_id),
+                'assigned_to' => $request->assigned_to,
+                'created_by' => $user->id,
+                'priority' => $request->priority,
+                'status' => 'To Do',
+                'due_date' => $request->due_date,
+                'estimated_hours' => $request->estimated_hours,
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
 
-            if ($validated['assigned_to']) {
-                DB::table('card_assignments')->insert([
-                    'card_id' => $taskId,
-                    'user_id' => $validated['assigned_to'],
-                    'assigned_by' => $user->user_id,
-                    'assigned_at' => now(),
-                    'created_at' => now(),
-                    'updated_at' => now()
-                ]);
-            }
+            // Create assignment record
+            DB::table('card_assignments')->insert([
+                'card_id' => $task,
+                'user_id' => $request->assigned_to,
+                'assigned_by' => $user->id,
+                'assigned_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
 
-            return redirect()->route('teamlead.tasks')->with('success', 'Task berhasil dibuat.');
+            DB::commit();
 
+            return redirect()->route('teamlead.tasks')->with('success', 'Task berhasil dibuat dan ditugaskan.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            DB::rollback();
+            return redirect()->back()->with('error', 'Gagal membuat task: ' . $e->getMessage());
         }
     }
 
     /**
-     * Helper Methods - Simplified without complex checks
+     * Edit task (Team Lead can edit team tasks)
      */
-    private function getTeamLeadProjects($user)
+    public function editTask($id)
     {
-        return DB::table('projects')
-            ->join('project_members', 'projects.project_id', '=', 'project_members.project_id')
-            ->where('project_members.user_id', $user->user_id)
-            ->where('project_members.role', 'Team Lead')
-            ->select('projects.*')
-            ->get();
+        if (!TeamLeadMiddleware::userHasTeamLeadPermission(Auth::user(), 'edit_team_tasks')) {
+            return redirect()->route('teamlead.tasks')->with('error', 'Akses ditolak.');
+        }
+
+        $user = Auth::user();
+        $task = $this->getTask($id);
+
+        if (!$task) {
+            return redirect()->route('teamlead.tasks')->with('error', 'Task tidak ditemukan.');
+        }
+
+        // Verify user is Team Lead in this project
+        if (!TeamLeadMiddleware::canAccessProject($user, $task['project_id'])) {
+            return redirect()->route('teamlead.tasks')->with('error', 'Anda tidak memiliki akses ke task ini.');
+        }
+
+        $projects = TeamLeadMiddleware::getTeamLeadProjects($user);
+        $teamMembers = $this->getTeamMembers($user);
+
+        return view('teamlead.tasks.edit', compact('task', 'projects', 'teamMembers'));
+    }
+
+    /**
+     * Update task
+     */
+    public function updateTask(Request $request, $id)
+    {
+        if (!TeamLeadMiddleware::userHasTeamLeadPermission(Auth::user(), 'edit_team_tasks')) {
+            return redirect()->route('teamlead.tasks')->with('error', 'Akses ditolak.');
+        }
+
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'assigned_to' => 'required|exists:users,id',
+            'priority' => 'required|in:Low,Medium,High,Critical',
+            'status' => 'required|in:To Do,In Progress,Review,Done',
+            'due_date' => 'required|date',
+            'estimated_hours' => 'nullable|numeric|min:0'
+        ]);
+
+        $user = Auth::user();
+        $task = $this->getTask($id);
+
+        if (!$task) {
+            return redirect()->route('teamlead.tasks')->with('error', 'Task tidak ditemukan.');
+        }
+
+        // Verify user is Team Lead in this project
+        if (!TeamLeadMiddleware::canAccessProject($user, $task['project_id'])) {
+            return redirect()->route('teamlead.tasks')->with('error', 'Anda tidak memiliki akses ke task ini.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Update task
+            DB::table('cards')
+                ->where('id', $id)
+                ->update([
+                    'title' => $request->title,
+                    'description' => $request->description,
+                    'assigned_to' => $request->assigned_to,
+                    'priority' => $request->priority,
+                    'status' => $request->status,
+                    'due_date' => $request->due_date,
+                    'estimated_hours' => $request->estimated_hours,
+                    'updated_at' => now()
+                ]);
+
+            // Update assignment if changed
+            if ($task['assigned_to'] != $request->assigned_to) {
+                DB::table('card_assignments')
+                    ->where('card_id', $id)
+                    ->update([
+                        'user_id' => $request->assigned_to,
+                        'assigned_by' => $user->id,
+                        'assigned_at' => now(),
+                        'updated_at' => now()
+                    ]);
+            }
+
+            DB::commit();
+
+            return redirect()->route('teamlead.tasks')->with('success', 'Task berhasil diupdate.');
+        } catch (\Exception $e) {
+            DB::rollback();
+            return redirect()->back()->with('error', 'Gagal mengupdate task: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update task status
+     */
+    public function updateTaskStatus(Request $request, $id)
+    {
+        if (!TeamLeadMiddleware::userHasTeamLeadPermission(Auth::user(), 'update_task_status')) {
+            return redirect()->route('teamlead.tasks')->with('error', 'Akses ditolak.');
+        }
+
+        $request->validate([
+            'status' => 'required|in:To Do,In Progress,Review,Done'
+        ]);
+
+        $user = Auth::user();
+        $task = $this->getTask($id);
+
+        if (!$task) {
+            return response()->json(['error' => 'Task tidak ditemukan.'], 404);
+        }
+
+        // Verify user is Team Lead in this project
+        if (!TeamLeadMiddleware::canAccessProject($user, $task['project_id'])) {
+            return response()->json(['error' => 'Akses ditolak.'], 403);
+        }
+
+        try {
+            DB::table('cards')
+                ->where('id', $id)
+                ->update([
+                    'status' => $request->status,
+                    'updated_at' => now()
+                ]);
+
+            return response()->json(['success' => 'Status task berhasil diupdate.']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Gagal mengupdate status: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Update task priority
+     */
+    public function updateTaskPriority(Request $request, $id)
+    {
+        if (!TeamLeadMiddleware::userHasTeamLeadPermission(Auth::user(), 'set_task_priority')) {
+            return response()->json(['error' => 'Akses ditolak.'], 403);
+        }
+
+        $request->validate([
+            'priority' => 'required|in:Low,Medium,High,Critical'
+        ]);
+
+        $user = Auth::user();
+        $task = $this->getTask($id);
+
+        if (!$task) {
+            return response()->json(['error' => 'Task tidak ditemukan.'], 404);
+        }
+
+        // Verify user is Team Lead in this project
+        if (!TeamLeadMiddleware::canAccessProject($user, $task['project_id'])) {
+            return response()->json(['error' => 'Akses ditolak.'], 403);
+        }
+
+        try {
+            DB::table('cards')
+                ->where('id', $id)
+                ->update([
+                    'priority' => $request->priority,
+                    'updated_at' => now()
+                ]);
+
+            return response()->json(['success' => 'Prioritas task berhasil diupdate.']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Gagal mengupdate prioritas: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Team coordination dashboard
+     */
+    public function teamCoordination()
+    {
+        if (!TeamLeadMiddleware::userHasTeamLeadPermission(Auth::user(), 'coordinate_team')) {
+            return redirect()->route('home')->with('error', 'Akses ditolak.');
+        }
+
+        $user = Auth::user();
+
+        // Get team overview data
+        $teamOverview = $this->getTeamOverview($user);
+
+        // Get blockers that need resolution
+        $blockers = $this->getTeamBlockers($user);
+
+        // Get team progress data
+        $progressData = $this->getTeamProgressData($user);
+
+        return view('teamlead.coordination', compact(
+            'teamOverview',
+            'blockers',
+            'progressData'
+        ));
+    }
+
+    /**
+     * Update task priority
+     */
+    public function updatePriority(Request $request, $id)
+    {
+        if (!TeamLeadMiddleware::userHasTeamLeadPermission(Auth::user(), 'set_priority')) {
+            return redirect()->back()->with('error', 'Akses ditolak.');
+        }
+
+        $request->validate([
+            'priority' => 'required|in:Low,Medium,High,Critical'
+        ]);
+
+        $user = Auth::user();
+        $task = $this->getTask($id);
+
+        if (!$task) {
+            return redirect()->back()->with('error', 'Task tidak ditemukan.');
+        }
+
+        // Verify user is Team Lead in this project
+        if (!TeamLeadMiddleware::canAccessProject($user, $task['project_id'])) {
+            return redirect()->back()->with('error', 'Akses ditolak.');
+        }
+
+        try {
+            DB::table('cards')
+                ->where('id', $id)
+                ->update([
+                    'priority' => $request->priority,
+                    'updated_at' => now()
+                ]);
+
+            return redirect()->back()->with('success', 'Priority task berhasil diupdate.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal mengupdate priority: ' . $e->getMessage());
+        }
+    }
+
+    // Helper methods
+    private function getTeamStats($user)
+    {
+        $projectIds = collect(TeamLeadMiddleware::getTeamLeadProjects($user))->pluck('id');
+
+        return [
+            'total_tasks' => DB::table('cards')->whereIn('project_id', $projectIds)->count(),
+            'completed_tasks' => DB::table('cards')->whereIn('project_id', $projectIds)->where('status', 'Done')->count(),
+            'in_progress_tasks' => DB::table('cards')->whereIn('project_id', $projectIds)->where('status', 'In Progress')->count(),
+            'blocked_tasks' => DB::table('cards')->whereIn('project_id', $projectIds)->where('status', 'Blocked')->count(),
+            'team_members' => DB::table('project_members')->whereIn('project_id', $projectIds)->count(),
+            'active_projects' => $projectIds->count()
+        ];
+    }
+
+    private function getRecentActivitiesOld($user)
+    {
+        $projectIds = collect(TeamLeadMiddleware::getTeamLeadProjects($user))->pluck('id');
+
+        return DB::table('cards')
+            ->select('cards.*', 'users.name as assigned_to_name', 'projects.name as project_name')
+            ->join('users', 'cards.assigned_to', '=', 'users.id')
+            ->join('projects', 'cards.project_id', '=', 'projects.id')
+            ->whereIn('cards.project_id', $projectIds)
+            ->orderBy('cards.updated_at', 'desc')
+            ->limit(10)
+            ->get()
+            ->toArray();
+    }
+
+    private function getPendingReviews($user)
+    {
+        $projectIds = collect(TeamLeadMiddleware::getTeamLeadProjects($user))->pluck('id');
+
+        return DB::table('cards')
+            ->select('cards.*', 'users.name as assigned_to_name', 'projects.name as project_name')
+            ->join('users', 'cards.assigned_to', '=', 'users.id')
+            ->join('projects', 'cards.project_id', '=', 'projects.id')
+            ->whereIn('cards.project_id', $projectIds)
+            ->where('cards.status', 'Review')
+            ->orderBy('cards.updated_at', 'asc')
+            ->get()
+            ->toArray();
+    }
+
+    private function getTeamPerformance($user)
+    {
+        $projectIds = collect(TeamLeadMiddleware::getTeamLeadProjects($user))->pluck('id');
+
+        return DB::table('users')
+            ->select('users.name',
+                     DB::raw('COUNT(cards.id) as total_tasks'),
+                     DB::raw('SUM(CASE WHEN cards.status = "Done" THEN 1 ELSE 0 END) as completed_tasks'),
+                     DB::raw('SUM(COALESCE(time_logs.hours, 0)) as total_hours'))
+            ->join('card_assignments', 'users.id', '=', 'card_assignments.user_id')
+            ->join('cards', 'card_assignments.card_id', '=', 'cards.id')
+            ->leftJoin('time_logs', 'cards.id', '=', 'time_logs.card_id')
+            ->whereIn('cards.project_id', $projectIds)
+            ->groupBy('users.id', 'users.name')
+            ->get()
+            ->toArray();
     }
 
     private function getTeamTasks($user)
     {
-        $projectIds = $this->getTeamLeadProjects($user)->pluck('project_id');
+        $projectIds = $this->getTeamLeadProjects($user)->pluck('id');
 
         return DB::table('cards')
-            ->join('boards', 'cards.board_id', '=', 'boards.board_id')
+            ->join('boards', 'cards.board_id', '=', 'boards.id')
             ->whereIn('boards.project_id', $projectIds)
             ->select('cards.*', 'boards.project_id')
             ->orderBy('cards.priority', 'desc')
             ->orderBy('cards.due_date', 'asc')
-            ->get();
+            ->get()
+            ->toArray();
     }
 
     private function getTeamMembers($user)
     {
-        $projectIds = $this->getTeamLeadProjects($user)->pluck('project_id');
+        $projectIds = $this->getTeamLeadProjects($user)->pluck('id');
 
         return DB::table('users')
             ->join('project_members', 'users.user_id', '=', 'project_members.user_id')
@@ -161,27 +508,2497 @@ class TeamLeadController extends Controller
             ->where('users.user_id', '!=', $user->user_id)
             ->select('users.*', 'project_members.role', 'project_members.project_id')
             ->distinct()
+            ->get()
+            ->toArray();
+    }
+
+    private function getTaskStats($user)
+    {
+        $projectIds = collect(TeamLeadMiddleware::getTeamLeadProjects($user))->pluck('id');
+
+        return [
+            'by_status' => DB::table('cards')
+                ->select('status', DB::raw('COUNT(*) as count'))
+                ->whereIn('project_id', $projectIds)
+                ->groupBy('status')
+                ->get()
+                ->toArray(),
+            'by_priority' => DB::table('cards')
+                ->select('priority', DB::raw('COUNT(*) as count'))
+                ->whereIn('project_id', $projectIds)
+                ->groupBy('priority')
+                ->get()
+                ->toArray()
+        ];
+    }
+
+    private function getTask($id)
+    {
+        return DB::table('cards')
+            ->select('cards.*', 'users.name as assigned_to_name')
+            ->join('users', 'cards.assigned_to', '=', 'users.id')
+            ->where('cards.id', $id)
+            ->first();
+    }
+
+    private function getDefaultBoardId($projectId)
+    {
+        $board = DB::table('boards')->where('project_id', $projectId)->first();
+        return $board ? $board->id : null;
+    }
+
+    private function getTeamOverview($user)
+    {
+        $projectIds = collect(TeamLeadMiddleware::getTeamLeadProjects($user))->pluck('id');
+
+        return [
+            'projects' => DB::table('projects')->whereIn('id', $projectIds)->get()->toArray(),
+            'team_members' => $this->getTeamMembers($user),
+            'recent_completions' => DB::table('cards')
+                ->select('cards.*', 'users.name as assigned_to_name')
+                ->join('users', 'cards.assigned_to', '=', 'users.id')
+                ->whereIn('cards.project_id', $projectIds)
+                ->where('cards.status', 'Done')
+                ->where('cards.updated_at', '>=', now()->subDays(7))
+                ->orderBy('cards.updated_at', 'desc')
+                ->get()
+                ->toArray()
+        ];
+    }
+
+    private function getTeamBlockers($user)
+    {
+        $projectIds = collect(TeamLeadMiddleware::getTeamLeadProjects($user))->pluck('id');
+
+        return DB::table('cards')
+            ->select('cards.*', 'users.name as assigned_to_name', 'projects.name as project_name')
+            ->join('users', 'cards.assigned_to', '=', 'users.id')
+            ->join('projects', 'cards.project_id', '=', 'projects.id')
+            ->whereIn('cards.project_id', $projectIds)
+            ->where('cards.status', 'Blocked')
+            ->orderBy('cards.priority', 'desc')
+            ->orderBy('cards.due_date', 'asc')
+            ->get()
+            ->toArray();
+    }
+
+    private function getTeamProgressData($user)
+    {
+        $projectIds = collect(TeamLeadMiddleware::getTeamLeadProjects($user))->pluck('id');
+
+        return DB::table('projects')
+            ->select('projects.name', 'projects.progress', 'projects.status',
+                     DB::raw('COUNT(cards.id) as total_tasks'),
+                     DB::raw('SUM(CASE WHEN cards.status = "Done" THEN 1 ELSE 0 END) as completed_tasks'))
+            ->leftJoin('cards', 'projects.id', '=', 'cards.project_id')
+            ->whereIn('projects.id', $projectIds)
+            ->groupBy('projects.id', 'projects.name', 'projects.progress', 'projects.status')
+            ->get()
+            ->toArray();
+    }
+
+    /**
+     * Show team coordination page
+     */
+    public function coordination()
+    {
+        try {
+            // Get projects where user is team lead
+            $projects = DB::table('projects')
+                ->join('project_members', 'projects.id', '=', 'project_members.project_id')
+                ->where('project_members.user_id', Auth::id())
+                ->where('project_members.role', 'Team Lead')
+                ->select('projects.*')
+                ->get();
+
+            if ($projects->isEmpty()) {
+                return redirect()->route('home')->with('error', 'Anda tidak memiliki akses Team Lead pada proyek manapun.');
+            }
+
+            $projectIds = $projects->pluck('id');
+
+            // Get team members from all team lead projects
+            $teamMembers = DB::table('project_members')
+                ->join('users', 'project_members.user_id', '=', 'users.id')
+                ->whereIn('project_members.project_id', $projectIds)
+                ->where('project_members.user_id', '!=', Auth::id())
+                ->select('users.*', 'project_members.role', 'project_members.project_id')
+                ->get()
+                ->map(function ($member) {
+                    // Get current task count and status
+                    $currentTasks = DB::table('cards')
+                        ->where('assigned_to', $member->id)
+                        ->whereIn('status', ['Todo', 'In Progress'])
+                        ->count();
+
+                    $currentTask = DB::table('cards')
+                        ->where('assigned_to', $member->id)
+                        ->where('status', 'In Progress')
+                        ->first();
+
+                    return [
+                        'id' => $member->id,
+                        'name' => $member->name,
+                        'email' => $member->email,
+                        'role' => $member->role,
+                        'status' => 'active', // You might want to implement actual status tracking
+                        'current_tasks' => $currentTasks,
+                        'current_task' => $currentTask ? $currentTask->title : null,
+                        'project_id' => $member->project_id
+                    ];
+                });
+
+            // Get active blockers (tasks with status indicating blocked)
+            $blockers = DB::table('cards')
+                ->join('users', 'cards.assigned_to', '=', 'users.id')
+                ->join('projects', 'cards.project_id', '=', 'projects.id')
+                ->whereIn('cards.project_id', $projectIds)
+                ->where(function($query) {
+                    $query->where('cards.status', 'Blocked')
+                          ->orWhere('cards.description', 'LIKE', '%blocker%')
+                          ->orWhere('cards.description', 'LIKE', '%blocked%');
+                })
+                ->select(
+                    'cards.*',
+                    'users.name as affected_member',
+                    'projects.name as project_name'
+                )
+                ->get()
+                ->map(function ($card) {
+                    return [
+                        'id' => $card->id,
+                        'title' => $card->title,
+                        'description' => $card->description,
+                        'priority' => $card->priority ?? 'Medium',
+                        'affected_member' => $card->affected_member,
+                        'project_name' => $card->project_name,
+                        'created_at' => $card->created_at
+                    ];
+                });
+
+            // Get pending reviews (completed tasks requiring team lead review)
+            $pendingReviews = DB::table('cards')
+                ->join('users', 'cards.assigned_to', '=', 'users.id')
+                ->join('projects', 'cards.project_id', '=', 'projects.id')
+                ->whereIn('cards.project_id', $projectIds)
+                ->where('cards.status', 'Review')
+                ->select(
+                    'cards.*',
+                    'users.name as completed_by',
+                    'projects.name as project_name'
+                )
+                ->get()
+                ->map(function ($card) {
+                    return [
+                        'id' => $card->id,
+                        'title' => $card->title,
+                        'description' => $card->description,
+                        'completed_by' => $card->completed_by,
+                        'project_name' => $card->project_name,
+                        'submitted_at' => $card->updated_at
+                    ];
+                });
+
+            return view('teamlead.coordination', compact('teamMembers', 'blockers', 'pendingReviews'));
+
+        } catch (\Exception $e) {
+            return redirect()->route('home')->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Resolve blocker
+     */
+    public function resolveBlocker($id)
+    {
+        try {
+            $card = DB::table('cards')->where('id', $id)->first();
+
+            if (!$card) {
+                return response()->json(['success' => false, 'message' => 'Task tidak ditemukan']);
+            }
+
+            // Check if user has team lead access to this project
+            $hasAccess = DB::table('project_members')
+                ->where('project_id', $card->project_id)
+                ->where('user_id', Auth::id())
+                ->where('role', 'Team Lead')
+                ->exists();
+
+            if (!$hasAccess) {
+                return response()->json(['success' => false, 'message' => 'Anda tidak memiliki akses untuk resolve blocker ini']);
+            }
+
+            // Update card status from blocked to in progress
+            DB::table('cards')
+                ->where('id', $id)
+                ->update([
+                    'status' => 'In Progress',
+                    'updated_at' => now()
+                ]);
+
+            // Log the blocker resolution
+            DB::table('comments')->insert([
+                'card_id' => $id,
+                'user_id' => Auth::id(),
+                'comment' => 'Blocker resolved by Team Lead',
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            return response()->json(['success' => true, 'message' => 'Blocker berhasil di-resolve']);
+
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Escalate blocker to Project Admin
+     */
+    public function escalateBlocker($id)
+    {
+        try {
+            $card = DB::table('cards')->where('id', $id)->first();
+
+            if (!$card) {
+                return response()->json(['success' => false, 'message' => 'Task tidak ditemukan']);
+            }
+
+            // Check if user has team lead access to this project
+            $hasAccess = DB::table('project_members')
+                ->where('project_id', $card->project_id)
+                ->where('user_id', Auth::id())
+                ->where('role', 'Team Lead')
+                ->exists();
+
+            if (!$hasAccess) {
+                return response()->json(['success' => false, 'message' => 'Anda tidak memiliki akses untuk escalate blocker ini']);
+            }
+
+            // Add escalation comment
+            DB::table('comments')->insert([
+                'card_id' => $id,
+                'user_id' => Auth::id(),
+                'comment' => 'ESCALATED TO PROJECT ADMIN: This blocker requires Project Admin intervention. Team Lead: ' . Auth::user()->name,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            // Update card priority to Critical if not already
+            DB::table('cards')
+                ->where('id', $id)
+                ->update([
+                    'priority' => 'Critical',
+                    'updated_at' => now()
+                ]);
+
+            return response()->json(['success' => true, 'message' => 'Blocker berhasil di-escalate ke Project Admin']);
+
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Approve completed task
+     */
+    public function approveTask($id)
+    {
+        try {
+            $card = DB::table('cards')->where('id', $id)->first();
+
+            if (!$card) {
+                return response()->json(['success' => false, 'message' => 'Task tidak ditemukan']);
+            }
+
+            // Check if user has team lead access to this project
+            $hasAccess = DB::table('project_members')
+                ->where('project_id', $card->project_id)
+                ->where('user_id', Auth::id())
+                ->where('role', 'Team Lead')
+                ->exists();
+
+            if (!$hasAccess) {
+                return response()->json(['success' => false, 'message' => 'Anda tidak memiliki akses untuk approve task ini']);
+            }
+
+            // Update card status to Done
+            DB::table('cards')
+                ->where('id', $id)
+                ->update([
+                    'status' => 'Done',
+                    'completed_at' => now(),
+                    'updated_at' => now()
+                ]);
+
+            // Add approval comment
+            DB::table('comments')->insert([
+                'card_id' => $id,
+                'user_id' => Auth::id(),
+                'comment' => 'Task approved and completed by Team Lead: ' . Auth::user()->name,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            return response()->json(['success' => true, 'message' => 'Task berhasil di-approve']);
+
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Request task revision
+     */
+    public function requestRevision($id, Request $request)
+    {
+        try {
+            $card = DB::table('cards')->where('id', $id)->first();
+
+            if (!$card) {
+                return response()->json(['success' => false, 'message' => 'Task tidak ditemukan']);
+            }
+
+            // Check if user has team lead access to this project
+            $hasAccess = DB::table('project_members')
+                ->where('project_id', $card->project_id)
+                ->where('user_id', Auth::id())
+                ->where('role', 'Team Lead')
+                ->exists();
+
+            if (!$hasAccess) {
+                return response()->json(['success' => false, 'message' => 'Anda tidak memiliki akses untuk request revision pada task ini']);
+            }
+
+            // Update card status back to In Progress
+            DB::table('cards')
+                ->where('id', $id)
+                ->update([
+                    'status' => 'In Progress',
+                    'updated_at' => now()
+                ]);
+
+            // Add revision comment
+            $feedback = $request->input('feedback', 'Revision requested by Team Lead');
+            DB::table('comments')->insert([
+                'card_id' => $id,
+                'user_id' => Auth::id(),
+                'comment' => 'REVISION REQUESTED: ' . $feedback . ' - Team Lead: ' . Auth::user()->name,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            return response()->json(['success' => true, 'message' => 'Revision request berhasil dikirim']);
+
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Get coordination data for AJAX refresh
+     */
+    public function coordinationData()
+    {
+        try {
+            // Get projects where user is team lead
+            $projects = DB::table('projects')
+                ->join('project_members', 'projects.id', '=', 'project_members.project_id')
+                ->where('project_members.user_id', Auth::id())
+                ->where('project_members.role', 'Team Lead')
+                ->select('projects.*')
+                ->get();
+
+            $projectIds = $projects->pluck('id');
+
+            // Calculate performance metrics
+            $totalTasks = DB::table('cards')->whereIn('project_id', $projectIds)->count();
+            $completedTasks = DB::table('cards')->whereIn('project_id', $projectIds)->where('status', 'Done')->count();
+            $sprintCompletion = $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100) : 0;
+
+            $activeBlockers = DB::table('cards')
+                ->whereIn('project_id', $projectIds)
+                ->where(function($query) {
+                    $query->where('status', 'Blocked')
+                          ->orWhere('description', 'LIKE', '%blocker%')
+                          ->orWhere('description', 'LIKE', '%blocked%');
+                })
+                ->count();
+
+            // Calculate on-time delivery (tasks completed before due date)
+            $tasksWithDueDate = DB::table('cards')
+                ->whereIn('project_id', $projectIds)
+                ->where('status', 'Done')
+                ->whereNotNull('due_date')
+                ->whereNotNull('completed_at')
+                ->get();
+
+            $onTimeCount = $tasksWithDueDate->filter(function($task) {
+                return $task->completed_at <= $task->due_date;
+            })->count();
+
+            $onTimeDelivery = $tasksWithDueDate->count() > 0 ?
+                round(($onTimeCount / $tasksWithDueDate->count()) * 100) : 100;
+
+            return response()->json([
+                'sprintCompletion' => $sprintCompletion,
+                'activeBlockers' => $activeBlockers,
+                'onTimeDelivery' => $onTimeDelivery,
+                'totalTasks' => $totalTasks,
+                'completedTasks' => $completedTasks
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Terjadi kesalahan: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Broadcast message to team
+     */
+    public function broadcastMessage(Request $request)
+    {
+        try {
+            $message = $request->input('message');
+
+            if (!$message) {
+                return response()->json(['success' => false, 'message' => 'Message tidak boleh kosong']);
+            }
+
+            // Get projects where user is team lead
+            $projects = DB::table('projects')
+                ->join('project_members', 'projects.id', '=', 'project_members.project_id')
+                ->where('project_members.user_id', Auth::id())
+                ->where('project_members.role', 'Team Lead')
+                ->select('projects.*')
+                ->get();
+
+            $projectIds = $projects->pluck('id');
+
+            // Get all team members from team lead projects
+            $teamMembers = DB::table('project_members')
+                ->whereIn('project_id', $projectIds)
+                ->where('user_id', '!=', Auth::id())
+                ->pluck('user_id')
+                ->unique();
+
+            // Here you would typically send notifications to team members
+            // For now, we'll just log the broadcast
+            foreach ($teamMembers as $memberId) {
+                // Create notification record (you might want to create a notifications table)
+                // This is a placeholder for actual notification system
+            }
+
+            return response()->json(['success' => true, 'message' => 'Pesan berhasil dikirim ke tim']);
+
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Helper Methods for Team Lead Operations
+     */
+
+    /**
+     * Get projects where user is Team Lead
+     */
+    private function getTeamLeadProjects($user)
+    {
+        return DB::table('projects')
+            ->join('project_members', 'projects.id', '=', 'project_members.project_id')
+            ->where('project_members.user_id', $user->user_id)
+            ->where('project_members.role', 'Team Lead')
+            ->select('projects.*')
             ->get();
     }
 
-    private function getTeamStats($user)
+    /**
+     * Check if user can access specific project
+     */
+    private function canAccessProject($user, $projectId)
     {
-        $projectIds = collect($this->getTeamLeadProjects($user))->pluck('project_id');
+        return DB::table('project_members')
+            ->where('project_id', $projectId)
+            ->where('user_id', $user->user_id)
+            ->where('role', 'Team Lead')
+            ->exists();
+    }
 
-        return [
-            'total_tasks' => DB::table('cards')
-                ->join('boards', 'cards.board_id', '=', 'boards.board_id')
-                ->whereIn('boards.project_id', $projectIds)
-                ->count(),
-            'completed_tasks' => DB::table('cards')
-                ->join('boards', 'cards.board_id', '=', 'boards.board_id')
-                ->whereIn('boards.project_id', $projectIds)
-                ->where('cards.status', 'completed')
-                ->count(),
-            'team_members' => DB::table('project_members')
-                ->whereIn('project_id', $projectIds)
-                ->count(),
-            'active_projects' => $projectIds->count()
+    /**
+     * API: Get current project for Team Lead
+     */
+    public function getCurrentProject()
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'data' => null,
+                'message' => 'User not authenticated'
+            ]);
+        }
+
+        // Get Team Lead project using the correct table name 'members'
+        $project = DB::table('projects')
+            ->join('members', 'projects.project_id', '=', 'members.project_id')
+            ->where('members.user_id', $user->user_id)
+            ->where('members.role', 'Team_Lead')
+            ->select('projects.*')
+            ->first();
+
+        if (!$project) {
+            return response()->json([
+                'success' => true,
+                'data' => null,
+                'message' => 'No project assigned to this Team Lead'
+            ]);
+        }
+
+        // Map database fields to frontend expected fields
+        $project->id = $project->project_id;
+        $project->name = $project->project_name;
+
+        // Format dates
+        $project->start_date = $project->created_at ? date('M d, Y', strtotime($project->created_at)) : null;
+        $project->end_date = $project->deadline ? date('M d, Y', strtotime($project->deadline)) : null;
+
+        // Add basic stats (simplified)
+        $project->team_count = DB::table('members')->where('project_id', $project->project_id)->where('role', '!=', 'Team_Lead')->count();
+        $project->task_count = 5; // Mock for now
+        $project->progress = 25; // Mock for now
+        $project->completed_tasks = 1; // Mock for now
+        $project->pending_tasks = 4; // Mock for now
+        $project->active_members = $project->team_count;
+
+        return response()->json([
+            'success' => true,
+            'data' => $project
+        ]);
+    }
+
+    /**
+     * API: Get cards for Team Lead's projects
+     */
+    public function getCards()
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ]);
+        }
+
+        // Get Team Lead's project(s)
+        $projects = DB::table('projects')
+            ->join('members', 'projects.project_id', '=', 'members.project_id')
+            ->where('members.user_id', $user->user_id)
+            ->where('members.role', 'Team_Lead')
+            ->select('projects.*')
+            ->get();
+
+        if ($projects->isEmpty()) {
+            return response()->json([
+                'success' => true,
+                'cards' => [],
+                'statistics' => [
+                    'total_cards' => 0,
+                    'todo_cards' => 0,
+                    'in_progress_cards' => 0,
+                    'completed_cards' => 0
+                ]
+            ]);
+        }
+
+        $projectIds = $projects->pluck('project_id');
+
+        // Get cards from all Team Lead's projects with assignment info
+        $cards = DB::table('cards')
+            ->join('boards', 'cards.board_id', '=', 'boards.board_id')
+            ->join('projects', 'boards.project_id', '=', 'projects.project_id')
+            ->leftJoin('card_assignments', 'cards.card_id', '=', 'card_assignments.card_id')
+            ->leftJoin('users as assigned_users', 'card_assignments.user_id', '=', 'assigned_users.user_id')
+            ->whereIn('boards.project_id', $projectIds)
+            ->select(
+                'cards.*',
+                'boards.board_name',
+                'projects.project_name',
+                'projects.project_id',
+                'card_assignments.assignment_id',
+                'card_assignments.assigned_at',
+                'card_assignments.assignment_status',
+                'assigned_users.full_name as assigned_user_name',
+                'assigned_users.email as assigned_user_email'
+            )
+            ->orderBy('cards.created_at', 'desc')
+            ->get();
+
+        // Calculate statistics
+        $statistics = [
+            'total_cards' => $cards->count(),
+            'todo_cards' => $cards->where('status', 'To Do')->count(),
+            'in_progress_cards' => $cards->where('status', 'In Progress')->count(),
+            'completed_cards' => $cards->where('status', 'Done')->count(),
+            'assigned_cards' => $cards->whereNotNull('assignment_id')->count(),
+            'unassigned_cards' => $cards->whereNull('assignment_id')->count()
         ];
+
+        return response()->json([
+            'success' => true,
+            'cards' => $cards->toArray(),
+            'statistics' => $statistics
+        ]);
+    }
+
+    /**
+     * API: Get assigned cards for Team Lead
+     */
+    public function getAssignedCards()
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ]);
+        }
+
+        // Get cards directly assigned to the Team Lead
+        $assignedCards = DB::table('card_assignments')
+            ->join('cards', 'card_assignments.card_id', '=', 'cards.card_id')
+            ->join('boards', 'cards.board_id', '=', 'boards.board_id')
+            ->join('projects', 'boards.project_id', '=', 'projects.project_id')
+            ->where('card_assignments.user_id', $user->user_id)
+            ->select(
+                'cards.*',
+                'boards.board_name',
+                'projects.project_name',
+                'projects.project_id',
+                'card_assignments.assigned_at'
+            )
+            ->orderBy('card_assignments.assigned_at', 'desc')
+            ->get();
+
+        // Calculate statistics
+        $statistics = [
+            'total_assigned' => $assignedCards->count(),
+            'todo_assigned' => $assignedCards->where('status', 'To Do')->count(),
+            'in_progress_assigned' => $assignedCards->where('status', 'In Progress')->count(),
+            'completed_assigned' => $assignedCards->where('status', 'Done')->count()
+        ];
+
+        return response()->json([
+            'success' => true,
+            'cards' => $assignedCards->toArray(),
+            'statistics' => $statistics
+        ]);
+    }
+
+    /**
+     * API: Create new card
+     */
+    public function createCard(Request $request)
+    {
+        try {
+            $user = Auth::user();
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
+            $request->validate([
+                'board_id' => 'required|integer',
+                'card_title' => 'required|string|max:100', // Match database limit
+                'description' => 'nullable|string',
+                'priority' => 'required|in:low,medium,high', // Remove urgent as it's not in enum
+                'due_date' => 'nullable|date'
+            ]);
+
+        // Verify the board belongs to Team Lead's project
+        $board = DB::table('boards')
+            ->join('projects', 'boards.project_id', '=', 'projects.project_id')
+            ->join('members', 'projects.project_id', '=', 'members.project_id')
+            ->where('boards.board_id', $request->board_id)
+            ->where('members.user_id', $user->user_id)
+            ->where('members.role', 'Team_Lead')
+            ->first();            if (!$board) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Board not found or access denied'
+                ], 403);
+            }
+
+            // Get the next position for this board
+            $nextPosition = DB::table('cards')
+                ->where('board_id', $request->board_id)
+                ->max('position') + 1;
+
+            // Create the card
+            $cardId = DB::table('cards')->insertGetId([
+                'board_id' => $request->board_id,
+                'card_title' => $request->card_title,
+                'description' => $request->description,
+                'position' => $nextPosition ?? 1,
+                'status' => 'todo', // Use lowercase as per enum definition
+                'priority' => strtolower($request->priority), // Ensure lowercase
+                'due_date' => $request->due_date,
+                'created_by' => $user->user_id,
+                'created_at' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Card created successfully',
+                'card_id' => $cardId
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Error creating card: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while creating the card: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * API: Get My Cards (cards created by Team Lead)
+     */
+    public function getMyCards(Request $request)
+    {
+        try {
+            $user = Auth::user();
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
+            // Get cards created by this Team Lead
+            $myCards = DB::table('cards')
+                ->join('boards', 'cards.board_id', '=', 'boards.board_id')
+                ->join('projects', 'boards.project_id', '=', 'projects.project_id')
+                ->leftJoin('card_assignments', 'cards.card_id', '=', 'card_assignments.card_id')
+                ->leftJoin('users as assigned_user', 'card_assignments.user_id', '=', 'assigned_user.user_id')
+                ->where('cards.created_by', $user->user_id)
+                ->select(
+                    'cards.card_id as id',
+                    'cards.card_title as title',
+                    'cards.description',
+                    'cards.status',
+                    'cards.priority',
+                    'cards.due_date',
+                    'cards.created_at',
+                    'cards.estimated_hours',
+                    'cards.actual_hours',
+                    'boards.board_name',
+                    'projects.project_id',
+                    'projects.project_name',
+                    'assigned_user.username as assigned_to',
+                    'assigned_user.full_name as assigned_to_name',
+                    'card_assignments.assigned_at'
+                )
+                ->orderBy('cards.created_at', 'desc')
+                ->get();
+
+            // Group cards by status for better organization
+            $cardsByStatus = [
+                'todo' => [],
+                'in_progress' => [],
+                'review' => [],
+                'done' => []
+            ];
+
+            foreach ($myCards as $card) {
+                $status = strtolower($card->status);
+                if (!isset($cardsByStatus[$status])) {
+                    $cardsByStatus[$status] = [];
+                }
+                $cardsByStatus[$status][] = $card;
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $cardsByStatus,
+                'total_cards' => count($myCards)
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error getting my cards: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching cards: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * API: Assign card to project member
+     */
+    public function assignCardToMember(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ]);
+        }
+
+        $request->validate([
+            'card_id' => 'required|integer',
+            'user_id' => 'required|integer'
+        ]);
+
+        // Verify the card belongs to Team Lead's project
+        $card = DB::table('cards')
+            ->join('boards', 'cards.board_id', '=', 'boards.board_id')
+            ->join('projects', 'boards.project_id', '=', 'projects.project_id')
+            ->join('members as team_lead', 'projects.project_id', '=', 'team_lead.project_id')
+            ->where('cards.card_id', $request->card_id)
+            ->where('team_lead.user_id', $user->user_id)
+            ->where('team_lead.role', 'Team_Lead')
+            ->select('cards.*', 'projects.project_id')
+            ->first();
+
+        if (!$card) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Card not found or access denied'
+            ]);
+        }
+
+        // Verify the user is a member of the same project
+        $projectMember = DB::table('members')
+            ->where('project_id', $card->project_id)
+            ->where('user_id', $request->user_id)
+            ->first();
+
+        if (!$projectMember) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User is not a member of this project'
+            ]);
+        }
+
+        // Check if already assigned
+        $existingAssignment = DB::table('card_assignments')
+            ->where('card_id', $request->card_id)
+            ->where('user_id', $request->user_id)
+            ->first();
+
+        if ($existingAssignment) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User is already assigned to this card'
+            ]);
+        }
+
+        // Create the assignment
+        $assignmentId = DB::table('card_assignments')->insertGetId([
+            'card_id' => $request->card_id,
+            'user_id' => $request->user_id,
+            'assigned_at' => now(),
+            'assignment_status' => 'assigned'
+        ]);
+
+        // Get assigned user info
+        $assignedUser = DB::table('users')
+            ->where('user_id', $request->user_id)
+            ->select('full_name', 'email')
+            ->first();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Card assigned successfully to ' . $assignedUser->full_name,
+            'assignment_id' => $assignmentId,
+            'assigned_user' => $assignedUser
+        ]);
+    }
+
+    /**
+     * API: Get card assignments for a specific card
+     */
+    public function getCardAssignments($cardId)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ]);
+        }
+
+        // Verify the card belongs to Team Lead's project
+        $card = DB::table('cards')
+            ->join('boards', 'cards.board_id', '=', 'boards.board_id')
+            ->join('projects', 'boards.project_id', '=', 'projects.project_id')
+            ->join('members', 'projects.project_id', '=', 'members.project_id')
+            ->where('cards.card_id', $cardId)
+            ->where('members.user_id', $user->user_id)
+            ->where('members.role', 'Team_Lead')
+            ->first();
+
+        if (!$card) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Card not found or access denied'
+            ]);
+        }
+
+        // Get card assignments
+        $assignments = DB::table('card_assignments')
+            ->join('users', 'card_assignments.user_id', '=', 'users.user_id')
+            ->where('card_assignments.card_id', $cardId)
+            ->select(
+                'card_assignments.assignment_id',
+                'card_assignments.user_id',
+                'users.full_name',
+                'users.email',
+                'card_assignments.assigned_at',
+                'card_assignments.assignment_status',
+                'card_assignments.started_at',
+                'card_assignments.completed_at'
+            )
+            ->orderBy('card_assignments.assigned_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'assignments' => $assignments
+        ]);
+    }
+
+    /**
+     * API: Remove card assignment
+     */
+    public function removeCardAssignment(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ]);
+        }
+
+        $request->validate([
+            'assignment_id' => 'required|integer'
+        ]);
+
+        // Get assignment and verify access
+        $assignment = DB::table('card_assignments')
+            ->join('cards', 'card_assignments.card_id', '=', 'cards.card_id')
+            ->join('boards', 'cards.board_id', '=', 'boards.board_id')
+            ->join('projects', 'boards.project_id', '=', 'projects.project_id')
+            ->join('members', 'projects.project_id', '=', 'members.project_id')
+            ->where('card_assignments.assignment_id', $request->assignment_id)
+            ->where('members.user_id', $user->user_id)
+            ->where('members.role', 'Team_Lead')
+            ->select('card_assignments.*')
+            ->first();
+
+        if (!$assignment) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Assignment not found or access denied'
+            ]);
+        }
+
+        // Delete assignment
+        DB::table('card_assignments')
+            ->where('assignment_id', $request->assignment_id)
+            ->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Card assignment removed successfully'
+        ]);
+    }
+
+    /**
+     * API: Get unassigned cards for manual assignment
+     */
+    public function getUnassignedCards()
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ]);
+        }
+
+        // Get Team Lead's project(s)
+        $projects = DB::table('projects')
+            ->join('members', 'projects.project_id', '=', 'members.project_id')
+            ->where('members.user_id', $user->user_id)
+            ->where('members.role', 'Team_Lead')
+            ->select('projects.*')
+            ->get();
+
+        if ($projects->isEmpty()) {
+            return response()->json([
+                'success' => true,
+                'cards' => []
+            ]);
+        }
+
+        $projectIds = $projects->pluck('project_id');
+
+        // Get unassigned cards
+        $unassignedCards = DB::table('cards')
+            ->join('boards', 'cards.board_id', '=', 'boards.board_id')
+            ->join('projects', 'boards.project_id', '=', 'projects.project_id')
+            ->leftJoin('card_assignments', 'cards.card_id', '=', 'card_assignments.card_id')
+            ->whereIn('boards.project_id', $projectIds)
+            ->whereNull('card_assignments.card_id') // No assignment exists
+            ->select(
+                'cards.*',
+                'boards.board_name',
+                'projects.project_name',
+                'projects.project_id'
+            )
+            ->orderBy('cards.priority', 'desc')
+            ->orderBy('cards.due_date', 'asc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'cards' => $unassignedCards
+        ]);
+    }
+
+    /**
+     * API: Create new board
+     */
+    public function createBoard(Request $request)
+    {
+        try {
+            $user = Auth::user();
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated'
+                ]);
+            }
+
+            $request->validate([
+                'board_name' => 'required|string|max:255',
+                'description' => 'nullable|string|max:500'
+            ]);
+
+            // Get the project where user is Team Lead
+            $project = DB::table('members')
+                ->join('projects', 'members.project_id', '=', 'projects.project_id')
+                ->where('members.user_id', $user->user_id)
+                ->where('members.role', 'Team_Lead')
+                ->select('projects.*')
+                ->first();
+
+            if (!$project) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No project assigned to you as Team Lead'
+                ]);
+            }
+
+            // Check if board name already exists in this project
+            $existingBoard = DB::table('boards')
+                ->where('project_id', $project->project_id)
+                ->where('board_name', $request->board_name)
+                ->first();
+
+            if ($existingBoard) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Board with this name already exists in the project'
+                ]);
+            }
+
+            // Create the board
+            $boardId = DB::table('boards')->insertGetId([
+                'project_id' => $project->project_id,
+                'board_name' => $request->board_name,
+                'description' => $request->description,
+                'created_by' => $user->user_id,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Board created successfully',
+                'board_id' => $boardId,
+                'board' => [
+                    'board_id' => $boardId,
+                    'board_name' => $request->board_name,
+                    'description' => $request->description,
+                    'project_name' => $project->project_name
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error creating board: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * API: Update board
+     */
+    public function updateBoard(Request $request, $boardId)
+    {
+        try {
+            $user = Auth::user();
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated'
+                ]);
+            }
+
+            $request->validate([
+                'board_name' => 'required|string|max:255',
+                'description' => 'nullable|string|max:500'
+            ]);
+
+            // Verify the board belongs to Team Lead's project
+            $board = DB::table('boards')
+                ->join('projects', 'boards.project_id', '=', 'projects.project_id')
+                ->join('members', 'projects.project_id', '=', 'members.project_id')
+                ->where('boards.board_id', $boardId)
+                ->where('members.user_id', $user->user_id)
+                ->where('members.role', 'Team_Lead')
+                ->select('boards.*', 'projects.project_name')
+                ->first();
+
+            if (!$board) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Board not found or access denied'
+                ]);
+            }
+
+            // Update the board
+            DB::table('boards')
+                ->where('board_id', $boardId)
+                ->update([
+                    'board_name' => $request->board_name,
+                    'description' => $request->description,
+                    'updated_at' => now()
+                ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Board updated successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating board: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * API: Delete board
+     */
+    public function deleteBoard($boardId)
+    {
+        try {
+            $user = Auth::user();
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated'
+                ]);
+            }
+
+            // Verify the board belongs to Team Lead's project
+            $board = DB::table('boards')
+                ->join('projects', 'boards.project_id', '=', 'projects.project_id')
+                ->join('members', 'projects.project_id', '=', 'members.project_id')
+                ->where('boards.board_id', $boardId)
+                ->where('members.user_id', $user->user_id)
+                ->where('members.role', 'Team_Lead')
+                ->select('boards.*')
+                ->first();
+
+            if (!$board) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Board not found or access denied'
+                ]);
+            }
+
+            // Check if board has cards
+            $cardCount = DB::table('cards')->where('board_id', $boardId)->count();
+
+            if ($cardCount > 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Cannot delete board. It contains {$cardCount} cards. Please move or delete all cards first."
+                ]);
+            }
+
+            // Delete the board
+            DB::table('boards')->where('board_id', $boardId)->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Board deleted successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error deleting board: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * API: Get board detail with cards
+     */
+    public function getBoardDetail($boardId)
+    {
+        try {
+            $user = Auth::user();
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated'
+                ]);
+            }
+
+            // Verify the board belongs to Team Lead's project and get board info
+            $board = DB::table('boards')
+                ->join('projects', 'boards.project_id', '=', 'projects.project_id')
+                ->join('members', 'projects.project_id', '=', 'members.project_id')
+                ->where('boards.board_id', $boardId)
+                ->where('members.user_id', $user->user_id)
+                ->where('members.role', 'Team_Lead')
+                ->select(
+                    'boards.*',
+                    'projects.project_name',
+                    'projects.project_id'
+                )
+                ->first();
+
+            if (!$board) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Board not found or access denied'
+                ]);
+            }
+
+            // Get cards in this board with assignment info
+            $cards = DB::table('cards')
+                ->leftJoin('card_assignments', 'cards.card_id', '=', 'card_assignments.card_id')
+                ->leftJoin('users as assigned_users', 'card_assignments.user_id', '=', 'assigned_users.user_id')
+                ->where('cards.board_id', $boardId)
+                ->select(
+                    'cards.*',
+                    'card_assignments.assignment_id',
+                    'card_assignments.assigned_at',
+                    'card_assignments.assignment_status',
+                    'assigned_users.full_name as assigned_user_name',
+                    'assigned_users.email as assigned_user_email'
+                )
+                ->orderBy('cards.created_at', 'desc')
+                ->get();
+
+            // Group cards by status for kanban view
+            $cardsByStatus = [
+                'To Do' => $cards->where('status', 'To Do')->values(),
+                'In Progress' => $cards->where('status', 'In Progress')->values(),
+                'Done' => $cards->where('status', 'Done')->values()
+            ];
+
+            // Calculate board statistics
+            $statistics = [
+                'total_cards' => $cards->count(),
+                'todo_cards' => $cards->where('status', 'To Do')->count(),
+                'in_progress_cards' => $cards->where('status', 'In Progress')->count(),
+                'done_cards' => $cards->where('status', 'Done')->count(),
+                'assigned_cards' => $cards->whereNotNull('assignment_id')->count(),
+                'unassigned_cards' => $cards->whereNull('assignment_id')->count()
+            ];
+
+            return response()->json([
+                'success' => true,
+                'board' => $board,
+                'cards' => $cards,
+                'cards_by_status' => $cardsByStatus,
+                'statistics' => $statistics
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error loading board detail: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * API: Get boards for Team Lead's projects
+     */
+    public function getBoards()
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ]);
+        }
+
+        // Get boards from Team Lead's projects with enhanced info
+        $boards = DB::table('boards')
+            ->join('projects', 'boards.project_id', '=', 'projects.project_id')
+            ->join('members', 'projects.project_id', '=', 'members.project_id')
+            ->leftJoin('cards', 'boards.board_id', '=', 'cards.board_id')
+            ->where('members.user_id', $user->user_id)
+            ->where('members.role', 'Team_Lead')
+            ->select(
+                'boards.board_id as id',
+                'boards.board_name as name',
+                'boards.description',
+                'boards.created_at',
+                'projects.project_name',
+                DB::raw('COUNT(cards.card_id) as total_cards'),
+                DB::raw('COUNT(CASE WHEN cards.status = "To Do" THEN 1 END) as todo_cards'),
+                DB::raw('COUNT(CASE WHEN cards.status = "In Progress" THEN 1 END) as in_progress_cards'),
+                DB::raw('COUNT(CASE WHEN cards.status = "Done" THEN 1 END) as done_cards')
+            )
+            ->groupBy('boards.board_id', 'boards.board_name', 'boards.description', 'boards.created_at', 'projects.project_name')
+            ->orderBy('boards.created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'boards' => $boards
+        ]);
+    }
+
+    /**
+     * API: Get boards for card creation dropdown
+     */
+    public function getBoardsForCard()
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ]);
+        }
+
+        // Get boards list with card count for dropdown
+        $boards = DB::table('boards')
+            ->join('projects', 'boards.project_id', '=', 'projects.project_id')
+            ->join('members', 'projects.project_id', '=', 'members.project_id')
+            ->leftJoin('cards', 'boards.board_id', '=', 'cards.board_id')
+            ->where('members.user_id', $user->user_id)
+            ->where('members.role', 'Team_Lead')
+            ->select(
+                'boards.board_id',
+                'boards.board_name',
+                'projects.project_name',
+                DB::raw('COUNT(cards.card_id) as card_count')
+            )
+            ->groupBy('boards.board_id', 'boards.board_name', 'projects.project_name')
+            ->orderBy('projects.project_name')
+            ->orderBy('boards.board_name')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $boards->toArray()
+        ]);
+    }
+
+    /**
+     * API: Get project detail for Team Lead
+     */
+    public function getProjectDetail()
+    {
+        try {
+            $user = Auth::user();
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated'
+                ]);
+            }
+
+            // Get the project where user is Team Lead
+            $project = DB::table('members')
+                ->join('projects', 'members.project_id', '=', 'projects.project_id')
+                ->where('members.user_id', $user->user_id)
+                ->where('members.role', 'Team_Lead')
+                ->select('projects.*')
+                ->first();
+
+            if (!$project) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No project assigned to you as Team Lead'
+                ]);
+            }
+
+            // Get project statistics
+            $stats = DB::table('boards')
+                ->leftJoin('cards', 'boards.board_id', '=', 'cards.board_id')
+                ->leftJoin('card_assignments', 'cards.card_id', '=', 'card_assignments.card_id')
+                ->where('boards.project_id', $project->project_id)
+                ->select(
+                    DB::raw('COUNT(DISTINCT boards.board_id) as total_boards'),
+                    DB::raw('COUNT(DISTINCT cards.card_id) as total_cards'),
+                    DB::raw('COUNT(DISTINCT card_assignments.assignment_id) as total_assignments'),
+                    DB::raw('COUNT(DISTINCT CASE WHEN cards.status = "Done" THEN cards.card_id END) as completed_cards'),
+                    DB::raw('COUNT(DISTINCT CASE WHEN cards.status = "In Progress" THEN cards.card_id END) as in_progress_cards'),
+                    DB::raw('COUNT(DISTINCT CASE WHEN cards.status = "To Do" THEN cards.card_id END) as todo_cards')
+                )
+                ->first();
+
+            // Get team members count
+            $memberStats = DB::table('members')
+                ->where('project_id', $project->project_id)
+                ->select(
+                    DB::raw('COUNT(*) as total_members'),
+                    DB::raw('COUNT(CASE WHEN role = "Developer" THEN 1 END) as developers'),
+                    DB::raw('COUNT(CASE WHEN role = "Designer" THEN 1 END) as designers'),
+                    DB::raw('COUNT(CASE WHEN role = "Member" THEN 1 END) as members')
+                )
+                ->first();
+
+            // Calculate project progress
+            $progressPercentage = 0;
+            if ($stats->total_cards > 0) {
+                $progressPercentage = round(($stats->completed_cards / $stats->total_cards) * 100, 1);
+            }
+
+            return response()->json([
+                'success' => true,
+                'project' => $project,
+                'statistics' => [
+                    'boards' => $stats->total_boards,
+                    'cards' => [
+                        'total' => $stats->total_cards,
+                        'completed' => $stats->completed_cards,
+                        'in_progress' => $stats->in_progress_cards,
+                        'todo' => $stats->todo_cards
+                    ],
+                    'assignments' => $stats->total_assignments,
+                    'members' => [
+                        'total' => $memberStats->total_members,
+                        'developers' => $memberStats->developers,
+                        'designers' => $memberStats->designers,
+                        'members' => $memberStats->members
+                    ],
+                    'progress_percentage' => $progressPercentage
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error loading project detail: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * API: Get project timeline
+     */
+    public function getProjectTimeline()
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ]);
+        }
+
+        // Mock timeline data for now
+        $timeline = [
+            [
+                'id' => 1,
+                'title' => 'Project Started',
+                'description' => 'Project has been officially started and team assigned',
+                'date' => '2025-11-10',
+                'type' => 'milestone',
+                'status' => 'completed'
+            ],
+            [
+                'id' => 2,
+                'title' => 'Initial Planning Complete',
+                'description' => 'Project requirements and initial planning completed',
+                'date' => '2025-11-11',
+                'type' => 'task',
+                'status' => 'in_progress'
+            ],
+            [
+                'id' => 3,
+                'title' => 'Development Phase',
+                'description' => 'Start of development phase',
+                'date' => '2025-11-12',
+                'type' => 'milestone',
+                'status' => 'pending'
+            ]
+        ];
+
+        return response()->json([
+            'success' => true,
+            'timeline' => $timeline
+        ]);
+    }
+
+    /**
+     * API: Get recent activities
+     */
+    public function getRecentActivities()
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ]);
+        }
+
+        // Mock activities data for now
+        $activities = [
+            [
+                'id' => 1,
+                'title' => 'New task assigned',
+                'description' => 'Task "UI Design" assigned to John Doe',
+                'time' => '2 hours ago',
+                'type' => 'assignment',
+                'user' => 'John Doe'
+            ],
+            [
+                'id' => 2,
+                'title' => 'Task completed',
+                'description' => 'Task "Database Setup" marked as completed',
+                'time' => '5 hours ago',
+                'type' => 'completion',
+                'user' => 'Jane Smith'
+            ],
+            [
+                'id' => 3,
+                'title' => 'Team member joined',
+                'description' => 'Sarah Wilson joined the project team',
+                'time' => '1 day ago',
+                'type' => 'team',
+                'user' => 'Sarah Wilson'
+            ]
+        ];
+
+        return response()->json([
+            'success' => true,
+            'activities' => $activities
+        ]);
+    }
+
+    /**
+     * API: Get statistics
+     */
+    public function getStatistics()
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ]);
+        }
+
+        // Get projects count
+        $projectsCount = DB::table('members')
+            ->where('user_id', $user->user_id)
+            ->where('role', 'Team_Lead')
+            ->count();
+
+        // Get total cards
+        $totalCards = DB::table('cards')
+            ->join('boards', 'cards.board_id', '=', 'boards.board_id')
+            ->join('projects', 'boards.project_id', '=', 'projects.project_id')
+            ->join('members', 'projects.project_id', '=', 'members.project_id')
+            ->where('members.user_id', $user->user_id)
+            ->where('members.role', 'Team_Lead')
+            ->count();
+
+        // Get team members count
+        $teamMembersCount = DB::table('members as m1')
+            ->join('members as m2', 'm1.project_id', '=', 'm2.project_id')
+            ->where('m1.user_id', $user->user_id)
+            ->where('m1.role', 'Team_Lead')
+            ->where('m2.role', '!=', 'Team_Lead')
+            ->distinct('m2.user_id')
+            ->count();
+
+        return response()->json([
+            'success' => true,
+            'statistics' => [
+                'total_projects' => $projectsCount,
+                'total_cards' => $totalCards,
+                'team_members' => $teamMembersCount,
+                'completion_rate' => 75 // Mock for now
+            ]
+        ]);
+    }
+
+    /**
+     * Get available users (developers and designers) that can be added to the project
+     */
+    public function getAvailableUsers()
+    {
+        try {
+            $user = Auth::user();
+
+            // Get the project where user is Team Lead
+            $project = DB::table('members')
+                ->join('projects', 'members.project_id', '=', 'projects.project_id')
+                ->where('members.user_id', $user->user_id)
+                ->where('members.role', 'Team_Lead')
+                ->select('projects.*')
+                ->first();
+
+            if (!$project) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No project assigned to you as Team Lead'
+                ]);
+            }
+
+            // Get users that are not already in this project
+            $availableUsers = DB::table('users')
+                ->leftJoin('members', function($join) use ($project) {
+                    $join->on('users.user_id', '=', 'members.user_id')
+                         ->where('members.project_id', '=', $project->project_id);
+                })
+                ->whereIn('users.role', ['developer', 'designer', 'member'])
+                ->whereNull('members.user_id') // Not already in project
+                ->select('users.user_id as id', 'users.full_name', 'users.email', 'users.role')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'users' => $availableUsers,
+                'project' => $project
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error loading available users: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Add user to project
+     */
+    public function addUserToProject(Request $request)
+    {
+        try {
+            $request->validate([
+                'user_id' => 'required|integer',
+            ]);
+
+            $user = Auth::user();
+
+            // Get the project where user is Team Lead
+            $project = DB::table('members')
+                ->join('projects', 'members.project_id', '=', 'projects.project_id')
+                ->where('members.user_id', $user->user_id)
+                ->where('members.role', 'Team_Lead')
+                ->select('projects.*')
+                ->first();
+
+            if (!$project) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No project assigned to you as Team Lead'
+                ]);
+            }
+
+            // Get user details
+            $userToAdd = DB::table('users')->where('user_id', $request->user_id)->first();
+
+            if (!$userToAdd) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not found'
+                ]);
+            }
+
+            // Check if user is already in project
+            $existingMember = DB::table('members')
+                ->where('project_id', $project->project_id)
+                ->where('user_id', $request->user_id)
+                ->first();
+
+            if ($existingMember) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User is already in this project'
+                ]);
+            }
+
+            // Add user to project
+            DB::table('members')->insert([
+                'project_id' => $project->project_id,
+                'user_id' => $request->user_id,
+                'role' => $userToAdd->role,
+                'joined_at' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'User successfully added to project',
+                'user' => $userToAdd
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error adding user to project: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Remove user from project
+     */
+    public function removeUserFromProject(Request $request)
+    {
+        try {
+            $request->validate([
+                'user_id' => 'required|integer',
+            ]);
+
+            $user = Auth::user();
+
+            // Get the project where user is Team Lead
+            $project = DB::table('members')
+                ->join('projects', 'members.project_id', '=', 'projects.project_id')
+                ->where('members.user_id', $user->user_id)
+                ->where('members.role', 'Team_Lead')
+                ->select('projects.*')
+                ->first();
+
+            if (!$project) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No project assigned to you as Team Lead'
+                ]);
+            }
+
+            // Remove user from project (but don't remove Team Lead)
+            $deleted = DB::table('members')
+                ->where('project_id', $project->project_id)
+                ->where('user_id', $request->user_id)
+                ->where('role', '!=', 'Team_Lead')
+                ->delete();
+
+            if ($deleted) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'User successfully removed from project'
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not found in project or cannot remove Team Lead'
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error removing user from project: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Get project members
+     */
+    public function getProjectMembers()
+    {
+        try {
+            $user = Auth::user();
+
+            // Get the project where user is Team Lead
+            $project = DB::table('members')
+                ->join('projects', 'members.project_id', '=', 'projects.project_id')
+                ->where('members.user_id', $user->user_id)
+                ->where('members.role', 'Team_Lead')
+                ->select('projects.*')
+                ->first();
+
+            if (!$project) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No project assigned to you as Team Lead'
+                ]);
+            }
+
+            // Get all members of the project
+            $members = DB::table('members')
+                ->join('users', 'members.user_id', '=', 'users.user_id')
+                ->where('members.project_id', $project->project_id)
+                ->select('users.user_id', 'users.full_name', 'users.email', 'members.role', 'members.joined_at as created_at')
+                ->orderBy('members.role')
+                ->orderBy('users.full_name')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'members' => $members,
+                'project' => $project
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error loading project members: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * API: Get team members for assignment dropdown
+     */
+    public function getTeamMembersForAssignment(Request $request)
+    {
+        try {
+            $user = Auth::user();
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated'
+                ]);
+            }
+
+            // Get project_id from board_id if provided, otherwise get default project
+            $projectId = null;
+
+            if ($request->has('board_id') && $request->board_id) {
+                // Get project from board
+                $board = DB::table('boards')
+                    ->join('projects', 'boards.project_id', '=', 'projects.project_id')
+                    ->join('members', 'projects.project_id', '=', 'members.project_id')
+                    ->where('boards.board_id', $request->board_id)
+                    ->where('members.user_id', $user->user_id)
+                    ->where('members.role', 'Team_Lead')
+                    ->select('projects.project_id', 'projects.project_name')
+                    ->first();
+
+                if ($board) {
+                    $projectId = $board->project_id;
+                }
+            }
+
+            // If no specific project from board, get the first project where user is Team Lead
+            if (!$projectId) {
+                $project = DB::table('members')
+                    ->join('projects', 'members.project_id', '=', 'projects.project_id')
+                    ->where('members.user_id', $user->user_id)
+                    ->where('members.role', 'Team_Lead')
+                    ->select('projects.*')
+                    ->first();
+
+                if (!$project) {
+                    // Debug: Check all memberships for this user
+                    $allMemberships = DB::table('members')
+                        ->join('projects', 'members.project_id', '=', 'projects.project_id')
+                        ->where('members.user_id', $user->user_id)
+                        ->select('projects.project_name', 'members.role', 'members.project_id')
+                        ->get();
+
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'No project assigned to you as Team Lead',
+                        'debug' => [
+                            'user_id' => $user->user_id,
+                            'looking_for_role' => 'Team_Lead',
+                            'all_memberships' => $allMemberships
+                        ]
+                    ]);
+                }
+
+                $projectId = $project->project_id;
+            }
+
+            // Get project info
+            $projectInfo = DB::table('projects')->where('project_id', $projectId)->first();
+
+            // Get project members (excluding Team Lead and Project Admin)
+            $members = DB::table('members')
+                ->join('users', 'members.user_id', '=', 'users.user_id')
+                ->where('members.project_id', $projectId)
+                ->whereIn('members.role', ['Developer', 'Designer', 'Member'])
+                ->select(
+                    'users.user_id',
+                    'users.full_name',
+                    'users.email',
+                    'members.role',
+                    'users.current_task_status'
+                )
+                ->orderBy('members.role')
+                ->orderBy('users.full_name')
+                ->get();
+
+            // Add workload calculation for each member
+            foreach ($members as $member) {
+                // Count active assignments
+                $activeAssignments = DB::table('card_assignments')
+                    ->join('cards', 'card_assignments.card_id', '=', 'cards.card_id')
+                    ->where('card_assignments.user_id', $member->user_id)
+                    ->whereIn('card_assignments.assignment_status', ['assigned', 'in_progress'])
+                    ->count();
+
+                // Calculate workload level
+                if ($activeAssignments == 0) {
+                    $member->workload_level = 'Low';
+                    $member->workload_color = 'success';
+                } elseif ($activeAssignments <= 2) {
+                    $member->workload_level = 'Medium';
+                    $member->workload_color = 'warning';
+                } else {
+                    $member->workload_level = 'High';
+                    $member->workload_color = 'danger';
+                }
+
+                $member->active_assignments = $activeAssignments;
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $members,
+                'project' => $projectInfo,
+                'project_id' => $projectId
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error loading team members: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Get cards pending review from developers/designers
+     */
+    public function getPendingCardReviews()
+    {
+        try {
+            $user = Auth::user();
+
+            // Get TeamLead's projects
+            $teamLeadProjects = DB::table('members')
+                ->where('user_id', $user->user_id)
+                ->where('role', 'Team_Lead')
+                ->pluck('project_id');
+
+            // Get cards in 'review' status from TeamLead's projects
+            $pendingCards = DB::table('cards')
+                ->join('boards', 'cards.board_id', '=', 'boards.board_id')
+                ->join('projects', 'boards.project_id', '=', 'projects.project_id')
+                ->leftJoin('card_assignments', 'cards.card_id', '=', 'card_assignments.card_id')
+                ->leftJoin('users', 'card_assignments.user_id', '=', 'users.user_id')
+                ->where('cards.status', 'review')
+                ->whereIn('projects.project_id', $teamLeadProjects)
+                ->select(
+                    'cards.card_id',
+                    'cards.card_title as title',
+                    'cards.description',
+                    'cards.status',
+                    'cards.priority',
+                    'cards.created_at as submitted_at',
+                    'users.username as submitted_by',
+                    'users.full_name as submitted_by_name',
+                    'boards.board_name',
+                    'projects.project_name'
+                )
+                ->orderBy('cards.created_at', 'desc')
+                ->get()
+                ->map(function ($card) {
+                    // Get latest comment/feedback if any
+                    $latestReview = DB::table('card_reviews')
+                        ->where('card_id', $card->card_id)
+                        ->where('status', 'pending')
+                        ->orderBy('created_at', 'desc')
+                        ->first();
+
+                    $card->comment = $latestReview->feedback ?? 'No comment provided';
+                    return $card;
+                });
+
+            // If no real data, return dummy data for testing
+            if ($pendingCards->isEmpty()) {
+                $pendingCards = collect([
+                    [
+                        'card_id' => 4,
+                        'title' => 'Unit Testing Implementation',
+                        'description' => 'Write comprehensive unit tests for authentication module',
+                        'status' => 'review',
+                        'priority' => 'low',
+                        'submitted_by' => 'john_dev',
+                        'submitted_by_name' => 'John Developer',
+                        'board_name' => 'Testing Board',
+                        'project_name' => 'E-Commerce Platform',
+                        'submitted_at' => '2025-11-13 10:30:00',
+                        'comment' => 'Completed all unit tests with 95% coverage'
+                    ],
+                    [
+                        'card_id' => 6,
+                        'title' => 'UI Design Mockup',
+                        'description' => 'Create responsive design mockups for user dashboard',
+                        'status' => 'review',
+                        'priority' => 'high',
+                        'submitted_by' => 'jane_designer',
+                        'submitted_by_name' => 'Jane Designer',
+                        'board_name' => 'Design Board',
+                        'project_name' => 'E-Commerce Platform',
+                        'submitted_at' => '2025-11-13 09:15:00',
+                        'comment' => 'Mockup completed with mobile and desktop versions'
+                    ],
+                    [
+                        'card_id' => 7,
+                        'title' => 'Database Optimization',
+                        'description' => 'Optimize database queries for better performance',
+                        'status' => 'review',
+                        'priority' => 'medium',
+                        'submitted_by' => 'mike_dev',
+                        'submitted_by_name' => 'Mike Developer',
+                        'board_name' => 'Optimization Board',
+                        'project_name' => 'Mobile App Backend',
+                        'submitted_at' => '2025-11-13 08:45:00',
+                        'comment' => 'Reduced query time by 60% using indexing'
+                    ],
+                    [
+                        'card_id' => 8,
+                        'title' => 'API Documentation',
+                        'description' => 'Complete API documentation with examples',
+                        'status' => 'review',
+                        'priority' => 'medium',
+                        'submitted_by' => 'sarah_dev',
+                        'submitted_by_name' => 'Sarah Developer',
+                        'board_name' => 'Documentation Board',
+                        'project_name' => 'Mobile App Backend',
+                        'submitted_at' => '2025-11-12 16:20:00',
+                        'comment' => 'All endpoints documented with Postman collection'
+                    ]
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $pendingCards->toArray(),
+                'count' => $pendingCards->count()
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching pending reviews: ' . $e->getMessage()
+            ], 500);
+        }
+    }    /**
+     * Approve card - change status to 'done'
+     */
+    public function approveCard(Request $request, $cardId)
+    {
+        try {
+            $user = Auth::user();
+            $feedback = $request->input('feedback', '');
+
+            // Find the card and validate it exists and is in review status
+            $card = Card::find($cardId);
+            if (!$card) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Card not found'
+                ], 404);
+            }
+
+            if ($card->status !== 'review') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Card is not in review status'
+                ], 400);
+            }
+
+            // Get the assigned user (submitter) from card_assignments
+            $assignment = DB::table('card_assignments')
+                ->where('card_id', $cardId)
+                ->first();
+
+            // Create card review record
+            CardReview::create([
+                'card_id' => $cardId,
+                'reviewer_id' => $user->user_id,
+                'submitter_id' => $assignment ? $assignment->user_id : null,
+                'action' => 'approved',
+                'feedback' => $feedback,
+                'status' => 'completed'
+            ]);
+
+            // Update card status to 'done'
+            $card->update(['status' => 'done']);
+
+            // Create notification for developer
+            $this->createApprovalNotification($cardId, $user, 'approved', $feedback);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Card approved successfully',
+                'data' => [
+                    'card_id' => $cardId,
+                    'status' => 'done',
+                    'approved_by' => $user->username,
+                    'feedback' => $feedback
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error approving card: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Reject card - change status back to 'in_progress'
+     */
+    public function rejectCard(Request $request, $cardId)
+    {
+        try {
+            $user = Auth::user();
+            $feedback = $request->input('feedback', '');
+
+            if (empty($feedback)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Feedback is required when rejecting a card'
+                ], 400);
+            }
+
+            // Find the card and validate it exists and is in review status
+            $card = Card::find($cardId);
+            if (!$card) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Card not found'
+                ], 404);
+            }
+
+            if ($card->status !== 'review') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Card is not in review status'
+                ], 400);
+            }
+
+            // Get the assigned user (submitter) from card_assignments
+            $assignment = DB::table('card_assignments')
+                ->where('card_id', $cardId)
+                ->first();
+
+            // Create card review record
+            CardReview::create([
+                'card_id' => $cardId,
+                'reviewer_id' => $user->user_id,
+                'submitter_id' => $assignment ? $assignment->user_id : null,
+                'action' => 'rejected',
+                'feedback' => $feedback,
+                'status' => 'completed'
+            ]);
+
+            // Update card status back to 'in_progress'
+            $card->update(['status' => 'in_progress']);
+
+            // Create notification for developer
+            $this->createApprovalNotification($cardId, $user, 'rejected', $feedback);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Card rejected successfully',
+                'data' => [
+                    'card_id' => $cardId,
+                    'status' => 'in_progress',
+                    'rejected_by' => $user->username,
+                    'feedback' => $feedback
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error rejecting card: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Create notification for developer when card is approved/rejected
+     */
+    private function createApprovalNotification($cardId, $user, $action, $feedback)
+    {
+        try {
+            // TODO: Create notification in database
+            // $developerId = DB::table('card_assignments')->where('card_id', $cardId)->value('user_id');
+            // DB::table('notifications')->insert([
+            //     'user_id' => $developerId,
+            //     'type' => 'card_' . $action,
+            //     'title' => 'Card ' . ucfirst($action),
+            //     'message' => $user->username . ' has ' . $action . ' your card submission',
+            //     'data' => json_encode(['card_id' => $cardId, 'feedback' => $feedback]),
+            //     'created_at' => now()
+            // ]);
+
+            // For now, just log the notification
+            Log::info("Approval notification created for card $cardId - $action by user {$user->username}");
+
+        } catch (\Exception $e) {
+            Log::error("Error creating approval notification: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Create notification for developer/designer when assigned a card
+     */
+    private function createAssignmentNotification($cardId, $assignedUserId)
+    {
+        try {
+            // Get card and project details
+            $cardInfo = DB::table(
+'
+cards
+'
+)
+                ->join(
+'
+boards
+'
+,
+'
+cards.board_id
+'
+,
+'
+=
+'
+,
+'
+boards.board_id
+'
+)
+                ->join(
+'
+projects
+'
+,
+'
+boards.project_id
+'
+,
+'
+=
+'
+,
+'
+projects.project_id
+'
+)
+                ->join(
+'
+users as creator
+'
+,
+'
+cards.created_by
+'
+,
+'
+=
+'
+,
+'
+creator.user_id
+'
+)
+                ->where(
+'
+cards.card_id
+'
+, $cardId)
+                ->select(
+
+'
+cards.card_title
+'
+,
+
+'
+projects.project_name
+'
+,
+
+'
+boards.board_name
+'
+,
+
+'
+creator.full_name as team_lead_name
+'
+
+                )
+                ->first();
+
+            if (!$cardInfo) {
+                Log::warning("Card not found for assignment notification: $cardId");
+                return;
+            }
+
+            // Create notification message
+            $message = "You have been assigned a new card:
+'
+{$cardInfo->card_title}
+'
+ in project
+'
+{$cardInfo->project_name}
+'
+ by {$cardInfo->team_lead_name}";
+
+            // Create notification in database
+            DB::table(
+'
+notifications
+'
+)->insert([
+
+'
+user_id
+'
+ => $assignedUserId,
+
+'
+type
+'
+ =>
+'
+card_assignment
+'
+,
+
+'
+title
+'
+ =>
+'
+New Card Assignment
+'
+,
+
+'
+message
+'
+ => $message,
+
+'
+data
+'
+ => json_encode([
+
+'
+card_id
+'
+ => $cardId,
+
+'
+card_title
+'
+ => $cardInfo->card_title,
+
+'
+project_name
+'
+ => $cardInfo->project_name,
+
+'
+board_name
+'
+ => $cardInfo->board_name,
+
+'
+assigned_by
+'
+ => $cardInfo->team_lead_name
+                ]),
+
+'
+is_read
+'
+ => false,
+
+'
+created_at
+'
+ => now()
+            ]);
+
+            Log::info("Assignment notification created for user $assignedUserId - Card: $cardId");
+
+        } catch (\Exception $e) {
+            Log::error("Error creating assignment notification: " . $e->getMessage());
+        }
     }
 }
+

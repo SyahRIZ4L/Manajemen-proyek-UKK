@@ -230,4 +230,170 @@ class UserController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Update user profile
+     */
+    public function updateProfile(Request $request)
+    {
+        try {
+            $user = Auth::user();
+
+            // Validate the request
+            $validated = $request->validate([
+                'full_name' => 'nullable|string|max:255',
+                'email' => [
+                    'required',
+                    'email',
+                    'max:255',
+                    Rule::unique('users')->ignore($user->user_id, 'user_id')
+                ],
+                'bio' => 'nullable|string|max:1000',
+                'phone' => 'nullable|string|max:20',
+                'address' => 'nullable|string|max:500',
+                'birth_date' => 'nullable|date|before:today',
+                'gender' => 'nullable|in:male,female,other',
+                'website' => 'nullable|url|max:255',
+                'skills' => 'nullable|array',
+                'skills.*' => 'string|max:100',
+                'status' => 'nullable|in:active,inactive,busy,available'
+            ]);
+
+            // Prepare update data
+            $updateData = [];
+            $allowedFields = ['full_name', 'email', 'bio', 'phone', 'address', 'birth_date', 'gender', 'website', 'status'];
+
+            foreach ($allowedFields as $field) {
+                if (isset($validated[$field])) {
+                    $updateData[$field] = $validated[$field];
+                }
+            }
+
+            // Handle skills array
+            if (isset($validated['skills'])) {
+                $updateData['skills'] = json_encode($validated['skills']);
+            }
+
+            // Update the user
+            DB::table('users')
+                ->where('user_id', $user->user_id)
+                ->update($updateData);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile updated successfully',
+                'data' => [
+                    'full_name' => $validated['full_name'] ?? $user->full_name,
+                    'email' => $validated['email'],
+                    'updated_at' => now()->format('Y-m-d H:i:s')
+                ]
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating profile: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Upload profile photo
+     */
+    public function uploadProfilePhoto(Request $request)
+    {
+        try {
+            $user = Auth::user();
+
+            // Validate the uploaded file
+            $validated = $request->validate([
+                'profile_photo' => 'required|image|mimes:jpeg,jpg,png,gif|max:2048'
+            ]);
+
+            // Create upload directory if it doesn't exist
+            $uploadPath = public_path('uploads/profiles');
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0777, true);
+            }
+
+            // Delete old profile photo if exists
+            if ($user->profile_photo && file_exists($uploadPath . '/' . $user->profile_photo)) {
+                unlink($uploadPath . '/' . $user->profile_photo);
+            }
+
+            // Generate unique filename
+            $file = $request->file('profile_photo');
+            $filename = 'profile_' . $user->user_id . '_' . time() . '.' . $file->getClientOriginalExtension();
+
+            // Move uploaded file
+            $file->move($uploadPath, $filename);
+
+            // Update user profile photo
+            DB::table('users')
+                ->where('user_id', $user->user_id)
+                ->update(['profile_photo' => $filename]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile photo uploaded successfully',
+                'data' => [
+                    'profile_photo_url' => asset('uploads/profiles/' . $filename),
+                    'filename' => $filename
+                ]
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error uploading photo: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete profile photo
+     */
+    public function deleteProfilePhoto()
+    {
+        try {
+            $user = Auth::user();
+
+            if ($user->profile_photo) {
+                $photoPath = public_path('uploads/profiles/' . $user->profile_photo);
+                if (file_exists($photoPath)) {
+                    unlink($photoPath);
+                }
+
+                // Remove profile photo from database
+                DB::table('users')
+                    ->where('user_id', $user->user_id)
+                    ->update(['profile_photo' => null]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile photo deleted successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error deleting photo: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

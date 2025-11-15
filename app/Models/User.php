@@ -19,6 +19,15 @@ class User extends Authenticatable
         'email',
         'role',
         'current_task_status',
+        'profile_photo',
+        'bio',
+        'phone',
+        'address',
+        'birth_date',
+        'gender',
+        'website',
+        'skills',
+        'status',
     ];
 
     protected $hidden = [
@@ -28,6 +37,8 @@ class User extends Authenticatable
 
     protected $casts = [
         'password' => 'hashed',
+        'skills' => 'array',
+        'birth_date' => 'date',
     ];
 
     // Accessor untuk name attribute (gunakan full_name)
@@ -85,6 +96,51 @@ class User extends Authenticatable
     public function isIdle()
     {
         return $this->current_task_status === self::TASK_STATUS['IDLE'];
+    }
+
+    // Profile methods
+    public function getProfilePhotoUrlAttribute()
+    {
+        if ($this->profile_photo) {
+            return asset('uploads/profiles/' . $this->profile_photo);
+        }
+        return asset('uploads/profiles/default-avatar.png');
+    }
+
+    public function getDisplayNameAttribute()
+    {
+        return $this->full_name ?: $this->username;
+    }
+
+    public function getSkillsListAttribute()
+    {
+        if (is_array($this->skills)) {
+            return $this->skills;
+        }
+        return [];
+    }
+
+    public function hasSkill($skill)
+    {
+        return in_array($skill, $this->skills_list);
+    }
+
+    public function getAgeAttribute()
+    {
+        if ($this->birth_date) {
+            return now()->diffInYears($this->birth_date);
+        }
+        return null;
+    }
+
+    public function isAvailable()
+    {
+        return $this->status === 'available';
+    }
+
+    public function isBusy()
+    {
+        return $this->status === 'busy';
     }
 
     // Relasi dengan Project

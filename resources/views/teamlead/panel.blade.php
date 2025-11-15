@@ -75,13 +75,15 @@
             padding: 0;
             box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
             z-index: 1000;
-            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
         }
         .sidebar-header {
             padding: 30px 20px;
             text-align: center;
             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
             background: rgba(255, 255, 255, 0.1);
+            flex-shrink: 0;
         }
         .sidebar-header h4 {
             margin: 0;
@@ -95,9 +97,31 @@
         }
         .sidebar-nav {
             padding: 30px 0;
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        /* Custom scrollbar for sidebar navigation */
+        .sidebar-nav::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sidebar-nav::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+        }
+        .sidebar-nav::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+        }
+        .sidebar-nav::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
         }
         .nav-item {
             margin: 0 15px 12px 15px;
+        }
+        .nav-item:last-child {
+            margin-bottom: 20px;
         }
         .nav-link {
             color: rgba(255, 255, 255, 0.9);
@@ -173,10 +197,9 @@
 
         /* Profile Section Styles */
         .sidebar-profile {
-            position: absolute;
-            bottom: 20px;
-            left: 15px;
-            right: 15px;
+            padding: 20px 15px;
+            flex-shrink: 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
         .profile-card {
             background: rgba(255, 255, 255, 0.1);
@@ -200,9 +223,29 @@
             align-items: center;
             justify-content: center;
             color: white;
+            overflow: hidden;
+            position: relative;
         }
-        .profile-avatar i {
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .avatar-placeholder i {
             font-size: 1.8rem;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #28a745;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
         }
         .profile-details h6 {
             color: white;
@@ -245,6 +288,37 @@
         .theme-toggle:hover {
             background: rgba(255, 193, 7, 0.3);
             border-color: rgba(255, 193, 7, 0.5);
+        }
+
+        /* Dropdown Menu Styles */
+        .dropdown-menu {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            min-width: 200px;
+            margin-top: 8px;
+        }
+        .dropdown-item {
+            padding: 8px 16px;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            margin: 2px 4px;
+            color: #333;
+        }
+        .dropdown-item:hover {
+            background: rgba(0, 123, 255, 0.1);
+            color: #007bff;
+            transform: translateX(4px);
+        }
+        .dropdown-item i {
+            width: 20px;
+            margin-right: 8px;
+        }
+        .dropdown-divider {
+            margin: 8px 0;
+            border-color: rgba(0, 0, 0, 0.1);
         }
 
         /* Back Button Section */
@@ -1184,6 +1258,258 @@
             color: #707070;
         }
 
+        /* New Team Lead UI Styles */
+        .project-overview-card {
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .project-overview-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .progress-custom {
+            height: 10px;
+            border-radius: 10px;
+            background-color: #e9ecef;
+        }
+
+        .progress-custom .progress-bar {
+            border-radius: 10px;
+            transition: width 0.6s ease;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            margin-left: 8px;
+            margin-right: 8px;
+            color: #495057;
+        }
+
+        .detail-value {
+            color: #6c757d;
+        }
+
+        .stat-card {
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .stat-card .stat-icon {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            opacity: 0.8;
+        }
+
+        .stat-card .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+
+        .bg-gradient-success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+
+        .bg-gradient-warning {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+        }
+
+        .bg-gradient-info {
+            background: linear-gradient(135deg, #17a2b8, #6f42c1);
+        }
+
+        .quick-actions-card {
+            border-radius: 15px;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #007bff, #6c757d);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 25px;
+            padding-left: 25px;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: -25px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .timeline-content {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .timeline-title {
+            font-weight: 600;
+            color: #495057;
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        .timeline-description {
+            color: #6c757d;
+            margin: 0;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .activity-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .activity-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+            font-size: 0.8rem;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-text {
+            margin: 0 0 4px 0;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            color: #495057;
+        }
+
+        .timeline-card, .recent-activities-card {
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-card:hover, .recent-activities-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        /* Enhanced Assignment Styles */
+        .form-select optgroup {
+            font-weight: bold;
+            color: #6c757d;
+            background: #f8f9fa;
+            padding: 8px 12px;
+        }
+
+        .form-select option {
+            padding: 8px 12px;
+            font-weight: normal;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border-radius: 0.375rem 0.375rem 0 0;
+        }
+
+        .modal-content {
+            border-radius: 0.375rem;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .form-select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+        }
+
+        #assignmentPreview {
+            margin-top: 15px;
+            border-radius: 8px;
+            border: 2px solid;
+            transition: all 0.3s ease;
+        }
+
+        #assignmentPreview.alert-success {
+            border-color: #d4edda;
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+        }
+
+        #assignmentPreview.alert-warning {
+            border-color: #fff3cd;
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+        }
+
+        #assignmentPreview.alert-danger {
+            border-color: #f8d7da;
+            background: linear-gradient(135deg, #f8d7da, #f1c0c7);
+        }
+
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
@@ -1194,6 +1520,235 @@
                 margin-left: 0;
                 padding: 20px;
             }
+
+            .timeline {
+                padding-left: 20px;
+            }
+
+            .timeline-marker {
+                left: -20px;
+            }
+
+            .activity-avatar {
+                width: 30px;
+                height: 30px;
+                font-size: 0.7rem;
+            }
+        }
+
+        /* Enhanced Modal Styles */
+        .modal-content {
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .modal-header.bg-gradient {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal-header.bg-gradient::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .input-group-text {
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus + .input-group-text,
+        .form-select:focus + .input-group-text {
+            background-color: #667eea !important;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .form-control,
+        .form-select {
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-left-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+        }
+
+        #cardTitle {
+            font-weight: 500;
+            font-size: 1.1rem;
+        }
+
+        #titleCharCount {
+            transition: color 0.3s ease;
+        }
+
+        #titleCharCount.warning {
+            color: #ffc107 !important;
+        }
+
+        #titleCharCount.danger {
+            color: #dc3545 !important;
+            font-weight: bold;
+        }
+
+        #assignmentPreview {
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #boardProjectInfo {
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .form-select option[data-color="success"] {
+            background-color: #d4edda;
+        }
+
+        .form-select option[data-color="warning"] {
+            background-color: #fff3cd;
+        }
+
+        .form-select option[data-color="danger"] {
+            background-color: #f8d7da;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .modal.fade .modal-dialog {
+            transition: transform 0.3s ease-out;
+        }
+
+        .modal.show .modal-dialog {
+            transform: none;
+        }
+
+        /* Enhanced Modal Scrolling */
+        .modal-dialog-scrollable {
+            max-height: calc(100vh - 3rem);
+        }
+
+        .modal-dialog-scrollable .modal-content {
+            max-height: calc(100vh - 3rem);
+            overflow: hidden;
+        }
+
+        .modal-dialog-scrollable .modal-body {
+            overflow-y: auto;
+            max-height: calc(100vh - 200px);
+        }
+
+        /* Responsive Modal Heights */
+        @media (max-height: 768px) {
+            .modal-dialog-scrollable {
+                max-height: calc(100vh - 1rem);
+            }
+
+            .modal-dialog-scrollable .modal-content {
+                max-height: calc(100vh - 1rem);
+            }
+
+            .modal-dialog-scrollable .modal-body {
+                max-height: calc(100vh - 150px);
+            }
+        }
+
+        @media (max-height: 600px) {
+            .modal-dialog-scrollable .modal-body {
+                max-height: calc(100vh - 120px);
+            }
+        }
+
+        .badge.bg-white {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+
+
+        /* Input Group Focus Effects */
+        .input-group.focused .input-group-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: white !important;
+            border-color: #667eea !important;
+            transform: scale(1.05);
+        }
+
+        .input-group {
+            transition: all 0.3s ease;
+        }
+
+        /* Smooth Scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Enhanced Alert Styles */
+        .alert {
+            border-radius: 12px;
+            border: none;
+        }
+
+        /* Card Hover in Modal */
+        .card {
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
         }
     </style>
 </head>
@@ -1215,7 +1770,7 @@
         <nav class="sidebar-nav">
             <ul class="nav flex-column">
                 <li class="nav-item">
-                    <a class="nav-link active" href="#dashboard" onclick="showContent('dashboard')">
+                    <a class="nav-link active" href="#dashboard" onclick="showContent('dashboard', this)">
                         <div class="nav-icon">
                             <i class="bi bi-grid-fill"></i>
                         </div>
@@ -1226,40 +1781,29 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#projects" onclick="showContent('projects')">
+                    <a class="nav-link" href="#projects" onclick="showContent('projects', this)">
                         <div class="nav-icon">
                             <i class="bi bi-kanban-fill"></i>
                         </div>
                         <div class="nav-content">
-                            <span class="nav-title">My Projects</span>
-                            <small class="nav-subtitle">Assigned Projects</small>
+                            <span class="nav-title">My Project</span>
+                            <small class="nav-subtitle">Current Project</small>
                         </div>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#boards" onclick="showContent('boards')">
+                    <a class="nav-link" href="#my-cards" onclick="showContent('my-cards', this)">
                         <div class="nav-icon">
-                            <i class="bi bi-columns-gap"></i>
+                            <i class="bi bi-card-checklist"></i>
                         </div>
                         <div class="nav-content">
-                            <span class="nav-title">Boards</span>
-                            <small class="nav-subtitle">Project Boards</small>
+                            <span class="nav-title">My Cards</span>
+                            <small class="nav-subtitle">Cards I Created</small>
                         </div>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#cards" onclick="showContent('cards')">
-                        <div class="nav-icon">
-                            <i class="bi bi-card-list"></i>
-                        </div>
-                        <div class="nav-content">
-                            <span class="nav-title">Cards</span>
-                            <small class="nav-subtitle">All Cards</small>
-                        </div>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#assigned-cards" onclick="showContent('assigned-cards')">
+                    <a class="nav-link" href="#assigned-cards" onclick="showContent('assigned-cards', this)">
                         <div class="nav-icon">
                             <i class="bi bi-clipboard-check-fill"></i>
                         </div>
@@ -1270,7 +1814,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#assigned-history" onclick="showContent('assigned-history')">
+                    <a class="nav-link" href="#assigned-history" onclick="showContent('assigned-history', this)">
                         <div class="nav-icon">
                             <i class="bi bi-clock-history"></i>
                         </div>
@@ -1281,7 +1825,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#card-time-logs" onclick="showContent('card-time-logs')">
+                    <a class="nav-link" href="#card-time-logs" onclick="showContent('card-time-logs', this)">
                         <div class="nav-icon">
                             <i class="bi bi-stopwatch-fill"></i>
                         </div>
@@ -1294,32 +1838,39 @@
             </ul>
         </nav>
 
-        <!-- Profile & Logout Section -->
-        <div class="sidebar-profile">
-            <div class="profile-card">
-                <div class="profile-info">
+        <!-- Profile Section -->
+        <div class="sidebar-profile" style="position: absolute; bottom: 20px; left: 15px; right: 15px;">
+            <div class="dropdown">
+                <div class="profile-info d-flex align-items-center p-3" data-bs-toggle="dropdown" style="cursor: pointer; border-radius: 12px; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1);">
                     <div class="profile-avatar">
-                        <i class="bi bi-person-circle"></i>
+                        @if(auth()->user()->profile_photo)
+                            <img src="{{ auth()->user()->profile_photo_url }}" alt="Profile Photo">
+                        @else
+                            <div class="avatar-placeholder">
+                                <i class="bi bi-person-fill"></i>
+                            </div>
+                        @endif
                     </div>
-                    <div class="profile-details">
-                        <h6 class="mb-1">{{ auth()->user()->name ?? auth()->user()->username }}</h6>
-                        <small class="text-muted">Team Lead</small>
+                    <div class="profile-details flex-grow-1 ms-3">
+                        <h6 class="mb-0">{{ auth()->user()->name }}</h6>
+                        <small class="d-flex align-items-center">
+                            <span class="status-dot me-1"></span>
+                            {{ ucfirst(auth()->user()->status ?? 'active') }}
+                        </small>
                     </div>
+                    <i class="bi bi-chevron-up text-white"></i>
                 </div>
-                <div class="profile-actions">
-                    <a href="#profile" onclick="showContent('profile')" class="btn-action" title="Profile Settings">
-                        <i class="bi bi-person-gear"></i>
-                    </a>
-
-                    <form action="{{ route('logout') }}" method="POST" style="display: inline;">
-                        @csrf
-                        <button type="submit" class="btn-action logout-btn" title="Logout">
-                            <i class="bi bi-box-arrow-right"></i>
-                        </button>
-                    </form>
-                </div>
-
-
+                <ul class="dropdown-menu dropdown-menu-end w-100">
+                    <li><a class="dropdown-item" href="#" onclick="showContent('profile', this)"><i class="bi bi-person-gear"></i>Profile Settings</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="toggleTheme()"><i class="bi bi-palette"></i>Theme</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <form method="POST" action="{{ route('logout') }}" class="m-0">
+                            @csrf
+                            <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right"></i>Logout</button>
+                        </form>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>
@@ -1374,8 +1925,8 @@
                         <div class="stat-card">
                             <i class="bi bi-folder-check stat-icon text-primary"></i>
                             <h3 class="stat-number text-primary" id="my-projects-count">0</h3>
-                            <p class="stat-label">My Projects</p>
-                            <small class="text-muted" id="active-projects-text">Loading...</small>
+                            <p class="stat-label">My Project</p>
+                            <small class="text-muted" id="active-projects-text">Dashboard</small>
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -1577,257 +2128,288 @@
 
             <!-- Projects Content -->
             <div id="projects-content" class="content-section" style="display: none;">
-                <!-- My Projects Header -->
+                <!-- My Project Header -->
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
-                        <h4 class="mb-1">My Projects</h4>
-                        <p class="text-muted mb-0">Projects assigned to your leadership with detailed insights</p>
+                        <h4 class="mb-1">My Project</h4>
+                        <p class="text-muted mb-0">Project assigned to your leadership with detailed insights</p>
                     </div>
                     <div class="d-flex gap-2">
-                        <button class="btn btn-outline-primary" onclick="refreshMyProjects()">
+                        <button class="btn btn-outline-primary" onclick="refreshMyProject()">
                             <i class="bi bi-arrow-clockwise me-2"></i>
                             Refresh
+                        </button>
+                        <button class="btn btn-primary" onclick="viewProjectDetails()">
+                            <i class="bi bi-eye me-2"></i>
+                            View Details
                         </button>
                     </div>
                 </div>
 
-                <!-- Team Lead Project Statistics -->
+                <!-- Project Overview Section -->
                 <div class="row g-4 mb-5">
-                    <div class="col-md-3">
-                        <div class="project-stat-card">
-                            <i class="bi bi-folder-check stat-icon text-success"></i>
-                            <h3 class="stat-number text-success" id="my-total-projects">0</h3>
-                            <p class="stat-label">My Projects</p>
-                            <small class="text-muted">Under my leadership</small>
+                    <div class="col-md-8">
+                        <!-- Main Project Card -->
+                        <div class="card project-overview-card shadow-sm border-0">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <h5 class="card-title mb-1" id="current-project-name">No Project Assigned</h5>
+                                        <p class="text-muted mb-0" id="current-project-description">You currently have no project assigned to your leadership.</p>
+                                    </div>
+                                    <span class="badge bg-primary" id="current-project-status">Not Assigned</span>
+                                </div>
+
+                                <div class="project-progress-section mb-3" id="project-progress-section" style="display: none;">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <small class="text-muted">Overall Progress</small>
+                                        <small class="text-muted" id="project-progress-percentage">0%</small>
+                                    </div>
+                                    <div class="progress progress-custom mb-3">
+                                        <div class="progress-bar" id="project-progress-bar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+
+                                <div class="project-details-grid" id="project-details" style="display: none;">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="detail-item">
+                                                <i class="bi bi-calendar-event text-primary me-2"></i>
+                                                <span class="detail-label">Start Date:</span>
+                                                <span class="detail-value" id="project-start-date">-</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-item">
+                                                <i class="bi bi-calendar-check text-success me-2"></i>
+                                                <span class="detail-label">End Date:</span>
+                                                <span class="detail-value" id="project-end-date">-</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-item">
+                                                <i class="bi bi-people text-info me-2"></i>
+                                                <span class="detail-label">Team Members:</span>
+                                                <span class="detail-value" id="project-team-count">0</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="detail-item">
+                                                <i class="bi bi-list-task text-warning me-2"></i>
+                                                <span class="detail-label">Total Tasks:</span>
+                                                <span class="detail-value" id="project-task-count">0</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="project-stat-card">
-                            <i class="bi bi-exclamation-triangle stat-icon text-danger"></i>
-                            <h3 class="stat-number text-danger" id="project-overdue-count">0</h3>
-                            <p class="stat-label">Overdue</p>
-                            <small class="text-muted">Need attention</small>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="project-stat-card">
-                            <i class="bi bi-clock-history stat-icon text-warning"></i>
-                            <h3 class="stat-number text-warning" id="project-upcoming-count">0</h3>
-                            <p class="stat-label">Upcoming</p>
-                            <small class="text-muted">Starting soon</small>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="project-stat-card">
-                            <i class="bi bi-people stat-icon text-info"></i>
-                            <h3 class="stat-number text-info" id="total-team-members">0</h3>
-                            <p class="stat-label">Team Members</p>
-                            <small class="text-muted">Across all projects</small>
+
+                    <div class="col-md-4">
+                        <!-- Quick Stats -->
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="stat-card bg-gradient-success text-white">
+                                    <div class="stat-icon">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <h4 class="stat-number" id="completed-tasks">0</h4>
+                                        <p class="stat-label mb-0">Completed Tasks</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="stat-card bg-gradient-warning text-white">
+                                    <div class="stat-icon">
+                                        <i class="bi bi-clock-fill"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <h4 class="stat-number" id="pending-tasks">0</h4>
+                                        <p class="stat-label mb-0">Pending Tasks</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="stat-card bg-gradient-info text-white">
+                                    <div class="stat-icon">
+                                        <i class="bi bi-people-fill"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <h4 class="stat-number" id="active-members">0</h4>
+                                        <p class="stat-label mb-0">Active Members</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Search and Filter Section -->
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <div class="search-container">
-                            <div class="input-group">
-                                <span class="input-group-text bg-transparent border-end-0">
-                                    <i class="bi bi-search text-muted"></i>
-                                </span>
-                                <input type="text" class="form-control border-start-0 ps-0" placeholder="Search projects..." id="searchProject">
+                <!-- Quick Actions Section -->
+                <div class="card quick-actions-card shadow-sm border-0 mb-4">
+                    <div class="card-body p-4">
+                        <h6 class="card-title mb-3">
+                            <i class="bi bi-lightning-charge text-warning me-2"></i>
+                            Quick Actions
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-md-2">
+                                <button class="btn btn-primary w-100" onclick="openCreateCardModal()" id="btn-create-card">
+                                    <i class="bi bi-plus-lg me-2"></i>
+                                    New Card
+                                </button>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-outline-primary w-100" onclick="openBoardListModal()" id="btn-manage-boards">
+                                    <i class="bi bi-kanban me-2"></i>
+                                    Manage Boards
+                                </button>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-outline-success w-100" onclick="viewTeamMembers()" id="btn-view-team" disabled>
+                                    <i class="bi bi-people me-2"></i>
+                                    View Team
+                                </button>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-success w-100" onclick="showAddTeamMemberModal()" id="btn-add-member" disabled>
+                                    <i class="bi bi-person-plus me-2"></i>
+                                    Add Member
+                                </button>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-outline-info w-100" onclick="viewProjectReports()" id="btn-view-reports" disabled>
+                                    <i class="bi bi-graph-up me-2"></i>
+                                    Reports
+                                </button>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-outline-warning w-100" onclick="manageProject()" id="btn-manage-project" disabled>
+                                    <i class="bi bi-gear me-2"></i>
+                                    Manage
+                                </button>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-3">
-                        <select class="form-select" id="sortByName">
-                            <option value="">Sort by Name</option>
-                            <option value="asc">A to Z</option>
-                            <option value="desc">Z to A</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <select class="form-select" id="sortByStatus">
-                            <option value="">All Status</option>
-                            <option value="Planning">Planning</option>
-                            <option value="In Progress">In Progress</option>
-                            <option value="On Hold">On Hold</option>
-                            <option value="Completed">Completed</option>
-                        </select>
                     </div>
                 </div>
 
-                <!-- Project List -->
-                <div class="projects-grid" id="projectsList">
-                    <!-- Project Card 1 -->
-                    <div class="project-card" data-status="progress" data-name="Website Redesign">
-                        <div class="project-header">
-                            <div class="project-status status-progress">In Progress</div>
-                            <div class="project-menu">
-                                <button class="btn btn-sm btn-outline-secondary">
-                                    <i class="bi bi-three-dots"></i>
-                                </button>
+                <!-- Project Activity Timeline -->
+                <div class="row g-4">
+                    <div class="col-md-8">
+                        <div class="card timeline-card shadow-sm border-0">
+                            <div class="card-header bg-transparent border-0 pb-0">
+                                <h6 class="card-title mb-0">
+                                    <i class="bi bi-clock-history text-primary me-2"></i>
+                                    Project Timeline
+                                </h6>
                             </div>
-                        </div>
-                        <div class="project-body">
-                            <h5 class="project-title">Website Redesign</h5>
-                            <p class="project-description">Complete overhaul of company website with modern UI/UX design</p>
-
-                            <div class="project-progress">
-                                <div class="d-flex justify-content-between mb-1">
-                                    <small class="text-muted">Progress</small>
-                                    <small class="text-muted">65%</small>
-                                </div>
-                                <div class="progress">
-                                    <div class="progress-bar bg-warning" style="width: 65%"></div>
-                                </div>
-                            </div>
-
-                            <div class="project-info mt-3">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div class="project-team">
-                                        <div class="avatar-group">
-                                            <div class="avatar">JD</div>
-                                            <div class="avatar">AS</div>
-                                            <div class="avatar">+3</div>
+                            <div class="card-body">
+                                <div id="project-timeline" class="timeline">
+                                    <!-- Timeline items will be loaded dynamically -->
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker bg-primary"></div>
+                                        <div class="timeline-content">
+                                            <div class="timeline-header">
+                                                <h6 class="timeline-title">Project Started</h6>
+                                                <small class="text-muted">2 days ago</small>
+                                            </div>
+                                            <p class="timeline-description">Project has been officially started and team members have been assigned.</p>
                                         </div>
                                     </div>
-                                    <div class="project-deadline">
-                                        <small class="text-danger">
-                                            <i class="bi bi-calendar-event me-1"></i>
-                                            Nov 15
-                                        </small>
+
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker bg-success"></div>
+                                        <div class="timeline-content">
+                                            <div class="timeline-header">
+                                                <h6 class="timeline-title">Initial Planning Completed</h6>
+                                                <small class="text-muted">1 day ago</small>
+                                            </div>
+                                            <p class="timeline-description">Project planning phase completed with all requirements documented.</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker bg-warning"></div>
+                                        <div class="timeline-content">
+                                            <div class="timeline-header">
+                                                <h6 class="timeline-title">Development Phase Started</h6>
+                                                <small class="text-muted">6 hours ago</small>
+                                            </div>
+                                            <p class="timeline-description">Development team has started working on the core features.</p>
+                                        </div>
+                                    </div>
+
+                                    <div id="no-timeline-data" class="text-center py-4" style="display: none;">
+                                        <i class="bi bi-clock text-muted mb-2" style="font-size: 2rem;"></i>
+                                        <p class="text-muted">No timeline data available</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Project Card 2 -->
-                    <div class="project-card" data-status="todo" data-name="Mobile App">
-                        <div class="project-header">
-                            <div class="project-status status-todo">To Do</div>
-                            <div class="project-menu">
-                                <button class="btn btn-sm btn-outline-secondary">
-                                    <i class="bi bi-three-dots"></i>
-                                </button>
+                    <div class="col-md-4">
+                        <div class="card recent-activities-card shadow-sm border-0">
+                            <div class="card-header bg-transparent border-0 pb-0">
+                                <h6 class="card-title mb-0">
+                                    <i class="bi bi-activity text-success me-2"></i>
+                                    Recent Activities
+                                </h6>
                             </div>
-                        </div>
-                        <div class="project-body">
-                            <h5 class="project-title">Mobile App Development</h5>
-                            <p class="project-description">Native mobile application for iOS and Android platforms</p>
-
-                            <div class="project-progress">
-                                <div class="d-flex justify-content-between mb-1">
-                                    <small class="text-muted">Progress</small>
-                                    <small class="text-muted">0%</small>
-                                </div>
-                                <div class="progress">
-                                    <div class="progress-bar bg-secondary" style="width: 0%"></div>
-                                </div>
-                            </div>
-
-                            <div class="project-info mt-3">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div class="project-team">
-                                        <div class="avatar-group">
-                                            <div class="avatar">MK</div>
-                                            <div class="avatar">LT</div>
+                            <div class="card-body">
+                                <div id="recent-activities" class="activity-list">
+                                    <!-- Activities will be loaded dynamically -->
+                                    <div class="activity-item">
+                                        <div class="activity-avatar bg-primary text-white">
+                                            <i class="bi bi-person-check"></i>
+                                        </div>
+                                        <div class="activity-content">
+                                            <p class="activity-text">New task assigned to <strong>John Doe</strong></p>
+                                            <small class="text-muted">2 minutes ago</small>
                                         </div>
                                     </div>
-                                    <div class="project-deadline">
-                                        <small class="text-primary">
-                                            <i class="bi bi-calendar-event me-1"></i>
-                                            Dec 20
-                                        </small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Project Card 3 -->
-                    <div class="project-card" data-status="review" data-name="Analytics Dashboard">
-                        <div class="project-header">
-                            <div class="project-status status-review">Review</div>
-                            <div class="project-menu">
-                                <button class="btn btn-sm btn-outline-secondary">
-                                    <i class="bi bi-three-dots"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="project-body">
-                            <h5 class="project-title">Analytics Dashboard</h5>
-                            <p class="project-description">Real-time analytics and reporting dashboard for business metrics</p>
-
-                            <div class="project-progress">
-                                <div class="d-flex justify-content-between mb-1">
-                                    <small class="text-muted">Progress</small>
-                                    <small class="text-muted">95%</small>
-                                </div>
-                                <div class="progress">
-                                    <div class="progress-bar bg-info" style="width: 95%"></div>
-                                </div>
-                            </div>
-
-                            <div class="project-info mt-3">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div class="project-team">
-                                        <div class="avatar-group">
-                                            <div class="avatar">RF</div>
-                                            <div class="avatar">GH</div>
-                                            <div class="avatar">UI</div>
+                                    <div class="activity-item">
+                                        <div class="activity-avatar bg-success text-white">
+                                            <i class="bi bi-check-circle"></i>
+                                        </div>
+                                        <div class="activity-content">
+                                            <p class="activity-text"><strong>Sarah Smith</strong> completed "Design Review"</p>
+                                            <small class="text-muted">1 hour ago</small>
                                         </div>
                                     </div>
-                                    <div class="project-deadline">
-                                        <small class="text-success">
-                                            <i class="bi bi-calendar-event me-1"></i>
-                                            Nov 5
-                                        </small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Project Card 4 -->
-                    <div class="project-card" data-status="done" data-name="Security Audit">
-                        <div class="project-header">
-                            <div class="project-status status-done">Done</div>
-                            <div class="project-menu">
-                                <button class="btn btn-sm btn-outline-secondary">
-                                    <i class="bi bi-three-dots"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="project-body">
-                            <h5 class="project-title">Security Audit</h5>
-                            <p class="project-description">Comprehensive security assessment and vulnerability testing</p>
-
-                            <div class="project-progress">
-                                <div class="d-flex justify-content-between mb-1">
-                                    <small class="text-muted">Progress</small>
-                                    <small class="text-muted">100%</small>
-                                </div>
-                                <div class="progress">
-                                    <div class="progress-bar bg-success" style="width: 100%"></div>
-                                </div>
-                            </div>
-
-                            <div class="project-info mt-3">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div class="project-team">
-                                        <div class="avatar-group">
-                                            <div class="avatar">PQ</div>
-                                            <div class="avatar">RS</div>
+                                    <div class="activity-item">
+                                        <div class="activity-avatar bg-warning text-white">
+                                            <i class="bi bi-chat-dots"></i>
+                                        </div>
+                                        <div class="activity-content">
+                                            <p class="activity-text">New comment added to "Frontend Development"</p>
+                                            <small class="text-muted">3 hours ago</small>
                                         </div>
                                     </div>
-                                    <div class="project-deadline">
-                                        <small class="text-muted">
-                                            <i class="bi bi-calendar-check me-1"></i>
-                                            Completed
-                                        </small>
+
+                                    <div class="activity-item">
+                                        <div class="activity-avatar bg-info text-white">
+                                            <i class="bi bi-upload"></i>
+                                        </div>
+                                        <div class="activity-content">
+                                            <p class="activity-text"><strong>Mike Johnson</strong> uploaded files to task</p>
+                                            <small class="text-muted">5 hours ago</small>
+                                        </div>
                                     </div>
+
+                                    <div id="no-activities-data" class="text-center py-3" style="display: none;">
+                                        <i class="bi bi-activity text-muted mb-2" style="font-size: 1.5rem;"></i>
+                                        <p class="text-muted small">No recent activities</p>
+                                    </div>
+                                </div>
+
+                                <div class="text-center mt-3">
+                                    <button class="btn btn-outline-primary btn-sm" onclick="viewAllActivities()">
+                                        View All Activities
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -1850,13 +2432,7 @@
                     <!-- Board cards will be loaded here dynamically -->
                 </div>
 
-                <!-- Loading State -->
-                <div id="boards-loading" class="text-center py-5">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <p class="mt-2 text-muted">Loading boards...</p>
-                </div>
+
 
                 <!-- Empty State -->
                 <div id="boards-empty" class="text-center py-5" style="display: none;">
@@ -1875,6 +2451,10 @@
                         <p class="text-muted mb-0">Manage project tasks and track progress</p>
                     </div>
                     <div class="d-flex gap-2">
+                        <button class="btn btn-primary" onclick="openCreateCardModal()">
+                            <i class="bi bi-plus-lg me-2"></i>
+                            Create Card
+                        </button>
                         <select id="cardStatusFilter" class="form-select" style="width: auto;">
                             <option value="">All Status</option>
                             <option value="todo">To Do</option>
@@ -1898,19 +2478,554 @@
                     <!-- Card items will be loaded here dynamically -->
                 </div>
 
-                <!-- Loading State -->
-                <div id="cards-loading" class="text-center py-5">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <p class="mt-2 text-muted">Loading cards...</p>
-                </div>
+
 
                 <!-- Empty State -->
                 <div id="cards-empty" class="text-center py-5" style="display: none;">
                     <i class="bi bi-card-list text-muted mb-3" style="font-size: 4rem;"></i>
                     <h4 class="text-muted">No Cards Found</h4>
                     <p class="text-muted">You don't have any cards assigned to your projects yet.</p>
+                </div>
+            </div>
+
+            <!-- My Cards Content -->
+            <div id="my-cards-content" class="content-section" style="display: none;">
+                <!-- Header Section -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="mb-0">My Cards</h2>
+                        <p class="text-muted mb-0">Cards created by you across all projects</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary" onclick="openCreateCardModal()">
+                            <i class="bi bi-plus-lg me-2"></i>
+                            Create New Card
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="refreshMyCards()">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <!-- My Cards Statistics -->
+                <div class="row mb-4" id="my-cards-statistics">
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body text-center">
+                                <i class="bi bi-list-ul display-6"></i>
+                                <h4 class="mt-2 mb-0" id="myCardsTodoCount">0</h4>
+                                <small>To Do</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body text-center">
+                                <i class="bi bi-play-circle display-6"></i>
+                                <h4 class="mt-2 mb-0" id="myCardsInProgressCount">0</h4>
+                                <small>In Progress</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body text-center">
+                                <i class="bi bi-eye display-6"></i>
+                                <h4 class="mt-2 mb-0" id="myCardsReviewCount">0</h4>
+                                <small>In Review</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body text-center">
+                                <i class="bi bi-check-circle display-6"></i>
+                                <h4 class="mt-2 mb-0" id="myCardsDoneCount">0</h4>
+                                <small>Done</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filter Section -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Status Filter</label>
+                                <select id="myCardsStatusFilter" class="form-select">
+                                    <option value="">All Status</option>
+                                    <option value="todo">To Do</option>
+                                    <option value="in_progress">In Progress</option>
+                                    <option value="review">Review</option>
+                                    <option value="done">Done</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Project Filter</label>
+                                <select id="myCardsProjectFilter" class="form-select">
+                                    <option value="">All Projects</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Priority Filter</label>
+                                <select id="myCardsPriorityFilter" class="form-select">
+                                    <option value="">All Priorities</option>
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button class="btn btn-primary me-2" onclick="applyMyCardsFilters()">
+                                    <i class="bi bi-funnel me-1"></i>Apply
+                                </button>
+                                <button class="btn btn-outline-secondary" onclick="clearMyCardsFilters()">
+                                    <i class="bi bi-x-circle me-1"></i>Clear
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- My Cards Grid -->
+                <div id="my-cards-grid" class="row">
+                    <!-- My cards will be loaded here dynamically -->
+                </div>
+
+                <!-- Loading State -->
+                <div id="my-cards-loading" class="text-center py-5" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Loading your cards...</p>
+                </div>
+
+                <!-- Empty State -->
+                <div id="my-cards-empty" class="text-center py-5" style="display: none;">
+                    <i class="bi bi-card-checklist text-muted mb-3" style="font-size: 4rem;"></i>
+                    <h4 class="text-muted">No Cards Found</h4>
+                    <p class="text-muted">You haven't created any cards yet. Start by creating your first card!</p>
+                    <button class="btn btn-primary mt-3" onclick="openCreateCardModal()">
+                        <i class="bi bi-plus-lg me-2"></i>Create Your First Card
+                    </button>
+                </div>
+            </div>
+
+            <!-- Assigned Cards Content - Card Review System -->
+            <div id="assigned-cards-content" class="content-section" style="display: none;">
+                <!-- Header Section -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="mb-0">Card Reviews</h2>
+                        <p class="text-muted mb-0">Review and approve cards submitted by developers/designers</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary" onclick="refreshPendingReviews()">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Review Statistics -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body text-center">
+                                <i class="bi bi-clock-history display-6"></i>
+                                <h4 class="mt-2 mb-0" id="pendingReviewsCount">0</h4>
+                                <small>Pending Reviews</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body text-center">
+                                <i class="bi bi-check-circle display-6"></i>
+                                <h4 class="mt-2 mb-0" id="approvedTodayCount">0</h4>
+                                <small>Approved Today</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-danger text-white">
+                            <div class="card-body text-center">
+                                <i class="bi bi-x-circle display-6"></i>
+                                <h4 class="mt-2 mb-0" id="rejectedTodayCount">0</h4>
+                                <small>Rejected Today</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body text-center">
+                                <i class="bi bi-graph-up display-6"></i>
+                                <h4 class="mt-2 mb-0" id="avgReviewTime">0h</h4>
+                                <small>Avg Review Time</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pending Reviews Grid -->
+                <div id="pending-reviews-grid" class="row">
+                    <!-- Review cards will be loaded here dynamically -->
+                </div>
+
+
+
+                <!-- Empty State -->
+                <div id="reviews-empty" class="text-center py-5" style="display: none;">
+                    <i class="bi bi-clipboard-check text-muted mb-3" style="font-size: 4rem;"></i>
+                    <h4 class="text-muted">No Pending Reviews</h4>
+                    <p class="text-muted">All submitted cards have been reviewed!</p>
+                </div>
+            </div>
+
+            <!-- Assigned History Content -->
+            <div id="assigned-history-content" class="content-section" style="display: none;">
+                <!-- Header Section -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h4 class="mb-1">Assignment History</h4>
+                        <p class="text-muted mb-0">Track assignment progress and history</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary" onclick="exportAssignmentHistory()">
+                            <i class="bi bi-download me-1"></i>Export
+                        </button>
+                        <button class="btn btn-primary" onclick="refreshAssignmentHistory()">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Summary Statistics -->
+                <div class="row mb-4" id="assignment-summary-stats">
+                    <div class="col-md-2">
+                        <div class="stat-card">
+                            <i class="bi bi-clipboard-data stat-icon text-primary"></i>
+                            <h3 class="stat-number text-primary" id="totalAssignments">0</h3>
+                            <p class="stat-label">Total Assignments</p>
+                            <small class="text-muted">All time</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="stat-card">
+                            <i class="bi bi-clipboard-plus stat-icon text-info"></i>
+                            <h3 class="stat-number text-info" id="assignedCount">0</h3>
+                            <p class="stat-label">Assigned</p>
+                            <small class="text-muted">New assignments</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="stat-card">
+                            <i class="bi bi-play-circle stat-icon text-warning"></i>
+                            <h3 class="stat-number text-warning" id="inProgressCount">0</h3>
+                            <p class="stat-label">In Progress</p>
+                            <small class="text-muted">Active work</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="stat-card">
+                            <i class="bi bi-check-circle stat-icon text-success"></i>
+                            <h3 class="stat-number text-success" id="completedCount">0</h3>
+                            <p class="stat-label">Completed</p>
+                            <small class="text-muted">Finished tasks</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="stat-card">
+                            <i class="bi bi-clock stat-icon text-primary"></i>
+                            <h3 class="stat-number text-primary" id="avgCompletionTime">0h</h3>
+                            <p class="stat-label">Avg Time</p>
+                            <small class="text-muted">To completion</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="stat-card">
+                            <i class="bi bi-exclamation-triangle stat-icon text-danger"></i>
+                            <h3 class="stat-number text-danger" id="overdueCount">0</h3>
+                            <p class="stat-label">Overdue</p>
+                            <small class="text-muted">Past deadline</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters Section -->
+                <div class="filter-section mb-4">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" id="historyStatusFilter">
+                                <option value="all">All Status</option>
+                                <option value="assigned">Assigned</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Team Member</label>
+                            <select class="form-select" id="historyUserFilter">
+                                <option value="">All Members</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Project</label>
+                            <select class="form-select" id="historyProjectFilter">
+                                <option value="">All Projects</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Date Range</label>
+                            <div class="input-group">
+                                <input type="date" class="form-control" id="historyDateFrom" placeholder="From">
+                                <input type="date" class="form-control" id="historyDateTo" placeholder="To">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <button class="btn btn-primary me-2" onclick="applyAssignmentHistoryFilters()">
+                                <i class="bi bi-funnel me-1"></i>Apply Filters
+                            </button>
+                            <button class="btn btn-outline-secondary" onclick="clearAssignmentHistoryFilters()">
+                                <i class="bi bi-x-circle me-1"></i>Clear Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assignment History Table -->
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Task</th>
+                                <th>Assigned To</th>
+                                <th>Project</th>
+                                <th>Status</th>
+                                <th>Assigned Date</th>
+                                <th>Duration</th>
+                                <th>Priority</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="assignmentHistoryTableBody">
+                            <tr>
+                                <td colspan="8" class="text-center py-4">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-2 text-muted">Loading assignment history...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <div class="text-muted">
+                        <span id="assignmentHistoryInfo">Showing 0 of 0 assignments</span>
+                    </div>
+                    <nav aria-label="Assignment history pagination">
+                        <ul class="pagination pagination-sm mb-0" id="assignmentHistoryPagination">
+                            <!-- Pagination will be generated here -->
+                        </ul>
+                    </nav>
+                </div>
+
+                <!-- No Results Message -->
+                <div id="no-assignment-history" class="text-center py-5" style="display: none;">
+                    <i class="bi bi-clock-history text-muted" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3 text-muted">No Assignment History</h5>
+                    <p class="text-muted">No assignment history found for the selected criteria.</p>
+                </div>
+            </div>
+
+            <!-- Card Time Logs Content -->
+            <div id="card-time-logs-content" class="content-section" style="display: none;">
+                <!-- Header Section -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h4 class="mb-1">Time Tracking</h4>
+                        <p class="text-muted mb-0">Monitor team time logs and productivity</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary" onclick="exportTimeLogs()">
+                            <i class="bi bi-download me-1"></i>Export
+                        </button>
+                        <button class="btn btn-primary" onclick="refreshTimeLogs()">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Summary Statistics -->
+                <div class="row mb-4" id="time-logs-summary-stats">
+                    <div class="col-md-2">
+                        <div class="stat-card">
+                            <i class="bi bi-clock stat-icon text-primary"></i>
+                            <h3 class="stat-number text-primary" id="totalHours">0h</h3>
+                            <p class="stat-label">Total Hours</p>
+                            <small class="text-muted">Logged time</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="stat-card">
+                            <i class="bi bi-journal-text stat-icon text-info"></i>
+                            <h3 class="stat-number text-info" id="totalLogs">0</h3>
+                            <p class="stat-label">Total Entries</p>
+                            <small class="text-muted">Time logs</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="stat-card">
+                            <i class="bi bi-people stat-icon text-success"></i>
+                            <h3 class="stat-number text-success" id="activeUsers">0</h3>
+                            <p class="stat-label">Active Users</p>
+                            <small class="text-muted">Logging time</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="stat-card">
+                            <i class="bi bi-card-list stat-icon text-warning"></i>
+                            <h3 class="stat-number text-warning" id="trackedCards">0</h3>
+                            <p class="stat-label">Tracked Tasks</p>
+                            <small class="text-muted">With time logs</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="stat-card">
+                            <i class="bi bi-graph-up stat-icon text-primary"></i>
+                            <h3 class="stat-number text-primary" id="avgHoursPerLog">0h</h3>
+                            <p class="stat-label">Avg Per Entry</p>
+                            <small class="text-muted">Hours logged</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="stat-card">
+                            <i class="bi bi-calendar-day stat-icon text-secondary"></i>
+                            <h3 class="stat-number text-secondary" id="activeDays">0</h3>
+                            <p class="stat-label">Active Days</p>
+                            <small class="text-muted">With logs</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daily Activity Chart -->
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Daily Time Tracking (Last 30 Days)</h6>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="dailyTimeChart" height="100"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Top Performers (30 Days)</h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="topPerformersList">
+                                    <!-- Top performers will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters Section -->
+                <div class="filter-section mb-4">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Team Member</label>
+                            <select class="form-select" id="timeLogUserFilter">
+                                <option value="">All Members</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Project</label>
+                            <select class="form-select" id="timeLogProjectFilter">
+                                <option value="">All Projects</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Task</label>
+                            <select class="form-select" id="timeLogCardFilter">
+                                <option value="">All Tasks</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Date Range</label>
+                            <div class="input-group">
+                                <input type="date" class="form-control" id="timeLogDateFrom" placeholder="From">
+                                <input type="date" class="form-control" id="timeLogDateTo" placeholder="To">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <button class="btn btn-primary me-2" onclick="applyTimeLogFilters()">
+                                <i class="bi bi-funnel me-1"></i>Apply Filters
+                            </button>
+                            <button class="btn btn-outline-secondary" onclick="clearTimeLogFilters()">
+                                <i class="bi bi-x-circle me-1"></i>Clear Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time Logs Table -->
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Task</th>
+                                <th>User</th>
+                                <th>Hours</th>
+                                <th>Description</th>
+                                <th>Date</th>
+                                <th>Project</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="timeLogsTableBody">
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-2 text-muted">Loading time logs...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <div class="text-muted">
+                        <span id="timeLogsInfo">Showing 0 of 0 time logs</span>
+                    </div>
+                    <nav aria-label="Time logs pagination">
+                        <ul class="pagination pagination-sm mb-0" id="timeLogsPagination">
+                            <!-- Pagination will be generated here -->
+                        </ul>
+                    </nav>
+                </div>
+
+                <!-- No Results Message -->
+                <div id="no-time-logs" class="text-center py-5" style="display: none;">
+                    <i class="bi bi-clock text-muted" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3 text-muted">No Time Logs Found</h5>
+                    <p class="text-muted">No time logs found for the selected criteria.</p>
                 </div>
             </div>
 
@@ -2087,7 +3202,7 @@
                     <div class="col-md-3">
                         <div class="report-stat-card">
                             <i class="bi bi-folder-fill stat-icon text-primary"></i>
-                            <h3 class="stat-number text-primary" id="reportTotalProjects">Loading...</h3>
+                            <h3 class="stat-number text-primary" id="reportTotalProjects">0</h3>
                             <p class="stat-label">Total Projects</p>
                             <small class="text-muted">All projects</small>
                         </div>
@@ -2095,7 +3210,7 @@
                     <div class="col-md-3">
                         <div class="report-stat-card">
                             <i class="bi bi-check-circle-fill stat-icon text-success"></i>
-                            <h3 class="stat-number text-success" id="reportCompletedProjects">Loading...</h3>
+                            <h3 class="stat-number text-success" id="reportCompletedProjects">0</h3>
                             <p class="stat-label">Completed Projects</p>
                             <small class="text-muted">Successfully finished</small>
                         </div>
@@ -2103,7 +3218,7 @@
                     <div class="col-md-3">
                         <div class="report-stat-card">
                             <i class="bi bi-clock-history stat-icon text-warning"></i>
-                            <h3 class="stat-number text-warning" id="reportInProgressProjects">Loading...</h3>
+                            <h3 class="stat-number text-warning" id="reportInProgressProjects">0</h3>
                             <p class="stat-label">In Progress</p>
                             <small class="text-muted">Currently active</small>
                         </div>
@@ -2111,7 +3226,7 @@
                     <div class="col-md-3">
                         <div class="report-stat-card">
                             <i class="bi bi-people-fill stat-icon text-info"></i>
-                            <h3 class="stat-number text-info" id="reportActiveUsers">Loading...</h3>
+                            <h3 class="stat-number text-info" id="reportActiveUsers">0</h3>
                             <p class="stat-label">Active Users</p>
                             <small class="text-muted">Registered users</small>
                         </div>
@@ -2320,37 +3435,118 @@
                                     <i class="bi bi-person-circle me-2 text-primary"></i>
                                     Account Information
                                 </h5>
-                                <div class="row mb-3">
-                                    <div class="col-sm-3">
-                                        <strong>Name:</strong>
+
+                                <!-- Display Mode -->
+                                <div id="profile-display-mode">
+                                    <div class="row mb-3">
+                                        <div class="col-sm-3">
+                                            <strong>Name:</strong>
+                                        </div>
+                                        <div class="col-sm-9" id="display-name">
+                                            {{ $user->full_name ?? $user->username }}
+                                        </div>
                                     </div>
-                                    <div class="col-sm-9">
-                                        {{ $user->name }}
+                                    <div class="row mb-3">
+                                        <div class="col-sm-3">
+                                            <strong>Username:</strong>
+                                        </div>
+                                        <div class="col-sm-9">
+                                            {{ $user->username }}
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-sm-3">
+                                            <strong>Email:</strong>
+                                        </div>
+                                        <div class="col-sm-9" id="display-email">
+                                            {{ $user->email }}
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-sm-3">
+                                            <strong>Role:</strong>
+                                        </div>
+                                        <div class="col-sm-9">
+                                            <span class="badge bg-info">Team Lead</span>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-sm-3">
+                                            <strong>Registered:</strong>
+                                        </div>
+                                        <div class="col-sm-9">
+                                            {{ $user->created_at->format('d M Y, H:i') }}
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="row mb-3">
-                                    <div class="col-sm-3">
-                                        <strong>Email:</strong>
-                                    </div>
-                                    <div class="col-sm-9">
-                                        {{ $user->email }}
-                                    </div>
-                                </div>
-                                <div class="row mb-3">
-                                    <div class="col-sm-3">
-                                        <strong>Role:</strong>
-                                    </div>
-                                    <div class="col-sm-9">
-                                        <span class="badge bg-info">Team Lead</span>
-                                    </div>
-                                </div>
-                                <div class="row mb-3">
-                                    <div class="col-sm-3">
-                                        <strong>Registered:</strong>
-                                    </div>
-                                    <div class="col-sm-9">
-                                        {{ $user->created_at->format('d M Y, H:i') }}
-                                    </div>
+
+                                <!-- Edit Mode -->
+                                <div id="profile-edit-mode" style="display: none;">
+                                    <form id="profile-update-form">
+                                        <div class="row mb-3">
+                                            <div class="col-sm-3">
+                                                <label class="form-label"><strong>Full Name:</strong></label>
+                                            </div>
+                                            <div class="col-sm-9">
+                                                <input type="text" class="form-control" id="edit-full-name" name="full_name" value="{{ $user->full_name ?? '' }}">
+                                            </div>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <div class="col-sm-3">
+                                                <label class="form-label"><strong>Email:</strong></label>
+                                            </div>
+                                            <div class="col-sm-9">
+                                                <input type="email" class="form-control" id="edit-email" name="email" value="{{ $user->email }}" required>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <div class="col-sm-3">
+                                                <label class="form-label"><strong>Phone:</strong></label>
+                                            </div>
+                                            <div class="col-sm-9">
+                                                <input type="text" class="form-control" id="edit-phone" name="phone" value="{{ $user->phone ?? '' }}">
+                                            </div>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <div class="col-sm-3">
+                                                <label class="form-label"><strong>Bio:</strong></label>
+                                            </div>
+                                            <div class="col-sm-9">
+                                                <textarea class="form-control" id="edit-bio" name="bio" rows="3">{{ $user->bio ?? '' }}</textarea>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <div class="col-sm-3">
+                                                <label class="form-label"><strong>Address:</strong></label>
+                                            </div>
+                                            <div class="col-sm-9">
+                                                <textarea class="form-control" id="edit-address" name="address" rows="2">{{ $user->address ?? '' }}</textarea>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <div class="col-sm-3">
+                                                <label class="form-label"><strong>Status:</strong></label>
+                                            </div>
+                                            <div class="col-sm-9">
+                                                <select class="form-select" id="edit-status" name="status">
+                                                    <option value="active" {{ ($user->status ?? 'active') == 'active' ? 'selected' : '' }}>Active</option>
+                                                    <option value="available" {{ ($user->status ?? '') == 'available' ? 'selected' : '' }}>Available</option>
+                                                    <option value="busy" {{ ($user->status ?? '') == 'busy' ? 'selected' : '' }}>Busy</option>
+                                                    <option value="inactive" {{ ($user->status ?? '') == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <div class="col-sm-12">
+                                                <button type="submit" class="btn btn-success me-2">
+                                                    <i class="bi bi-check-lg me-1"></i>Save Changes
+                                                </button>
+                                                <button type="button" class="btn btn-secondary" onclick="cancelEditProfile()">
+                                                    <i class="bi bi-x-lg me-1"></i>Cancel
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -2358,14 +3554,66 @@
                     <div class="col-md-4">
                         <div class="card border-0 shadow-sm">
                             <div class="card-body text-center">
-                                <div class="profile-avatar-large mb-3">
-                                    <i class="bi bi-person-circle" style="font-size: 4rem; color: #667eea;"></i>
+                                <div class="profile-avatar-large mb-3 position-relative">
+                                    <img id="profile-photo-display"
+                                         src="{{ $user->profile_photo ? asset('uploads/profiles/' . $user->profile_photo) : asset('uploads/profiles/default-avatar.png') }}"
+                                         alt="Profile Photo"
+                                         class="rounded-circle"
+                                         style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #667eea;">
+                                    <button class="btn btn-sm btn-primary position-absolute bottom-0 end-0 rounded-circle"
+                                            onclick="document.getElementById('profile-photo-input').click()"
+                                            style="width: 35px; height: 35px;">
+                                        <i class="bi bi-camera"></i>
+                                    </button>
+                                    <input type="file" id="profile-photo-input" accept="image/*" style="display: none;" onchange="uploadProfilePhoto(this)">
                                 </div>
-                                <h5>{{ $user->name }}</h5>
+                                <h5 id="profile-display-name">{{ $user->full_name ?? $user->username }}</h5>
                                 <p class="text-muted">Team Lead</p>
-                                <button class="btn btn-outline-primary btn-sm">
-                                    <i class="bi bi-pencil me-1"></i>Edit Profile
-                                </button>
+                                <span class="badge bg-{{ ($user->status ?? 'active') == 'available' ? 'success' : (($user->status ?? 'active') == 'busy' ? 'warning' : 'info') }} mb-2">
+                                    {{ ucfirst($user->status ?? 'active') }}
+                                </span>
+                                <div class="d-flex gap-2 justify-content-center">
+                                    <button class="btn btn-outline-primary btn-sm" onclick="toggleEditProfile()">
+                                        <i class="bi bi-pencil me-1"></i>Edit Profile
+                                    </button>
+                                    @if($user->profile_photo)
+                                    <button class="btn btn-outline-danger btn-sm" onclick="deleteProfilePhoto()">
+                                        <i class="bi bi-trash me-1"></i>Delete Photo
+                                    </button>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Additional Profile Info -->
+                        <div class="card border-0 shadow-sm mt-3">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    <i class="bi bi-info-circle me-2 text-info"></i>
+                                    Quick Info
+                                </h6>
+                                <div class="row mb-2">
+                                    <div class="col-6">
+                                        <small class="text-muted">Projects Led:</small>
+                                        <div><strong>{{ $user->projects_count ?? 0 }}</strong></div>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Team Size:</small>
+                                        <div><strong>{{ $user->team_size ?? 0 }}</strong></div>
+                                    </div>
+                                </div>
+                                @if($user->phone)
+                                <div class="mb-2">
+                                    <small class="text-muted">Phone:</small>
+                                    <div><strong>{{ $user->phone }}</strong></div>
+                                </div>
+                                @endif
+                                @if($user->bio)
+                                <div class="mb-2">
+                                    <small class="text-muted">Bio:</small>
+                                    <div>{{ Str::limit($user->bio, 100) }}</div>
+                                </div>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -2420,10 +3668,6 @@
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-primary" id="submitBtn">
                             <span class="btn-text">Create Project</span>
-                            <span class="btn-loading" style="display: none;">
-                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                Creating...
-                            </span>
                         </button>
                     </div>
                 </form>
@@ -2479,10 +3723,6 @@
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-primary" id="editSubmitBtn">
                             <span class="btn-text">Update Project</span>
-                            <span class="btn-loading" style="display: none;">
-                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                Updating...
-                            </span>
                         </button>
                     </div>
                 </form>
@@ -2543,10 +3783,6 @@
                             <span class="btn-text">
                                 <i class="bi bi-check-circle me-1"></i>Complete Project
                             </span>
-                            <span class="btn-loading" style="display: none;">
-                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                Completing...
-                            </span>
                         </button>
                     </div>
                 </form>
@@ -2587,10 +3823,6 @@
                         <button type="submit" class="btn btn-warning" id="cancelProjectBtn">
                             <span class="btn-text">
                                 <i class="bi bi-x-circle me-1"></i>Cancel Project
-                            </span>
-                            <span class="btn-loading" style="display: none;">
-                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                Cancelling...
                             </span>
                         </button>
                     </div>
@@ -2659,10 +3891,6 @@
                     <button type="submit" form="createUserForm" class="btn btn-primary" id="createUserSubmitBtn">
                         <span class="btn-text">
                             <i class="bi bi-check-circle me-2"></i>Create User
-                        </span>
-                        <span class="btn-loading d-none">
-                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                            Creating...
                         </span>
                     </button>
                 </div>
@@ -2765,10 +3993,6 @@
                         <span class="btn-text">
                             <i class="bi bi-check-circle me-2"></i>Update User
                         </span>
-                        <span class="btn-loading d-none">
-                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                            Updating...
-                        </span>
                     </button>
                 </div>
             </div>
@@ -2801,10 +4025,6 @@
                     <button type="button" class="btn btn-danger" id="confirmDeleteUserBtn" onclick="confirmDeleteUser()">
                         <span class="btn-text">
                             <i class="bi bi-trash me-2"></i>Delete User
-                        </span>
-                        <span class="btn-loading d-none">
-                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                            Deleting...
                         </span>
                     </button>
                 </div>
@@ -2859,10 +4079,6 @@
                         <span class="btn-text">
                             <i class="bi bi-check-circle me-2"></i>Add Member
                         </span>
-                        <span class="btn-loading d-none">
-                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                            Adding...
-                        </span>
                     </button>
                 </div>
             </div>
@@ -2907,10 +4123,6 @@
                         <span class="btn-text">
                             <i class="bi bi-check-circle me-2"></i>Update Role
                         </span>
-                        <span class="btn-loading d-none">
-                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                            Updating...
-                        </span>
                     </button>
                 </div>
             </div>
@@ -2919,9 +4131,11 @@
 
     <!-- Bootstrap JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js for time tracking charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
-        function showContent(section) {
+        function showContent(section, element = null) {
             // Hide all content sections
             document.querySelectorAll('.content-section').forEach(content => {
                 content.style.display = 'none';
@@ -2933,17 +4147,33 @@
             });
 
             // Show selected content
-            document.getElementById(section + '-content').style.display = 'block';
+            const contentElement = document.getElementById(section + '-content');
+            if (contentElement) {
+                contentElement.style.display = 'block';
+            }
 
             // Add active class to clicked nav link
-            event.target.closest('.nav-link').classList.add('active');
+            if (element) {
+                const navLink = element.closest('.nav-link') || element.closest('.btn-action');
+                if (navLink) {
+                    navLink.classList.add('active');
+                }
+            }
 
             // Load data when section is opened
             if (section === 'users') {
                 loadUserStatistics();
                 loadUsersList();
             } else if (section === 'projects') {
-                loadProjectStatistics();
+                loadCurrentProject();
+            } else if (section === 'my-cards') {
+                loadMyCards();
+            } else if (section === 'assigned-cards') {
+                loadPendingReviews();
+            } else if (section === 'assigned-history') {
+                loadAssignmentHistory();
+            } else if (section === 'card-time-logs') {
+                loadCardTimeLogs();
             } else if (section === 'reports') {
                 if (typeof loadReportData === 'function') {
                     loadReportData();
@@ -2953,9 +4183,10 @@
             // Update header based on section
             const titles = {
                 'dashboard': 'Team Lead Dashboard',
-                'projects': 'My Projects',
+                'projects': 'My Project',
                 'boards': 'Project Boards',
                 'cards': 'Task Cards',
+                'my-cards': 'My Cards',
                 'assigned-cards': 'Assigned Cards',
                 'assigned-history': 'Assignment History',
                 'card-time-logs': 'Time Tracking',
@@ -2965,6 +4196,12 @@
             const subtitles = {
                 'dashboard': 'Welcome to the administrative control center',
                 'projects': 'Create, manage, and oversee project activities',
+                'boards': 'View and manage project boards',
+                'cards': 'Manage task cards and assignments',
+                'my-cards': 'Cards created by you across all projects',
+                'assigned-cards': 'Monitor and manage assigned tasks',
+                'assigned-history': 'Track assignment progress and history',
+                'card-time-logs': 'Monitor team time logs and productivity',
                 'users': 'Manage user accounts, roles, and permissions',
                 'reports': 'View comprehensive reports and analytics insights',
                 'profile': 'Manage your account settings and preferences'
@@ -3121,6 +4358,14 @@
                 });
             }
 
+            // Load assigned cards when assigned-cards tab is opened
+            const assignedCardsTab = document.querySelector('a[href="#assigned-cards"]');
+            if (assignedCardsTab) {
+                assignedCardsTab.addEventListener('click', function() {
+                    loadAssignedCards();
+                });
+            }
+
             // Cards filter event handlers
             document.addEventListener('DOMContentLoaded', function() {
                 const statusFilter = document.getElementById('cardStatusFilter');
@@ -3131,6 +4376,17 @@
                 }
                 if (projectFilter) {
                     projectFilter.addEventListener('change', filterCards);
+                }
+
+                // Assigned cards filter event handlers
+                const assignmentStatusFilter = document.getElementById('assignmentStatusFilter');
+                const assigneeFilter = document.getElementById('assigneeFilter');
+
+                if (assignmentStatusFilter) {
+                    assignmentStatusFilter.addEventListener('change', filterAssignedCards);
+                }
+                if (assigneeFilter) {
+                    assigneeFilter.addEventListener('change', filterAssignedCards);
                 }
             });
 
@@ -3205,12 +4461,7 @@
             const form = event.target;
             const formData = new FormData(form);
             const submitBtn = document.getElementById('submitBtn');
-            const btnText = submitBtn.querySelector('.btn-text');
-            const btnLoading = submitBtn.querySelector('.btn-loading');
 
-            // Show loading state
-            btnText.style.display = 'none';
-            btnLoading.style.display = 'inline-block';
             submitBtn.disabled = true;
 
             // Clear previous errors
@@ -3275,8 +4526,6 @@
             const formData = new FormData(form);
             const projectId = document.getElementById('editProjectId').value;
             const submitBtn = document.getElementById('editSubmitBtn');
-            const btnText = submitBtn.querySelector('.btn-text');
-            const btnLoading = submitBtn.querySelector('.btn-loading');
 
             console.log('Project ID:', projectId);
             console.log('Original form data:');
@@ -3292,9 +4541,6 @@
                 console.log(key, ':', value);
             }
 
-            // Show loading state
-            btnText.style.display = 'none';
-            btnLoading.style.display = 'inline-block';
             submitBtn.disabled = true;
 
             // Clear previous errors
@@ -3633,8 +4879,1080 @@
             }
         }
 
-        function refreshMyProjects() {
-            loadProjectsList();
+        function refreshMyProject() {
+            loadCurrentProject();
+        }
+
+        function loadCurrentProject() {
+            // Load detailed project data
+            fetch('/api/teamlead/project-detail', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Project detail data:', data);
+                    if (data.success) {
+                        if (data.project) {
+                            updateProjectOverview(data.project, data.statistics);
+                            loadProjectTimeline();
+                            loadRecentActivities();
+                        } else {
+                            updateProjectOverview(null);
+                        }
+                    } else {
+                        console.error('Error loading current project:', data.message);
+                        updateProjectOverview(null);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading current project:', error);
+                    updateProjectOverview(null);
+                });
+        }
+
+        function loadProjectTimeline() {
+            fetch('/api/teamlead/project-timeline')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateTimeline(data.data);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading timeline:', error);
+                });
+        }
+
+        function loadRecentActivities() {
+            fetch('/api/teamlead/recent-activities')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateRecentActivities(data.data);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading activities:', error);
+                });
+        }
+
+        function updateProjectOverview(project, statistics) {
+            if (project && project.project_id) {
+                // Update project info
+                document.getElementById('current-project-name').textContent = project.project_name || 'Unknown Project';
+                document.getElementById('current-project-description').textContent = project.description || 'No description available';
+                document.getElementById('current-project-status').textContent = project.status || 'Unknown';
+
+                // Show project details section
+                document.getElementById('project-progress-section').style.display = 'block';
+                document.getElementById('project-details').style.display = 'block';
+
+                // Update progress using statistics
+                const progress = statistics ? statistics.progress_percentage || 0 : 0;
+                document.getElementById('project-progress-percentage').textContent = progress + '%';
+                document.getElementById('project-progress-bar').style.width = progress + '%';
+
+                // Update project details
+                document.getElementById('project-start-date').textContent = project.start_date || '-';
+                document.getElementById('project-end-date').textContent = project.end_date || '-';
+
+                if (statistics) {
+                    document.getElementById('project-team-count').textContent = statistics.members.total || '0';
+                    document.getElementById('project-task-count').textContent = statistics.cards.total || '0';
+
+                    // Update stats
+                    document.getElementById('completed-tasks').textContent = statistics.cards.completed || '0';
+                    document.getElementById('pending-tasks').textContent = (statistics.cards.todo + statistics.cards.in_progress) || '0';
+                    document.getElementById('active-members').textContent = statistics.members.total || '0';
+                }
+
+                // Enable action buttons
+                enableProjectActions();
+            } else {
+                // No project assigned
+                document.getElementById('current-project-name').textContent = 'No Project Assigned';
+                document.getElementById('current-project-description').textContent = 'You currently have no project assigned to your leadership.';
+                document.getElementById('current-project-status').textContent = 'Not Assigned';
+
+                // Hide project details
+                document.getElementById('project-progress-section').style.display = 'none';
+                document.getElementById('project-details').style.display = 'none';
+
+                // Reset stats
+                document.getElementById('completed-tasks').textContent = '0';
+                document.getElementById('pending-tasks').textContent = '0';
+                document.getElementById('active-members').textContent = '0';
+
+                // Disable action buttons
+                disableProjectActions();
+            }
+        }
+
+        function enableProjectActions() {
+            document.getElementById('btn-create-card').disabled = false;
+            document.getElementById('btn-manage-boards').disabled = false;
+            document.getElementById('btn-view-team').disabled = false;
+            document.getElementById('btn-add-member').disabled = false;
+            document.getElementById('btn-view-reports').disabled = false;
+            document.getElementById('btn-manage-project').disabled = false;
+        }
+
+        function disableProjectActions() {
+            document.getElementById('btn-create-card').disabled = true;
+            document.getElementById('btn-manage-boards').disabled = true;
+            document.getElementById('btn-view-team').disabled = true;
+            document.getElementById('btn-add-member').disabled = true;
+            document.getElementById('btn-view-reports').disabled = true;
+            document.getElementById('btn-manage-project').disabled = true;
+        }
+
+        function viewProjectDetails() {
+            alert('View Project Details - This will open detailed project information');
+        }
+
+        function viewProjectBoard() {
+            showContent('boards');
+        }
+
+        function viewTeamMembers() {
+            // Load and show current project members
+            loadCurrentProjectMembers();
+        }
+
+        function showAddTeamMemberModal() {
+            // Fetch available users
+            fetch('/api/teamlead/available-users', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayAddTeamMemberModal(data.users, data.project);
+                } else {
+                    alert('Error loading available users: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading available users:', error);
+                alert('Error loading available users');
+            });
+        }
+
+        function displayAddTeamMemberModal(users, project) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="bi bi-person-plus me-2"></i>Add Team Member to ${project.project_name}
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="text-muted mb-3">Select users to add to your project team:</p>
+                            ${users.length === 0 ?
+                                '<div class="text-center py-4"><i class="bi bi-people text-muted mb-3" style="font-size: 3rem;"></i><h5 class="text-muted">No Available Users</h5><p class="text-muted">All eligible users are already assigned to this project.</p></div>'
+                                :
+                                `<div class="row">
+                                    ${users.map(user => `
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card user-card h-100" onclick="selectUserForProject(${user.id}, '${user.full_name}', '${user.role}')">
+                                                <div class="card-body">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="user-avatar me-3" style="background-color: ${getRoleColor(user.role)};">
+                                                            ${user.full_name.split(' ').map(n => n.charAt(0)).join('').toUpperCase()}
+                                                        </div>
+                                                        <div class="flex-grow-1">
+                                                            <h6 class="mb-1">${user.full_name}</h6>
+                                                            <span class="badge" style="background-color: ${getRoleColor(user.role)};">${formatRole(user.role)}</span>
+                                                            <small class="text-muted d-block">${user.email}</small>
+                                                        </div>
+                                                        <div class="text-end">
+                                                            <i class="bi bi-plus-circle text-success" style="font-size: 1.2rem;"></i>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>`
+                            }
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            const bootstrapModal = new bootstrap.Modal(modal);
+            bootstrapModal.show();
+
+            // Add CSS for user cards
+            const style = document.createElement('style');
+            style.textContent = `
+                .user-card {
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    border: 1px solid #e0e0e0;
+                }
+                .user-card:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                    border-color: #007bff;
+                }
+                .user-avatar {
+                    width: 40px;
+                    height: 40px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 50%;
+                    color: white;
+                    font-weight: bold;
+                    font-size: 0.8rem;
+                }
+            `;
+            document.head.appendChild(style);
+
+            // Remove modal from DOM when hidden
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+                document.head.removeChild(style);
+            });
+        }
+
+        function selectUserForProject(userId, userName, userRole) {
+            if (confirm(`Add ${userName} (${formatRole(userRole)}) to your project?`)) {
+                fetch('/api/teamlead/add-user-to-project', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        user_id: userId
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Close modal
+                        const modal = document.querySelector('.modal.show');
+                        if (modal) {
+                            bootstrap.Modal.getInstance(modal).hide();
+                        }
+
+                        // Refresh project data
+                        loadCurrentProject();
+
+                        alert(`${userName} has been successfully added to the project!`);
+                    } else {
+                        alert('Error adding user: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error adding user:', error);
+                    alert('Error adding user to project');
+                });
+            }
+        }
+
+        function loadCurrentProjectMembers() {
+            fetch('/api/teamlead/project-members', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayProjectMembersModal(data.members, data.project);
+                } else {
+                    alert('Error loading project members: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading project members:', error);
+                alert('Error loading project members');
+            });
+        }
+
+        function displayProjectMembersModal(members, project) {
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="bi bi-people me-2"></i>Team Members - ${project.project_name}
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                ${members.map(member => `
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card member-card">
+                                            <div class="card-body">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="member-avatar me-3" style="background-color: ${getRoleColor(member.role)};">
+                                                        ${member.full_name.split(' ').map(n => n.charAt(0)).join('').toUpperCase()}
+                                                    </div>
+                                                    <div class="flex-grow-1">
+                                                        <h6 class="mb-1">${member.full_name}</h6>
+                                                        <span class="badge" style="background-color: ${getRoleColor(member.role)};">${formatRole(member.role)}</span>
+                                                        <small class="text-muted d-block">${member.email}</small>
+                                                        <small class="text-muted">Joined: ${formatDate(member.created_at)}</small>
+                                                    </div>
+                                                    ${member.role !== 'Team_Lead' ? `
+                                                        <div class="dropdown">
+                                                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                                                <i class="bi bi-three-dots"></i>
+                                                            </button>
+                                                            <ul class="dropdown-menu">
+                                                                <li><a class="dropdown-item text-danger" href="#" onclick="removeMemberFromProject(${member.user_id}, '${member.full_name}')">
+                                                                    <i class="bi bi-person-dash me-2"></i>Remove from Project
+                                                                </a></li>
+                                                            </ul>
+                                                        </div>
+                                                    ` : ''}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" onclick="showAddTeamMemberModal(); bootstrap.Modal.getInstance(this.closest('.modal')).hide();">
+                                <i class="bi bi-person-plus me-1"></i>Add More Members
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            const bootstrapModal = new bootstrap.Modal(modal);
+            bootstrapModal.show();
+
+            // Remove modal from DOM when hidden
+            modal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(modal);
+            });
+        }
+
+        function removeMemberFromProject(userId, userName) {
+            if (confirm(`Remove ${userName} from the project?`)) {
+                fetch('/api/teamlead/remove-user-from-project', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        user_id: userId
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Close current modal and reload project members
+                        const modal = document.querySelector('.modal.show');
+                        if (modal) {
+                            bootstrap.Modal.getInstance(modal).hide();
+                        }
+
+                        // Refresh project data
+                        loadCurrentProject();
+
+                        alert(`${userName} has been removed from the project.`);
+                    } else {
+                        alert('Error removing user: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error removing user:', error);
+                    alert('Error removing user from project');
+                });
+            }
+        }
+
+        function viewProjectReports() {
+            alert('View Project Reports - This will show project analytics and reports');
+        }
+
+        function manageProject() {
+            alert('Manage Project - This will open project management interface');
+        }
+
+        function viewAllActivities() {
+            alert('View All Activities - This will show complete activity log');
+        }
+
+        function updateTimeline(timelineData) {
+            const timelineContainer = document.getElementById('project-timeline');
+            const noTimelineData = document.getElementById('no-timeline-data');
+
+            if (!timelineData || timelineData.length === 0) {
+                timelineContainer.style.display = 'none';
+                noTimelineData.style.display = 'block';
+                return;
+            }
+
+            // Clear existing timeline items (except template ones)
+            const existingItems = timelineContainer.querySelectorAll('.timeline-item');
+            existingItems.forEach(item => item.remove());
+
+            timelineData.forEach(item => {
+                const timelineItem = document.createElement('div');
+                timelineItem.className = 'timeline-item';
+
+                const markerClass = getTimelineMarkerClass(item.activity_type);
+                const timeAgo = getTimeAgo(item.activity_date);
+
+                timelineItem.innerHTML = `
+                    <div class="timeline-marker ${markerClass}"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-header">
+                            <h6 class="timeline-title">${item.title}</h6>
+                            <small class="text-muted">${timeAgo}</small>
+                        </div>
+                        <p class="timeline-description">${item.description || item.title}</p>
+                        ${item.user_name ? `<small class="text-muted">by ${item.user_name}</small>` : ''}
+                    </div>
+                `;
+
+                timelineContainer.appendChild(timelineItem);
+            });
+
+            timelineContainer.style.display = 'block';
+            noTimelineData.style.display = 'none';
+        }
+
+        function updateRecentActivities(activitiesData) {
+            const activitiesContainer = document.getElementById('recent-activities');
+            const noActivitiesData = document.getElementById('no-activities-data');
+
+            if (!activitiesData || activitiesData.length === 0) {
+                activitiesContainer.style.display = 'none';
+                noActivitiesData.style.display = 'block';
+                return;
+            }
+
+            // Clear existing activity items (except template ones)
+            const existingItems = activitiesContainer.querySelectorAll('.activity-item');
+            existingItems.forEach(item => item.remove());
+
+            activitiesData.forEach(activity => {
+                const activityItem = document.createElement('div');
+                activityItem.className = 'activity-item';
+
+                const avatarClass = getActivityAvatarClass(activity.type);
+                const timeAgo = getTimeAgo(activity.activity_time);
+
+                activityItem.innerHTML = `
+                    <div class="activity-avatar ${avatarClass}">
+                        ${getActivityIcon(activity.type)}
+                    </div>
+                    <div class="activity-content">
+                        <p class="activity-text">${activity.description}</p>
+                        <small class="text-muted">${timeAgo}</small>
+                    </div>
+                `;
+
+                activitiesContainer.appendChild(activityItem);
+            });
+
+            activitiesContainer.style.display = 'block';
+            noActivitiesData.style.display = 'none';
+        }
+
+        function getTimelineMarkerClass(type) {
+            switch(type) {
+                case 'created': return 'bg-primary';
+                case 'started': return 'bg-success';
+                case 'completed': return 'bg-info';
+                case 'card_update': return 'bg-warning';
+                default: return 'bg-secondary';
+            }
+        }
+
+        function getActivityAvatarClass(type) {
+            switch(type) {
+                case 'assignment': return 'bg-primary text-white';
+                case 'completion': return 'bg-success text-white';
+                case 'comment': return 'bg-warning text-white';
+                case 'time_log': return 'bg-info text-white';
+                default: return 'bg-secondary text-white';
+            }
+        }
+
+        function getActivityIcon(type) {
+            switch(type) {
+                case 'assignment': return '<i class="bi bi-person-check"></i>';
+                case 'completion': return '<i class="bi bi-check-circle"></i>';
+                case 'comment': return '<i class="bi bi-chat-dots"></i>';
+                case 'time_log': return '<i class="bi bi-clock"></i>';
+                default: return '<i class="bi bi-activity"></i>';
+            }
+        }
+
+        function getTimeAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffInSeconds = Math.floor((now - date) / 1000);
+
+            if (diffInSeconds < 60) return 'just now';
+            if (diffInSeconds < 3600) return Math.floor(diffInSeconds / 60) + ' minutes ago';
+            if (diffInSeconds < 86400) return Math.floor(diffInSeconds / 3600) + ' hours ago';
+            if (diffInSeconds < 2592000) return Math.floor(diffInSeconds / 86400) + ' days ago';
+
+            return date.toLocaleDateString();
+        }
+
+        // Create Card Functions
+        function openCreateCardModal() {
+            // Load boards and team members data
+            loadBoardsForCard();
+            loadTeamMembersForAssignment();
+
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('createCardModal'));
+            modal.show();
+        }
+
+        function loadBoardsForCard() {
+            fetch('/api/teamlead/boards-for-card', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                }
+            })
+                .then(response => {
+                    console.log('Boards API response status:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Boards API data:', data);
+                    if (data.success && data.data) {
+                        const boardSelect = document.getElementById('cardBoard');
+                        boardSelect.innerHTML = '<option value="">Select Board</option>';
+
+                        data.data.forEach(board => {
+                            const option = document.createElement('option');
+                            option.value = board.board_id;
+                            option.textContent = `${board.board_name} (${board.card_count} cards)`;
+                            boardSelect.appendChild(option);
+                        });
+                        console.log(`Loaded ${data.data.length} boards`);
+                    } else {
+                        console.error('Boards API failed:', data.message || 'Unknown error');
+                        showNotification('error', 'Error', 'Failed to load boards: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading boards:', error);
+                    showNotification('error', 'Error', 'Failed to load boards');
+                });
+        }
+
+        function loadTeamMembersForAssignment(boardId = null) {
+            // Build URL with board_id parameter if provided
+            let url = '/api/teamlead/team-members';
+            if (boardId) {
+                url += `?board_id=${boardId}`;
+            }
+
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                }
+            })
+                .then(response => {
+                    console.log('Team members API response status:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Team members API data:', data);
+                    if (data.success && data.data) {
+                        const assignSelect = document.getElementById('cardAssignTo');
+
+                        // Add project context info
+                        let headerText = '🚫 No Assignment - Keep Unassigned';
+                        if (data.project && data.project.project_name) {
+                            headerText += ` (Project: ${data.project.project_name})`;
+                        }
+                        assignSelect.innerHTML = `<option value="">${headerText}</option>`;
+
+                        // Show project context in form help text if available
+                        const assignToLabel = document.querySelector('label[for="cardAssignTo"]');
+                        if (assignToLabel && data.project) {
+                            const projectInfo = assignToLabel.parentNode.querySelector('.form-text');
+                            if (projectInfo) {
+                                projectInfo.innerHTML = `
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Showing members from project: <strong>${data.project.project_name}</strong>
+                                    (${data.data.length} members available). Members are sorted by workload (lowest first).
+                                `;
+                            }
+                        }
+
+                        // Separate developers and designers for better organization
+                        const developers = data.data.filter(member => member.role === 'Developer');
+                        const designers = data.data.filter(member => member.role === 'Designer');
+                        const members = data.data.filter(member => member.role === 'Member');
+
+                        // Sort by workload (Low -> Medium -> High)
+                        const sortByWorkload = (a, b) => {
+                            const workloadOrder = { 'Low': 1, 'Medium': 2, 'High': 3 };
+                            const workloadDiff = workloadOrder[a.workload_level] - workloadOrder[b.workload_level];
+                            if (workloadDiff !== 0) return workloadDiff;
+                            // If same workload, sort by name
+                            return a.full_name.localeCompare(b.full_name);
+                        };
+
+                        developers.sort(sortByWorkload);
+                        designers.sort(sortByWorkload);
+                        members.sort(sortByWorkload);
+
+                        // Add developers section
+                        if (developers.length > 0) {
+                            const devGroup = document.createElement('optgroup');
+                            devGroup.label = '👨‍💻 Developers';
+                            developers.forEach(member => {
+                                const option = createMemberOption(member);
+                                devGroup.appendChild(option);
+                            });
+                            assignSelect.appendChild(devGroup);
+                        }
+
+                        // Add designers section
+                        if (designers.length > 0) {
+                            const designGroup = document.createElement('optgroup');
+                            designGroup.label = '🎨 Designers';
+                            designers.forEach(member => {
+                                const option = createMemberOption(member);
+                                designGroup.appendChild(option);
+                            });
+                            assignSelect.appendChild(designGroup);
+                        }
+
+                        // Add members section
+                        if (members.length > 0) {
+                            const memberGroup = document.createElement('optgroup');
+                            memberGroup.label = '👤 Members';
+                            members.forEach(member => {
+                                const option = createMemberOption(member);
+                                memberGroup.appendChild(option);
+                            });
+                            assignSelect.appendChild(memberGroup);
+                        }
+
+                        // Add event listener for assignment preview
+                        assignSelect.addEventListener('change', function() {
+                            updateAssignmentPreview(this.value);
+                        });
+
+                        console.log(`Loaded ${data.data.length} team members`);
+                    } else {
+                        console.error('Team members API failed:', data.message || 'Unknown error');
+                        showNotification('error', 'Error', 'Failed to load team members: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading team members:', error);
+                    showNotification('error', 'Error', 'Failed to load team members');
+                });
+        }
+
+        function createMemberOption(member) {
+            const option = document.createElement('option');
+            option.value = member.user_id;
+
+            // Create workload indicator
+            let workloadIcon = '🟢'; // Low workload
+            if (member.workload_level === 'High') {
+                workloadIcon = '🔴';
+            } else if (member.workload_level === 'Medium') {
+                workloadIcon = '🟡';
+            }
+
+            // Build option text with comprehensive info
+            const optionText = `${workloadIcon} ${member.full_name} - ${member.active_tasks} active, ${member.completed_tasks || 0} completed (${member.efficiency_score || 0}% efficiency)`;
+
+            option.textContent = optionText;
+            option.setAttribute('data-member-data', JSON.stringify(member));
+
+            // Add styling based on workload
+            if (member.workload_level === 'High') {
+                option.style.color = '#dc3545'; // Red for high workload
+                option.style.fontWeight = 'bold';
+            } else if (member.workload_level === 'Low') {
+                option.style.color = '#198754'; // Green for low workload
+            }
+
+            return option;
+        }
+
+        function updateAssignmentPreview(selectedUserId) {
+            const assignmentPreview = document.getElementById('assignmentPreview');
+            const assignmentDetails = document.getElementById('assignmentDetails');
+
+            if (!selectedUserId) {
+                assignmentPreview.style.display = 'none';
+                return;
+            }
+
+            const selectedOption = document.querySelector(`#cardAssignTo option[value="${selectedUserId}"]`);
+            if (!selectedOption) return;
+
+            const memberData = JSON.parse(selectedOption.getAttribute('data-member-data'));
+
+            // Create detailed assignment preview
+            let recommendation = '';
+            let alertClass = 'alert-info';
+
+            if (memberData.workload_level === 'Low') {
+                recommendation = `✅ Excellent choice! ${memberData.full_name} has low workload and ${memberData.efficiency_score || 0}% efficiency.`;
+                alertClass = 'alert-success';
+            } else if (memberData.workload_level === 'Medium') {
+                recommendation = `⚠️ Good option. ${memberData.full_name} has moderate workload but maintains ${memberData.efficiency_score || 0}% efficiency.`;
+                alertClass = 'alert-warning';
+            } else {
+                recommendation = `🚨 Consider carefully. ${memberData.full_name} is heavily loaded with ${memberData.active_tasks} active tasks.`;
+                alertClass = 'alert-danger';
+            }
+
+            assignmentDetails.innerHTML = `
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <strong>👤 ${memberData.full_name}</strong><br>
+                        <small class="text-muted">${memberData.role} • ${memberData.username}</small>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-between">
+                            <span>Active Tasks:</span>
+                            <strong class="text-primary">${memberData.active_tasks}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Completed:</span>
+                            <strong class="text-success">${memberData.completed_tasks || 0}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Efficiency:</span>
+                            <strong class="text-info">${memberData.efficiency_score || 0}%</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Avg Hours:</span>
+                            <strong class="text-warning">${memberData.avg_completion_hours || 'N/A'}</strong>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="alert ${alertClass} mb-0">
+                            <strong>Recommendation:</strong> ${recommendation}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Update alert class
+            assignmentPreview.className = `alert ${alertClass}`;
+            assignmentPreview.style.display = 'block';
+        }
+
+        function submitCreateCard() {
+            const form = document.getElementById('createCardForm');
+            const formData = new FormData(form);
+            const createBtn = document.getElementById('createCardBtn');
+
+            createBtn.disabled = true;
+
+            // Convert FormData to JSON
+            const data = {};
+            formData.forEach((value, key) => {
+                if (value.trim() !== '') {
+                    data[key] = value;
+                }
+            });
+
+            fetch('/api/teamlead/cards', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // If user is assigned, create assignment
+                    if (formData.get('assigned_to') && formData.get('assigned_to').trim() !== '') {
+                        const assignmentData = {
+                            card_id: data.card_id,
+                            user_id: formData.get('assigned_to')
+                        };
+
+                        // Create assignment
+                        fetch('/api/teamlead/cards/assign', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                            },
+                            body: JSON.stringify(assignmentData)
+                        })
+                        .then(response => response.json())
+                        .then(assignData => {
+                            if (assignData.success) {
+                                showNotification('success', 'Card created and assigned successfully!', `${data.message} Assigned to ${assignData.assigned_user.full_name}.`);
+                            } else {
+                                showNotification('warning', 'Card created but assignment failed', `Card was created successfully but couldn't assign to user: ${assignData.message}`);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error assigning card:', error);
+                            showNotification('warning', 'Card created but assignment failed', 'Card was created successfully but assignment failed');
+                        });
+                    } else {
+                        // Success notification for card creation only
+                        showNotification('success', 'Card created successfully!', data.message);
+                    }
+
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('createCardModal'));
+                    modal.hide();
+
+                    // Reset form
+                    form.reset();
+                    document.getElementById('assignmentPreview').style.display = 'none';
+
+                    // Refresh cards list if on cards page
+                    if (typeof loadCards === 'function') {
+                        loadCards();
+                    }
+
+                    // Refresh current project data
+                    loadCurrentProject();
+
+                } else {
+                    showNotification('error', 'Error creating card', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error creating card:', error);
+                showNotification('error', 'Error creating card', 'An unexpected error occurred');
+            })
+            .finally(() => {
+                // Re-enable button
+                createBtn.disabled = false;
+                createBtn.innerHTML = '<i class="bi bi-plus-lg me-2"></i>Create Card';
+            });
+        }
+
+        function showNotification(type, title, message) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+
+            notification.innerHTML = `
+                <strong>${title}</strong> ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+
+            document.body.appendChild(notification);
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+
+        function initializeCreateCardForm() {
+            const assignSelect = document.getElementById('cardAssignTo');
+            const assignmentPreview = document.getElementById('assignmentPreview');
+            const assignmentDetails = document.getElementById('assignmentDetails');
+            const boardSelect = document.getElementById('cardBoard');
+            const cardTitle = document.getElementById('cardTitle');
+            const titleCharCount = document.getElementById('titleCharCount');
+            const cardPriority = document.getElementById('cardPriority');
+            const boardProjectInfo = document.getElementById('boardProjectInfo');
+            const boardProjectName = document.getElementById('boardProjectName');
+
+            // Character counter for title with animation
+            if (cardTitle && titleCharCount) {
+                cardTitle.addEventListener('input', function() {
+                    const length = this.value.length;
+                    const maxLength = 100;
+                    titleCharCount.textContent = `${length}/${maxLength}`;
+
+                    // Add warning colors
+                    titleCharCount.classList.remove('warning', 'danger');
+                    if (length > 80) {
+                        titleCharCount.classList.add('danger');
+                    } else if (length > 60) {
+                        titleCharCount.classList.add('warning');
+                    }
+
+                    // Add typing animation
+                    this.style.transform = 'scale(1.02)';
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1)';
+                    }, 100);
+                });
+            }
+
+            // Priority selection with visual feedback
+            if (cardPriority) {
+                cardPriority.addEventListener('change', function() {
+                    const selectedOption = this.options[this.selectedIndex];
+                    const color = selectedOption.getAttribute('data-color');
+
+                    // Animate selection
+                    this.style.transform = 'scale(1.05)';
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1)';
+                    }, 200);
+
+                    // Visual feedback
+                    if (color) {
+                        this.className = `form-select border-start-0 ps-0 border-${color}`;
+                        setTimeout(() => {
+                            this.className = 'form-select border-start-0 ps-0';
+                        }, 1000);
+                    }
+                });
+            }
+
+            // Add event listener for board selection
+            if (boardSelect) {
+                boardSelect.addEventListener('change', function() {
+                    const selectedBoardId = this.value;
+
+                    // Show loading state
+                    assignSelect.classList.add('loading');
+                    assignSelect.disabled = true;
+
+                    if (selectedBoardId) {
+                        // Get selected board details
+                        const selectedOption = this.options[this.selectedIndex];
+                        const boardName = selectedOption.textContent;
+
+                        // Show project info
+                        if (boardProjectInfo && boardProjectName) {
+                            boardProjectName.textContent = `This card will be added to: ${boardName}`;
+                            boardProjectInfo.style.display = 'block';
+                        }
+
+                        // Reload team members based on selected board
+                        loadTeamMembersForAssignment(selectedBoardId);
+
+                        // Enable assign select after loading
+                        setTimeout(() => {
+                            assignSelect.classList.remove('loading');
+                            assignSelect.disabled = false;
+                        }, 500);
+                    } else {
+                        // Reset assignment select when no board is selected
+                        assignSelect.innerHTML = '<option value="">� No Assignment - Keep Unassigned</option>';
+                        assignmentPreview.style.display = 'none';
+                        if (boardProjectInfo) {
+                            boardProjectInfo.style.display = 'none';
+                        }
+                        assignSelect.classList.remove('loading');
+                        assignSelect.disabled = false;
+                    }
+                });
+            }
+
+            if (assignSelect) {
+                assignSelect.addEventListener('change', function() {
+                    if (this.value) {
+                        const selectedOption = this.options[this.selectedIndex];
+                        const memberData = JSON.parse(selectedOption.getAttribute('data-member-data') || '{}');
+
+                        // Enhanced assignment preview with animations
+                        assignmentDetails.innerHTML = `
+                            <div class="d-flex align-items-center p-3 rounded" style="background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                <div class="me-3">
+                                    <div class="avatar-placeholder text-white rounded-circle d-flex align-items-center justify-content-center"
+                                         style="width: 50px; height: 50px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);">
+                                        <span class="fs-4 fw-bold">${memberData.full_name ? memberData.full_name.charAt(0).toUpperCase() : 'U'}</span>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1 fw-bold">${memberData.full_name || 'Unknown'}</h6>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge ${memberData.role === 'Developer' ? 'bg-primary' : 'bg-info'}">${memberData.role || 'Member'}</span>
+                                        <small class="text-muted">
+                                            <i class="bi bi-clipboard-check me-1"></i>${memberData.active_assignments || 0} active tasks
+                                        </small>
+                                        ${memberData.workload_level ? `
+                                            <span class="badge bg-${memberData.workload_color || 'secondary'} rounded-pill">
+                                                ${memberData.workload_level} Workload
+                                            </span>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <i class="bi bi-check-circle-fill text-success fs-3"></i>
+                                </div>
+                            </div>
+                        `;
+                        assignmentPreview.style.display = 'block';
+
+                        // Scroll to preview smoothly
+                        setTimeout(() => {
+                            assignmentPreview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }, 100);
+                    } else {
+                        assignmentPreview.style.display = 'none';
+                    }
+                });
+            }
+
+            // Handle form submission
+            const createCardForm = document.getElementById('createCardForm');
+            if (createCardForm) {
+                createCardForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    submitCreateCard();
+                });
+
+                // Add smooth focus effects
+                const formInputs = createCardForm.querySelectorAll('.form-control, .form-select');
+            formInputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.classList.add('focused');
+                });
+                input.addEventListener('blur', function() {
+                    this.parentElement.classList.remove('focused');
+                });
+            });
+            }
         }
 
         function viewProjectDetails(projectId) {
@@ -3798,18 +6116,14 @@
 
         function loadBoards() {
             const boardsGrid = document.getElementById('boards-grid');
-            const loadingElement = document.getElementById('boards-loading');
             const emptyElement = document.getElementById('boards-empty');
 
-            // Show loading
-            loadingElement.style.display = 'block';
             emptyElement.style.display = 'none';
             boardsGrid.innerHTML = '';
 
             fetch('/api/teamlead/boards')
                 .then(response => response.json())
                 .then(data => {
-                    loadingElement.style.display = 'none';
 
                     if (data.success && data.boards.length > 0) {
                         let boardsHTML = '';
@@ -3886,7 +6200,6 @@
                 })
                 .catch(error => {
                     console.error('Error loading boards:', error);
-                    loadingElement.style.display = 'none';
                     boardsGrid.innerHTML = `
                         <div class="col-12 text-center py-5">
                             <div class="alert alert-danger">
@@ -3906,12 +6219,9 @@
         function loadCards() {
             const cardsGrid = document.getElementById('cards-grid');
             const cardsStatistics = document.getElementById('cards-statistics');
-            const loadingElement = document.getElementById('cards-loading');
             const emptyElement = document.getElementById('cards-empty');
             const projectFilter = document.getElementById('cardProjectFilter');
 
-            // Show loading
-            loadingElement.style.display = 'block';
             emptyElement.style.display = 'none';
             cardsGrid.innerHTML = '';
             cardsStatistics.innerHTML = '';
@@ -3924,7 +6234,6 @@
                     return response.json();
                 })
                 .then(data => {
-                    loadingElement.style.display = 'none';
 
                     if (data.success && data.cards && data.cards.length > 0) {
                         // Populate project filter
@@ -3941,7 +6250,6 @@
                 })
                 .catch(error => {
                     console.error('Error loading cards:', error);
-                    loadingElement.style.display = 'none';
                     cardsGrid.innerHTML = `
                         <div class="col-12 text-center py-5">
                             <div class="alert alert-danger">
@@ -4118,6 +6426,1331 @@
         function viewCard(cardId) {
             // TODO: Implement card detail view
             console.log('View card:', cardId);
+        }
+
+        // My Cards Functions
+        function loadMyCards() {
+            const myCardsGrid = document.getElementById('my-cards-grid');
+            const loadingElement = document.getElementById('my-cards-loading');
+            const emptyElement = document.getElementById('my-cards-empty');
+
+            // Show loading state
+            loadingElement.style.display = 'block';
+            emptyElement.style.display = 'none';
+            myCardsGrid.innerHTML = '';
+
+            fetch('/api/teamlead/my-cards')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    loadingElement.style.display = 'none';
+
+                    if (data.success && data.data) {
+                        // Update statistics
+                        updateMyCardsStatistics(data.data);
+
+                        // Display cards by status
+                        displayMyCards(data.data);
+
+                        // Populate project filter
+                        populateMyCardsProjectFilter(data.data);
+                    } else {
+                        emptyElement.style.display = 'block';
+                        updateMyCardsStatistics({
+                            todo: [],
+                            in_progress: [],
+                            review: [],
+                            done: []
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading my cards:', error);
+                    loadingElement.style.display = 'none';
+                    myCardsGrid.innerHTML = `
+                        <div class="col-12 text-center py-5">
+                            <div class="alert alert-danger">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                Failed to load your cards: ${error.message}
+                            </div>
+                        </div>
+                    `;
+                });
+        }
+
+        function updateMyCardsStatistics(cardsByStatus) {
+            document.getElementById('myCardsTodoCount').textContent = cardsByStatus.todo ? cardsByStatus.todo.length : 0;
+            document.getElementById('myCardsInProgressCount').textContent = cardsByStatus.in_progress ? cardsByStatus.in_progress.length : 0;
+            document.getElementById('myCardsReviewCount').textContent = cardsByStatus.review ? cardsByStatus.review.length : 0;
+            document.getElementById('myCardsDoneCount').textContent = cardsByStatus.done ? cardsByStatus.done.length : 0;
+        }
+
+        function displayMyCards(cardsByStatus) {
+            const myCardsGrid = document.getElementById('my-cards-grid');
+            let html = '';
+
+            // Group cards by status and display them
+            const statusOrder = ['todo', 'in_progress', 'review', 'done'];
+            const statusLabels = {
+                'todo': 'To Do',
+                'in_progress': 'In Progress',
+                'review': 'Review',
+                'done': 'Done'
+            };
+
+            statusOrder.forEach(status => {
+                const cards = cardsByStatus[status] || [];
+                if (cards.length > 0) {
+                    html += `
+                        <div class="col-12 mb-4">
+                            <h5 class="mb-3"><i class="bi bi-circle-fill text-${getStatusColor(status)} me-2"></i>${statusLabels[status]} (${cards.length})</h5>
+                            <div class="row">
+                    `;
+
+                    cards.forEach(card => {
+                        html += createMyCardHTML(card);
+                    });
+
+                    html += `
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            if (html === '') {
+                document.getElementById('my-cards-empty').style.display = 'block';
+            } else {
+                myCardsGrid.innerHTML = html;
+            }
+        }
+
+        function createMyCardHTML(card) {
+            const priorityColor = getPriorityColor(card.priority);
+            const statusColor = getStatusColor(card.status);
+
+            return `
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header d-flex justify-content-between align-items-center py-2">
+                            <small class="text-muted">${card.project_name || 'No Project'}</small>
+                            <span class="badge bg-${priorityColor}">${card.priority}</span>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title mb-2">${card.title || card.card_title}</h6>
+                            <p class="card-text text-muted small mb-3" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                ${card.description || 'No description'}
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-${statusColor}">${card.status.replace('_', ' ')}</span>
+                                <small class="text-muted">${card.board_name || 'No Board'}</small>
+                            </div>
+                            ${card.due_date ? `
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <small class="text-muted">
+                                        <i class="bi bi-calendar me-1"></i>
+                                        Due: ${formatDate(card.due_date)}
+                                    </small>
+                                </div>
+                            ` : ''}
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    Created: ${formatDate(card.created_at)}
+                                </small>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary btn-sm" onclick="viewCardDetails(${card.id || card.card_id})" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="editCard(${card.id || card.card_id})" title="Edit Card">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function populateMyCardsProjectFilter(cardsByStatus) {
+            const projectFilter = document.getElementById('myCardsProjectFilter');
+            const projects = new Set();
+
+            // Collect all unique projects
+            Object.values(cardsByStatus).forEach(cards => {
+                cards.forEach(card => {
+                    if (card.project_name) {
+                        projects.add(JSON.stringify({
+                            id: card.project_id || card.id,
+                            name: card.project_name
+                        }));
+                    }
+                });
+            });
+
+            // Clear and populate filter
+            projectFilter.innerHTML = '<option value="">All Projects</option>';
+            Array.from(projects).forEach(projectStr => {
+                const project = JSON.parse(projectStr);
+                const option = document.createElement('option');
+                option.value = project.id;
+                option.textContent = project.name;
+                projectFilter.appendChild(option);
+            });
+        }
+
+        function refreshMyCards() {
+            loadMyCards();
+        }
+
+        function applyMyCardsFilters() {
+            // This would filter the displayed cards based on selected filters
+            // Implementation would depend on specific requirements
+            loadMyCards(); // For now, just reload
+        }
+
+        function clearMyCardsFilters() {
+            document.getElementById('myCardsStatusFilter').value = '';
+            document.getElementById('myCardsProjectFilter').value = '';
+            document.getElementById('myCardsPriorityFilter').value = '';
+            loadMyCards();
+        }
+
+        // Card Review Functions
+        function loadAssignedCards() {
+            loadPendingReviews();
+        }
+
+        function loadPendingReviews() {
+            const reviewsGrid = document.getElementById('pending-reviews-grid');
+            const emptyElement = document.getElementById('reviews-empty');
+
+            emptyElement.style.display = 'none';
+            reviewsGrid.innerHTML = '';
+
+            fetch('/api/teamlead/pending-reviews')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+
+                    if (data.success && data.data && data.data.length > 0) {
+                        // Update statistics
+                        updateReviewStatistics(data.data);
+
+                        // Display pending reviews
+                        displayPendingReviews(data.data);
+                    } else {
+                        emptyElement.style.display = 'block';
+                        updateReviewStatistics([]);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading pending reviews:', error);
+                    reviewsGrid.innerHTML = `
+                        <div class="col-12 text-center py-5">
+                            <div class="alert alert-danger">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                Failed to load pending reviews: ${error.message}
+                            </div>
+                        </div>
+                    `;
+                });
+        }
+
+        function updateReviewStatistics(reviews) {
+            document.getElementById('pendingReviewsCount').textContent = reviews.length;
+            document.getElementById('approvedTodayCount').textContent = '0'; // TODO: implement
+            document.getElementById('rejectedTodayCount').textContent = '0'; // TODO: implement
+            document.getElementById('avgReviewTime').textContent = '2h'; // TODO: implement
+        }
+
+        function displayPendingReviews(reviews) {
+            const reviewsGrid = document.getElementById('pending-reviews-grid');
+
+            reviewsGrid.innerHTML = reviews.map(card => {
+                const submitDate = new Date(card.submitted_at);
+                const timeAgo = getTimeAgo(submitDate);
+                const priorityClass = getPriorityClass(card.priority);
+
+                return `
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100 border-warning">
+                            <div class="card-header bg-warning bg-opacity-10">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-${priorityClass}">${card.priority.toUpperCase()}</span>
+                                    <small class="text-muted">${timeAgo}</small>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h6 class="card-title">${card.title}</h6>
+                                <p class="card-text small text-muted">${card.description}</p>
+
+                                <div class="mb-3">
+                                    <small class="text-muted">
+                                        <i class="bi bi-person"></i> ${card.submitted_by_name}<br>
+                                        <i class="bi bi-kanban"></i> ${card.board_name}<br>
+                                        <i class="bi bi-folder"></i> ${card.project_name}
+                                    </small>
+                                </div>
+
+                                ${card.comment ? `
+                                    <div class="alert alert-light p-2 mb-3">
+                                        <small><i class="bi bi-chat-left-text"></i> <strong>Comment:</strong><br>
+                                        ${card.comment}</small>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-success btn-sm" onclick="approveCard(${card.card_id}, '${card.title}')">
+                                        <i class="bi bi-check-lg"></i> Approve
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" onclick="rejectCard(${card.card_id}, '${card.title}')">
+                                        <i class="bi bi-x-lg"></i> Reject
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function refreshPendingReviews() {
+            loadPendingReviews();
+        }
+
+        let currentReviewCard = null;
+        let currentReviewAction = null;
+
+        function approveCard(cardId, cardTitle) {
+            showFeedbackModal(cardId, cardTitle, 'approve');
+        }
+
+        function rejectCard(cardId, cardTitle) {
+            showFeedbackModal(cardId, cardTitle, 'reject');
+        }
+
+        function showFeedbackModal(cardId, cardTitle, action) {
+            currentReviewCard = cardId;
+            currentReviewAction = action;
+
+            // Update modal content based on action
+            const modal = document.getElementById('cardFeedbackModal');
+            const header = document.getElementById('feedbackModalHeader');
+            const title = document.getElementById('cardFeedbackModalLabel');
+            const cardTitleEl = document.getElementById('feedbackCardTitle');
+            const cardInfoEl = document.getElementById('feedbackCardInfo');
+            const feedbackRequired = document.getElementById('feedbackRequired');
+            const feedbackHelp = document.getElementById('feedbackHelp');
+            const submitBtn = document.getElementById('submitFeedbackBtn');
+            const approveInfo = document.getElementById('approveInfo');
+            const rejectInfo = document.getElementById('rejectInfo');
+            const feedbackText = document.getElementById('feedbackText');
+
+            // Reset form
+            feedbackText.value = '';
+
+            if (action === 'approve') {
+                header.className = 'modal-header bg-success text-white';
+                title.innerHTML = '<i class="bi bi-check-circle me-2"></i>Approve Card';
+                feedbackRequired.textContent = '(optional)';
+                feedbackHelp.textContent = 'Add positive feedback or comments (optional).';
+                submitBtn.className = 'btn btn-success';
+                submitBtn.innerHTML = '<i class="bi bi-check-lg me-2"></i>Approve Card';
+                approveInfo.classList.remove('d-none');
+                rejectInfo.classList.add('d-none');
+                feedbackText.placeholder = 'Great work! Add any positive feedback...';
+            } else {
+                header.className = 'modal-header bg-danger text-white';
+                title.innerHTML = '<i class="bi bi-x-circle me-2"></i>Reject Card';
+                feedbackRequired.textContent = '(required)';
+                feedbackHelp.textContent = 'Please provide specific feedback on what needs to be improved.';
+                submitBtn.className = 'btn btn-danger';
+                submitBtn.innerHTML = '<i class="bi bi-x-lg me-2"></i>Reject Card';
+                approveInfo.classList.add('d-none');
+                rejectInfo.classList.remove('d-none');
+                feedbackText.placeholder = 'Please explain what needs to be improved...';
+                feedbackText.required = true;
+            }
+
+            cardTitleEl.textContent = cardTitle;
+            cardInfoEl.textContent = `Card ID: ${cardId} • Action: ${action.charAt(0).toUpperCase() + action.slice(1)}`;
+
+            // Show modal
+            const modalInstance = new bootstrap.Modal(modal);
+            modalInstance.show();
+        }
+
+        // Handle feedback form submission
+        document.getElementById('cardFeedbackForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const feedback = document.getElementById('feedbackText').value.trim();
+
+            // Validate required feedback for reject
+            if (currentReviewAction === 'reject' && !feedback) {
+                showNotification('error', 'Feedback Required', 'Please provide feedback when rejecting a card.');
+                return;
+            }
+
+            const endpoint = currentReviewAction === 'approve' ? 'approve' : 'reject';
+
+            fetch(`/api/teamlead/cards/${currentReviewCard}/${endpoint}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ feedback: feedback })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const actionText = currentReviewAction === 'approve' ? 'approved' : 'rejected';
+                    showNotification('success', `Card ${actionText}`, data.message);
+
+                    // Close modal
+                    bootstrap.Modal.getInstance(document.getElementById('cardFeedbackModal')).hide();
+
+                    // Refresh the list
+                    loadPendingReviews();
+                } else {
+                    showNotification('error', 'Error', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('error', 'Error', `Failed to ${currentReviewAction} card`);
+            });
+        });
+
+        // Show notification function
+        function showNotification(type, title, message) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show`;
+            notification.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 400px;';
+            notification.innerHTML = `
+                <strong>${title}:</strong> ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+
+            document.body.appendChild(notification);
+
+            // Auto dismiss after 5 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 5000);
+        }        function getPriorityClass(priority) {
+            switch(priority) {
+                case 'high': return 'danger';
+                case 'medium': return 'warning';
+                case 'low': return 'info';
+                default: return 'secondary';
+            }
+        }
+
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 60) {
+                return `${diffMins}m ago`;
+            } else if (diffHours < 24) {
+                return `${diffHours}h ago`;
+            } else {
+                return `${diffDays}d ago`;
+            }
+        }
+
+        function displayAssignmentStatistics(statistics) {
+            const statisticsContainer = document.getElementById('assignment-statistics');
+
+            const statsHTML = `
+                <div class="col-lg-2 col-md-4 col-6 mb-3">
+                    <div class="card stat-card">
+                        <div class="card-body text-center">
+                            <div class="stat-number text-primary">${statistics.total_assignments}</div>
+                            <div class="stat-label">Total Assignments</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6 mb-3">
+                    <div class="card stat-card">
+                        <div class="card-body text-center">
+                            <div class="stat-number text-warning">${statistics.assigned_status}</div>
+                            <div class="stat-label">Assigned</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6 mb-3">
+                    <div class="card stat-card">
+                        <div class="card-body text-center">
+                            <div class="stat-number text-info">${statistics.in_progress_status}</div>
+                            <div class="stat-label">In Progress</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6 mb-3">
+                    <div class="card stat-card">
+                        <div class="card-body text-center">
+                            <div class="stat-number text-success">${statistics.completed_status}</div>
+                            <div class="stat-label">Completed</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6 mb-3">
+                    <div class="card stat-card">
+                        <div class="card-body text-center">
+                            <div class="stat-number text-danger">${statistics.overdue_assignments}</div>
+                            <div class="stat-label">Overdue</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6 mb-3">
+                    <div class="card stat-card">
+                        <div class="card-body text-center">
+                            <div class="stat-number text-secondary">${statistics.unique_assignees}</div>
+                            <div class="stat-label">Team Members</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            statisticsContainer.innerHTML = statsHTML;
+        }
+
+        function displayAssignedCards(assignedCards) {
+            const assignedCardsGrid = document.getElementById('assigned-cards-grid');
+            let cardsHTML = '';
+
+            assignedCards.forEach(assignment => {
+                const dueDate = assignment.due_date ? new Date(assignment.due_date).toLocaleDateString() : 'No due date';
+                const assignedDate = new Date(assignment.assigned_at).toLocaleDateString();
+                const isOverdue = assignment.is_overdue == 1;
+                const priority = assignment.priority || 'medium';
+                const totalSubtasks = parseInt(assignment.total_subtasks) || 0;
+                const completedSubtasks = parseInt(assignment.completed_subtasks) || 0;
+                const subtasksProgress = totalSubtasks > 0 ? Math.round((completedSubtasks / totalSubtasks) * 100) : 0;
+
+                cardsHTML += `
+                    <div class="col-lg-4 col-md-6 mb-4 assignment-item" data-status="${assignment.assignment_status}" data-assignee="${assignment.assigned_to}">
+                        <div class="card assignment-card h-100 ${isOverdue ? 'border-danger' : ''}">
+                            <div class="card-header d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">${assignment.title || 'Untitled'}</h6>
+                                    <small class="text-muted">${assignment.project_name || 'Unknown Project'} • ${assignment.board_name || 'Unknown Board'}</small>
+                                </div>
+                                <div class="d-flex flex-column align-items-end">
+                                    <span class="badge ${getAssignmentStatusBadgeClass(assignment.assignment_status)} mb-1">${formatAssignmentStatus(assignment.assignment_status)}</span>
+                                    <span class="badge ${getPriorityBadgeClass(priority)}">${priority.toUpperCase()}</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                ${assignment.description ? `<p class="card-text small text-muted">${assignment.description.substring(0, 100)}${assignment.description.length > 100 ? '...' : ''}</p>` : ''}
+
+                                <div class="mb-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-person-fill me-2 text-primary"></i>
+                                        <strong>${assignment.assigned_to}</strong>
+                                    </div>
+                                    <small class="text-muted">Assigned on: ${assignedDate}</small>
+                                </div>
+
+                                ${totalSubtasks > 0 ? `
+                                    <div class="mb-2">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <small class="text-muted">Subtasks Progress</small>
+                                            <small class="text-muted">${completedSubtasks}/${totalSubtasks}</small>
+                                        </div>
+                                        <div class="progress" style="height: 4px;">
+                                            <div class="progress-bar bg-success" role="progressbar"
+                                                 style="width: ${subtasksProgress}%" aria-valuenow="${subtasksProgress}"
+                                                 aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                    </div>
+                                ` : ''}
+
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge ${getStatusBadgeClass(assignment.card_status)}">${formatStatus(assignment.card_status)}</span>
+                                    ${(parseInt(assignment.comments_count) > 0) ? `
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-chat-dots me-1"></i>
+                                            <small class="text-muted">${assignment.comments_count}</small>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <small class="text-muted">
+                                        <i class="bi bi-calendar"></i>
+                                        Due: ${dueDate}
+                                    </small>
+                                    ${isOverdue ? '<small class="text-danger"><i class="bi bi-exclamation-triangle"></i> Overdue</small>' : ''}
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="viewAssignmentDetail(${assignment.card_id}, '${assignment.assigned_username}')">
+                                        <i class="bi bi-eye"></i> View Details
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary" onclick="viewCard(${assignment.card_id})">
+                                        <i class="bi bi-card-text"></i> Card
+                                    </button>
+                                </div>
+
+                                <!-- Approval/Rejection Actions -->
+                                ${assignment.assignment_status === 'completed' && assignment.approval_status === 'pending' ? `
+                                    <div class="mt-3 pt-2 border-top">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <small class="text-warning fw-bold">
+                                                <i class="bi bi-clock-history"></i> Pending Review
+                                            </small>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-sm btn-success flex-fill" onclick="approveCard(${assignment.card_id}, '${assignment.assigned_username}')">
+                                                <i class="bi bi-check-circle"></i> Approve
+                                            </button>
+                                            <button class="btn btn-sm btn-danger flex-fill" onclick="rejectCard(${assignment.card_id}, '${assignment.assigned_username}')">
+                                                <i class="bi bi-x-circle"></i> Reject
+                                            </button>
+                                        </div>
+                                    </div>
+                                ` : assignment.approval_status === 'approved' ? `
+                                    <div class="mt-3 pt-2 border-top">
+                                        <div class="d-flex align-items-center text-success">
+                                            <i class="bi bi-check-circle-fill me-2"></i>
+                                            <small class="fw-bold">Approved</small>
+                                        </div>
+                                    </div>
+                                ` : assignment.approval_status === 'rejected' ? `
+                                    <div class="mt-3 pt-2 border-top">
+                                        <div class="d-flex align-items-center text-danger">
+                                            <i class="bi bi-x-circle-fill me-2"></i>
+                                            <small class="fw-bold">Rejected</small>
+                                        </div>
+                                        <button class="btn btn-sm btn-outline-primary mt-2 w-100" onclick="requestRevision(${assignment.card_id}, '${assignment.assigned_username}')">
+                                            <i class="bi bi-arrow-clockwise"></i> Request Revision
+                                        </button>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            assignedCardsGrid.innerHTML = cardsHTML;
+        }
+
+        function populateAssigneeFilter(assignments, selectElement) {
+            const assignees = [...new Set(assignments.map(assignment => assignment.assigned_to))];
+
+            selectElement.innerHTML = '<option value="">All Assignees</option>';
+            assignees.forEach(assignee => {
+                selectElement.innerHTML += `<option value="${assignee}">${assignee}</option>`;
+            });
+        }
+
+        function getAssignmentStatusBadgeClass(status) {
+            switch(status) {
+                case 'assigned': return 'bg-warning';
+                case 'in_progress': return 'bg-info';
+                case 'completed': return 'bg-success';
+                default: return 'bg-secondary';
+            }
+        }
+
+        function formatAssignmentStatus(status) {
+            return status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+        }
+
+        function filterAssignedCards() {
+            const statusFilter = document.getElementById('assignmentStatusFilter').value;
+            const assigneeFilter = document.getElementById('assigneeFilter').value;
+            const assignmentItems = document.querySelectorAll('.assignment-item');
+
+            assignmentItems.forEach(item => {
+                const assignmentStatus = item.getAttribute('data-status');
+                const assignee = item.getAttribute('data-assignee');
+
+                const statusMatch = !statusFilter || assignmentStatus === statusFilter;
+                const assigneeMatch = !assigneeFilter || assignee === assigneeFilter;
+
+                if (statusMatch && assigneeMatch) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function viewAssignmentDetail(cardId, username) {
+            // TODO: Implement assignment detail view
+            console.log('View assignment detail:', cardId, username);
+        }
+
+        // Assigned History Functions
+        let currentHistoryPage = 1;
+        let currentHistoryFilters = {};
+
+        function loadAssignmentHistory(page = 1, filters = {}) {
+            currentHistoryPage = page;
+            currentHistoryFilters = filters;
+
+            const params = new URLSearchParams({
+                page: page,
+                limit: 20,
+                ...filters
+            });
+
+            fetch('/api/teamlead/assigned-history?' + params)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayAssignmentHistory(data);
+                        updateHistoryStatistics(data.summary);
+                        updateHistoryPagination(data.pagination);
+                        populateHistoryFilters(data.filters);
+                    } else {
+                        console.error('Error loading assignment history:', data.message);
+                        showNoAssignmentHistory();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading assignment history:', error);
+                    showNoAssignmentHistory();
+                });
+        }
+
+        function displayAssignmentHistory(data) {
+            const tableBody = document.getElementById('assignmentHistoryTableBody');
+            const noHistoryDiv = document.getElementById('no-assignment-history');
+
+            if (!data.assignment_history || data.assignment_history.length === 0) {
+                showNoAssignmentHistory();
+                return;
+            }
+
+            noHistoryDiv.style.display = 'none';
+
+            tableBody.innerHTML = data.assignment_history.map(history => {
+                const assignedDate = new Date(history.assigned_at).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+
+                const duration = calculateDuration(history.assigned_at, history.completed_at);
+                const statusBadge = getAssignmentStatusBadge(history.assignment_status);
+                const priorityBadge = getPriorityBadge(history.priority);
+
+                return `
+                    <tr class="history-item" data-status="${history.assignment_status}" data-user="${history.user_id}" data-project="${history.project_id}">
+                        <td>
+                            <div>
+                                <strong>${history.title}</strong>
+                                <br>
+                                <small class="text-muted">${history.board_name}</small>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="user-avatar me-2">
+                                    <i class="bi bi-person-circle text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-medium">${history.assigned_to}</div>
+                                    <small class="text-muted">@${history.assigned_username}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div>
+                                <strong>${history.project_name}</strong>
+                            </div>
+                        </td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            <div>
+                                <div>${assignedDate}</div>
+                                ${history.started_at ? `<small class="text-muted">Started: ${new Date(history.started_at).toLocaleDateString()}</small>` : ''}
+                                ${history.completed_at ? `<small class="text-success d-block">Completed: ${new Date(history.completed_at).toLocaleDateString()}</small>` : ''}
+                            </div>
+                        </td>
+                        <td>
+                            <div>
+                                <strong>${duration}</strong>
+                                ${history.is_overdue ? '<br><small class="text-danger">Overdue</small>' : ''}
+                            </div>
+                        </td>
+                        <td>${priorityBadge}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-primary" onclick="viewHistoryDetail(${history.card_id})" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn btn-outline-secondary" onclick="viewAssignmentTimeline(${history.card_id}, ${history.user_id})" title="View Timeline">
+                                    <i class="bi bi-clock-history"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            updateHistoryInfo(data.pagination);
+        }
+
+        function updateHistoryStatistics(summary) {
+            if (!summary) return;
+
+            document.getElementById('totalAssignments').textContent = summary.total_assignments || 0;
+            document.getElementById('assignedCount').textContent = summary.assigned_count || 0;
+            document.getElementById('inProgressCount').textContent = summary.in_progress_count || 0;
+            document.getElementById('completedCount').textContent = summary.completed_count || 0;
+            document.getElementById('overdueCount').textContent = summary.overdue_count || 0;
+
+            const avgHours = summary.avg_completion_hours ? Math.round(summary.avg_completion_hours) : 0;
+            document.getElementById('avgCompletionTime').textContent = avgHours + 'h';
+        }
+
+        function updateHistoryPagination(pagination) {
+            const paginationContainer = document.getElementById('assignmentHistoryPagination');
+
+            if (pagination.total_pages <= 1) {
+                paginationContainer.innerHTML = '';
+                return;
+            }
+
+            let paginationHTML = '';
+
+            // Previous button
+            paginationHTML += `
+                <li class="page-item ${pagination.current_page === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="loadAssignmentHistory(${pagination.current_page - 1}, currentHistoryFilters)">Previous</a>
+                </li>
+            `;
+
+            // Page numbers
+            const startPage = Math.max(1, pagination.current_page - 2);
+            const endPage = Math.min(pagination.total_pages, pagination.current_page + 2);
+
+            if (startPage > 1) {
+                paginationHTML += `<li class="page-item"><a class="page-link" href="#" onclick="loadAssignmentHistory(1, currentHistoryFilters)">1</a></li>`;
+                if (startPage > 2) {
+                    paginationHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHTML += `
+                    <li class="page-item ${i === pagination.current_page ? 'active' : ''}">
+                        <a class="page-link" href="#" onclick="loadAssignmentHistory(${i}, currentHistoryFilters)">${i}</a>
+                    </li>
+                `;
+            }
+
+            if (endPage < pagination.total_pages) {
+                if (endPage < pagination.total_pages - 1) {
+                    paginationHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                }
+                paginationHTML += `<li class="page-item"><a class="page-link" href="#" onclick="loadAssignmentHistory(${pagination.total_pages}, currentHistoryFilters)">${pagination.total_pages}</a></li>`;
+            }
+
+            // Next button
+            paginationHTML += `
+                <li class="page-item ${pagination.current_page === pagination.total_pages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="loadAssignmentHistory(${pagination.current_page + 1}, currentHistoryFilters)">Next</a>
+                </li>
+            `;
+
+            paginationContainer.innerHTML = paginationHTML;
+        }
+
+        function populateHistoryFilters(filters) {
+            // Populate team members filter
+            const userFilter = document.getElementById('historyUserFilter');
+            userFilter.innerHTML = '<option value="">All Members</option>';
+            filters.team_members.forEach(member => {
+                userFilter.innerHTML += `<option value="${member.user_id}">${member.full_name} (@${member.username})</option>`;
+            });
+
+            // Populate projects filter
+            const projectFilter = document.getElementById('historyProjectFilter');
+            projectFilter.innerHTML = '<option value="">All Projects</option>';
+            filters.projects.forEach(project => {
+                projectFilter.innerHTML += `<option value="${project.project_id}">${project.project_name}</option>`;
+            });
+        }
+
+        function updateHistoryInfo(pagination) {
+            const start = ((pagination.current_page - 1) * pagination.per_page) + 1;
+            const end = Math.min(pagination.current_page * pagination.per_page, pagination.total_count);
+            const info = `Showing ${start}-${end} of ${pagination.total_count} assignments`;
+            document.getElementById('assignmentHistoryInfo').textContent = info;
+        }
+
+        function showNoAssignmentHistory() {
+            document.getElementById('assignmentHistoryTableBody').innerHTML = '';
+            document.getElementById('no-assignment-history').style.display = 'block';
+            document.getElementById('assignmentHistoryInfo').textContent = 'Showing 0 of 0 assignments';
+            document.getElementById('assignmentHistoryPagination').innerHTML = '';
+        }
+
+        function applyAssignmentHistoryFilters() {
+            const filters = {
+                status: document.getElementById('historyStatusFilter').value,
+                user_id: document.getElementById('historyUserFilter').value,
+                project_id: document.getElementById('historyProjectFilter').value,
+                date_from: document.getElementById('historyDateFrom').value,
+                date_to: document.getElementById('historyDateTo').value
+            };
+
+            // Remove empty filters
+            Object.keys(filters).forEach(key => {
+                if (!filters[key] || filters[key] === 'all') {
+                    delete filters[key];
+                }
+            });
+
+            loadAssignmentHistory(1, filters);
+        }
+
+        function clearAssignmentHistoryFilters() {
+            document.getElementById('historyStatusFilter').value = 'all';
+            document.getElementById('historyUserFilter').value = '';
+            document.getElementById('historyProjectFilter').value = '';
+            document.getElementById('historyDateFrom').value = '';
+            document.getElementById('historyDateTo').value = '';
+
+            loadAssignmentHistory(1, {});
+        }
+
+        function refreshAssignmentHistory() {
+            loadAssignmentHistory(currentHistoryPage, currentHistoryFilters);
+        }
+
+        function exportAssignmentHistory() {
+            const filters = currentHistoryFilters;
+            const params = new URLSearchParams(filters);
+            params.append('export', 'csv');
+
+            window.open('/api/teamlead/assigned-history?' + params, '_blank');
+        }
+
+        function calculateDuration(startDate, endDate) {
+            const start = new Date(startDate);
+            const end = endDate ? new Date(endDate) : new Date();
+            const diffMs = end - start;
+            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+            const diffDays = Math.floor(diffHours / 24);
+
+            if (diffDays > 0) {
+                return `${diffDays}d ${diffHours % 24}h`;
+            } else {
+                return `${diffHours}h`;
+            }
+        }
+
+        function getAssignmentStatusBadge(status) {
+            const statusConfig = {
+                'assigned': { class: 'bg-info', text: 'Assigned' },
+                'in_progress': { class: 'bg-warning', text: 'In Progress' },
+                'completed': { class: 'bg-success', text: 'Completed' }
+            };
+
+            const config = statusConfig[status] || { class: 'bg-secondary', text: status };
+            return `<span class="badge ${config.class}">${config.text}</span>`;
+        }
+
+        function getPriorityBadge(priority) {
+            const priorityConfig = {
+                'low': { class: 'bg-success', text: 'Low' },
+                'medium': { class: 'bg-warning', text: 'Medium' },
+                'high': { class: 'bg-danger', text: 'High' }
+            };
+
+            const config = priorityConfig[priority] || { class: 'bg-secondary', text: priority };
+            return `<span class="badge ${config.class}">${config.text}</span>`;
+        }
+
+        function viewHistoryDetail(cardId) {
+            // TODO: Implement history detail view
+            console.log('View history detail:', cardId);
+        }
+
+        function viewAssignmentTimeline(cardId, userId) {
+            // TODO: Implement assignment timeline view
+            console.log('View assignment timeline:', cardId, userId);
+        }
+
+        // Card Time Logs Functions
+        let currentTimeLogsPage = 1;
+        let currentTimeLogsFilters = {};
+        let dailyTimeChart = null;
+
+        function loadCardTimeLogs(page = 1, filters = {}) {
+            currentTimeLogsPage = page;
+            currentTimeLogsFilters = filters;
+
+            const params = new URLSearchParams({
+                page: page,
+                limit: 20,
+                ...filters
+            });
+
+            fetch('/api/teamlead/card-time-logs?' + params)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayTimeLogs(data);
+                        updateTimeLogsStatistics(data.summary);
+                        updateTimeLogsPagination(data.pagination);
+                        populateTimeLogsFilters(data.filters);
+                        updateDailyTimeChart(data.daily_stats);
+                        updateTopPerformers(data.top_performers);
+                    } else {
+                        console.error('Error loading time logs:', data.message);
+                        showNoTimeLogs();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading time logs:', error);
+                    showNoTimeLogs();
+                });
+        }
+
+        function displayTimeLogs(data) {
+            const tableBody = document.getElementById('timeLogsTableBody');
+            const noTimeLogsDiv = document.getElementById('no-time-logs');
+
+            if (!data.time_logs || data.time_logs.length === 0) {
+                showNoTimeLogs();
+                return;
+            }
+
+            noTimeLogsDiv.style.display = 'none';
+
+            tableBody.innerHTML = data.time_logs.map(log => {
+                const logDate = new Date(log.logged_at).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                const priorityBadge = getPriorityBadge(log.priority);
+                const statusBadge = getCardStatusBadge(log.card_status);
+
+                return `
+                    <tr class="time-log-item" data-user="${log.user_id}" data-project="${log.project_id}" data-card="${log.card_id}">
+                        <td>
+                            <div>
+                                <strong>${log.task_title}</strong>
+                                <br>
+                                <small class="text-muted">${log.board_name}</small>
+                                <br>
+                                ${statusBadge} ${priorityBadge}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="user-avatar me-2">
+                                    <i class="bi bi-person-circle text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-medium">${log.full_name}</div>
+                                    <small class="text-muted">@${log.username}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="text-center">
+                                <span class="badge bg-primary fs-6">${log.hours_logged}h</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div>
+                                ${log.description ? `<p class="mb-0 small">${log.description.length > 100 ? log.description.substring(0, 100) + '...' : log.description}</p>` : '<em class="text-muted">No description</em>'}
+                            </div>
+                        </td>
+                        <td>
+                            <div>
+                                <div>${logDate}</div>
+                                <small class="text-muted">${new Date(log.logged_at).toLocaleDateString()}</small>
+                            </div>
+                        </td>
+                        <td>
+                            <div>
+                                <strong>${log.project_name}</strong>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-primary" onclick="viewTimeLogDetail(${log.time_log_id})" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn btn-outline-secondary" onclick="viewCardDetail(${log.card_id})" title="View Task">
+                                    <i class="bi bi-card-text"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            updateTimeLogsInfo(data.pagination);
+        }
+
+        function updateTimeLogsStatistics(summary) {
+            if (!summary) return;
+
+            document.getElementById('totalHours').textContent = (summary.total_hours || 0) + 'h';
+            document.getElementById('totalLogs').textContent = summary.total_logs || 0;
+            document.getElementById('activeUsers').textContent = summary.unique_users || 0;
+            document.getElementById('trackedCards').textContent = summary.unique_cards || 0;
+            document.getElementById('activeDays').textContent = summary.unique_days || 0;
+
+            const avgHours = summary.avg_hours_per_log ? parseFloat(summary.avg_hours_per_log).toFixed(1) : 0;
+            document.getElementById('avgHoursPerLog').textContent = avgHours + 'h';
+        }
+
+        function updateTimeLogsPagination(pagination) {
+            const paginationContainer = document.getElementById('timeLogsPagination');
+
+            if (pagination.total_pages <= 1) {
+                paginationContainer.innerHTML = '';
+                return;
+            }
+
+            let paginationHTML = '';
+
+            // Previous button
+            paginationHTML += `
+                <li class="page-item ${pagination.current_page === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="loadCardTimeLogs(${pagination.current_page - 1}, currentTimeLogsFilters)">Previous</a>
+                </li>
+            `;
+
+            // Page numbers
+            const startPage = Math.max(1, pagination.current_page - 2);
+            const endPage = Math.min(pagination.total_pages, pagination.current_page + 2);
+
+            if (startPage > 1) {
+                paginationHTML += `<li class="page-item"><a class="page-link" href="#" onclick="loadCardTimeLogs(1, currentTimeLogsFilters)">1</a></li>`;
+                if (startPage > 2) {
+                    paginationHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHTML += `
+                    <li class="page-item ${i === pagination.current_page ? 'active' : ''}">
+                        <a class="page-link" href="#" onclick="loadCardTimeLogs(${i}, currentTimeLogsFilters)">${i}</a>
+                    </li>
+                `;
+            }
+
+            if (endPage < pagination.total_pages) {
+                if (endPage < pagination.total_pages - 1) {
+                    paginationHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                }
+                paginationHTML += `<li class="page-item"><a class="page-link" href="#" onclick="loadCardTimeLogs(${pagination.total_pages}, currentTimeLogsFilters)">${pagination.total_pages}</a></li>`;
+            }
+
+            // Next button
+            paginationHTML += `
+                <li class="page-item ${pagination.current_page === pagination.total_pages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="loadCardTimeLogs(${pagination.current_page + 1}, currentTimeLogsFilters)">Next</a>
+                </li>
+            `;
+
+            paginationContainer.innerHTML = paginationHTML;
+        }
+
+        function populateTimeLogsFilters(filters) {
+            // Populate team members filter
+            const userFilter = document.getElementById('timeLogUserFilter');
+            userFilter.innerHTML = '<option value="">All Members</option>';
+            filters.team_members.forEach(member => {
+                userFilter.innerHTML += `<option value="${member.user_id}">${member.full_name} (@${member.username})</option>`;
+            });
+
+            // Populate projects filter
+            const projectFilter = document.getElementById('timeLogProjectFilter');
+            projectFilter.innerHTML = '<option value="">All Projects</option>';
+            filters.projects.forEach(project => {
+                projectFilter.innerHTML += `<option value="${project.project_id}">${project.project_name}</option>`;
+            });
+
+            // Populate cards filter
+            const cardFilter = document.getElementById('timeLogCardFilter');
+            cardFilter.innerHTML = '<option value="">All Tasks</option>';
+            filters.cards.forEach(card => {
+                cardFilter.innerHTML += `<option value="${card.card_id}">${card.card_title} (${card.board_name})</option>`;
+            });
+        }
+
+        function updateTimeLogsInfo(pagination) {
+            const start = ((pagination.current_page - 1) * pagination.per_page) + 1;
+            const end = Math.min(pagination.current_page * pagination.per_page, pagination.total_count);
+            const info = `Showing ${start}-${end} of ${pagination.total_count} time logs`;
+            document.getElementById('timeLogsInfo').textContent = info;
+        }
+
+        function updateDailyTimeChart(dailyStats) {
+            const ctx = document.getElementById('dailyTimeChart').getContext('2d');
+
+            // Destroy existing chart if it exists
+            if (dailyTimeChart) {
+                dailyTimeChart.destroy();
+            }
+
+            const labels = dailyStats.map(stat => new Date(stat.log_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+            const hours = dailyStats.map(stat => parseFloat(stat.daily_hours));
+
+            dailyTimeChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels.reverse(),
+                    datasets: [{
+                        label: 'Hours Logged',
+                        data: hours.reverse(),
+                        borderColor: 'rgb(54, 162, 235)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Hours'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateTopPerformers(topPerformers) {
+            const container = document.getElementById('topPerformersList');
+
+            if (!topPerformers || topPerformers.length === 0) {
+                container.innerHTML = '<p class="text-muted text-center">No data available</p>';
+                return;
+            }
+
+            container.innerHTML = topPerformers.map((performer, index) => `
+                <div class="d-flex align-items-center mb-3">
+                    <div class="performer-rank me-3">
+                        <span class="badge ${index === 0 ? 'bg-warning' : index === 1 ? 'bg-light text-dark' : 'bg-secondary'}">${index + 1}</span>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="fw-medium">${performer.full_name}</div>
+                        <small class="text-muted">@${performer.username}</small>
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-bold text-primary">${performer.total_hours}h</div>
+                        <small class="text-muted">${performer.total_logs} logs</small>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showNoTimeLogs() {
+            document.getElementById('timeLogsTableBody').innerHTML = '';
+            document.getElementById('no-time-logs').style.display = 'block';
+            document.getElementById('timeLogsInfo').textContent = 'Showing 0 of 0 time logs';
+            document.getElementById('timeLogsPagination').innerHTML = '';
+        }
+
+        function applyTimeLogFilters() {
+            const filters = {
+                user_id: document.getElementById('timeLogUserFilter').value,
+                project_id: document.getElementById('timeLogProjectFilter').value,
+                card_id: document.getElementById('timeLogCardFilter').value,
+                date_from: document.getElementById('timeLogDateFrom').value,
+                date_to: document.getElementById('timeLogDateTo').value
+            };
+
+            // Remove empty filters
+            Object.keys(filters).forEach(key => {
+                if (!filters[key]) {
+                    delete filters[key];
+                }
+            });
+
+            loadCardTimeLogs(1, filters);
+        }
+
+        function clearTimeLogFilters() {
+            document.getElementById('timeLogUserFilter').value = '';
+            document.getElementById('timeLogProjectFilter').value = '';
+            document.getElementById('timeLogCardFilter').value = '';
+            document.getElementById('timeLogDateFrom').value = '';
+            document.getElementById('timeLogDateTo').value = '';
+
+            loadCardTimeLogs(1, {});
+        }
+
+        function refreshTimeLogs() {
+            loadCardTimeLogs(currentTimeLogsPage, currentTimeLogsFilters);
+        }
+
+        function exportTimeLogs() {
+            const filters = currentTimeLogsFilters;
+            const params = new URLSearchParams(filters);
+            params.append('export', 'csv');
+
+            window.open('/api/teamlead/card-time-logs?' + params, '_blank');
+        }
+
+        function getCardStatusBadge(status) {
+            const statusConfig = {
+                'to_do': { class: 'bg-secondary', text: 'To Do' },
+                'in_progress': { class: 'bg-warning', text: 'In Progress' },
+                'review': { class: 'bg-info', text: 'Review' },
+                'done': { class: 'bg-success', text: 'Done' }
+            };
+
+            const config = statusConfig[status] || { class: 'bg-secondary', text: status };
+            return `<span class="badge ${config.class}">${config.text}</span>`;
+        }
+
+        function viewTimeLogDetail(timeLogId) {
+            // TODO: Implement time log detail view
+            console.log('View time log detail:', timeLogId);
+        }
+
+        function viewCardDetail(cardId) {
+            // TODO: Implement card detail view
+            console.log('View card detail:', cardId);
         }
 
         function filterCards() {
@@ -5932,6 +9565,12 @@
             initializeProjectManagement();
             initializeUserManagement();
             initializeMemberManagement();
+
+            // Load current project data
+            loadCurrentProject();
+
+            // Initialize create card form handlers
+            initializeCreateCardForm();
         });
 
         // Member Management System
@@ -6822,6 +10461,883 @@
             .catch(error => {
                 console.error('Error marking all notifications as read:', error);
             });
+        }
+    </script>
+
+    <!-- Create Card Modal -->
+    <div class="modal fade" id="createCardModal" tabindex="-1" aria-labelledby="createCardModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-gradient text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h5 class="modal-title d-flex align-items-center" id="createCardModalLabel">
+                        <span class="badge bg-white text-primary me-2 p-2 rounded-circle">
+                            <i class="bi bi-plus-circle fs-5"></i>
+                        </span>
+                        <div>
+                            <div class="fw-bold">Create New Card</div>
+                            <small class="opacity-75" style="font-size: 0.85rem;">Add a new task to your board</small>
+                        </div>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="createCardForm">
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <!-- Board Selection -->
+                            <div class="col-md-6">
+                                <label for="cardBoard" class="form-label">
+                                    <i class="bi bi-kanban me-1"></i>
+                                    Board <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="cardBoard" name="board_id" required>
+                                    <option value="">Select Board</option>
+                                </select>
+                                <div class="form-text">Choose the board where this card will be placed</div>
+                            </div>
+
+                            <!-- Priority -->
+                            <div class="col-md-6">
+                                <label for="cardPriority" class="form-label">
+                                    <i class="bi bi-flag me-1"></i>
+                                    Priority <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="cardPriority" name="priority" required>
+                                    <option value="">Select Priority</option>
+                                    <option value="low">🟢 Low</option>
+                                    <option value="medium">🟡 Medium</option>
+                                    <option value="high">� High</option>
+                                </select>
+                            </div>
+
+                            <!-- Card Title -->
+                            <div class="col-12">
+                                <label for="cardTitle" class="form-label">
+                                    <i class="bi bi-card-text me-1"></i>
+                                    Card Title <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="cardTitle" name="card_title"
+                                       placeholder="Enter card title" maxlength="100" required>
+                                <div class="form-text">Brief, descriptive title for the task</div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="col-12">
+                                <label for="cardDescription" class="form-label">
+                                    <i class="bi bi-text-paragraph me-1"></i>
+                                    Description
+                                </label>
+                                <textarea class="form-control" id="cardDescription" name="description"
+                                          rows="4" placeholder="Describe the task in detail..."></textarea>
+                                <div class="form-text">Detailed description of what needs to be done</div>
+                            </div>
+
+                            <!-- Assign To -->
+                            <div class="col-12">
+                                <label for="cardAssignTo" class="form-label">
+                                    <i class="bi bi-person-check me-1"></i>
+                                    Assign To Team Member
+                                </label>
+                                <select class="form-select" id="cardAssignTo" name="assigned_to">
+                                    <option value="">🚫 No Assignment - Keep Unassigned</option>
+                                </select>
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Choose 1 developer or designer to assign this task. Members are sorted by workload (lowest first).
+                                </div>
+                            </div>
+
+                            <!-- Due Date -->
+                            <div class="col-md-6">
+                                <label for="cardDueDate" class="form-label">
+                                    <i class="bi bi-calendar-event me-1"></i>
+                                    Due Date
+                                </label>
+                                <input type="date" class="form-control" id="cardDueDate" name="due_date"
+                                       min="<?php echo date('Y-m-d', strtotime('tomorrow')); ?>">
+                                <div class="form-text">Optional deadline for completion</div>
+                            </div>
+
+                            <!-- Assignment Preview -->
+                            <div class="col-12" id="assignmentPreview" style="display: none;">
+                                <div class="alert alert-info">
+                                    <h6 class="alert-heading">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        Assignment Preview
+                                    </h6>
+                                    <div id="assignmentDetails"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-lg me-2"></i>
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary" id="createCardBtn">
+                            <i class="bi bi-plus-lg me-2"></i>
+                            Create Card
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Board Modal -->
+    <div class="modal fade" id="createBoardModal" tabindex="-1" aria-labelledby="createBoardModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createBoardModalLabel">
+                        <i class="bi bi-kanban me-2"></i>
+                        Create New Board
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="createBoardForm">
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <!-- Board Name -->
+                            <div class="col-12">
+                                <label for="boardName" class="form-label">
+                                    <i class="bi bi-kanban me-1"></i>
+                                    Board Name <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="boardName" name="board_name"
+                                       placeholder="Enter board name (e.g., Frontend, Backend, Testing)" maxlength="255" required>
+                                <div class="form-text">Choose a descriptive name for organizing related tasks</div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="col-12">
+                                <label for="boardDescription" class="form-label">
+                                    <i class="bi bi-text-paragraph me-1"></i>
+                                    Description
+                                </label>
+                                <textarea class="form-control" id="boardDescription" name="description"
+                                          rows="3" placeholder="Describe the purpose of this board..."></textarea>
+                                <div class="form-text">Optional description explaining what this board is for</div>
+                            </div>
+
+                            <!-- Board Examples -->
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <h6 class="alert-heading">
+                                        <i class="bi bi-lightbulb me-2"></i>
+                                        Board Examples
+                                    </h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <strong>By Technology:</strong>
+                                            <ul class="mb-0">
+                                                <li>Frontend Development</li>
+                                                <li>Backend Development</li>
+                                                <li>Database</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <strong>By Phase:</strong>
+                                            <ul class="mb-0">
+                                                <li>Planning & Design</li>
+                                                <li>Development</li>
+                                                <li>Testing & QA</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-lg me-2"></i>
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary" id="createBoardBtn">
+                            <i class="bi bi-plus-lg me-2"></i>
+                            Create Board
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Board Detail Modal -->
+    <div class="modal fade" id="boardDetailModal" tabindex="-1" aria-labelledby="boardDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="boardDetailModalLabel">
+                        <i class="bi bi-kanban me-2"></i>
+                        Board Detail
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="boardDetailContent">
+                        <!-- Board detail content will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Board List Modal -->
+    <div class="modal fade" id="boardListModal" tabindex="-1" aria-labelledby="boardListModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="boardListModalLabel">
+                        <i class="bi bi-kanban me-2"></i>
+                        Project Boards Management
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h6 class="mb-1">Manage Project Boards</h6>
+                            <p class="text-muted mb-0">Create, edit, and organize boards for better task management</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="openCreateBoardModal()">
+                            <i class="bi bi-plus-lg me-2"></i>
+                            New Board
+                        </button>
+                    </div>
+                    <div id="boardListContent">
+                        <!-- Board list content will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Board Management Functions
+        function openCreateBoardModal() {
+            const modal = new bootstrap.Modal(document.getElementById('createBoardModal'));
+            document.getElementById('createBoardForm').reset();
+            modal.show();
+        }
+
+        function submitCreateBoard() {
+            const form = document.getElementById('createBoardForm');
+            const formData = new FormData(form);
+            const createBtn = document.getElementById('createBoardBtn');
+
+            // Disable button and show loading
+            createBtn.disabled = true;
+            createBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Creating...';
+
+            // Convert FormData to JSON
+            const data = {};
+            formData.forEach((value, key) => {
+                if (value.trim() !== '') {
+                    data[key] = value;
+                }
+            });
+
+            fetch('/api/teamlead/boards', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('success', 'Board created successfully!', data.message);
+
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('createBoardModal'));
+                    modal.hide();
+
+                    // Reset form
+                    form.reset();
+
+                    // Refresh boards list if open
+                    if (document.getElementById('boardListModal').classList.contains('show')) {
+                        loadBoardsList();
+                    }
+
+                    // Refresh project data
+                    loadCurrentProject();
+                } else {
+                    showNotification('error', 'Error creating board', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error creating board:', error);
+                showNotification('error', 'Error creating board', 'An unexpected error occurred');
+            })
+            .finally(() => {
+                // Re-enable button
+                createBtn.disabled = false;
+                createBtn.innerHTML = '<i class="bi bi-plus-lg me-2"></i>Create Board';
+            });
+        }
+
+        function openBoardListModal() {
+            const modal = new bootstrap.Modal(document.getElementById('boardListModal'));
+            modal.show();
+            loadBoardsList();
+        }
+
+        function loadBoardsList() {
+            fetch('/api/teamlead/boards', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Boards data:', data);
+                if (data.success) {
+                    displayBoardsList(data.boards);
+                } else {
+                    document.getElementById('boardListContent').innerHTML = `
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            ${data.message}
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Error loading boards:', error);
+                document.getElementById('boardListContent').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Error loading boards
+                    </div>
+                `;
+            });
+        }
+
+        function displayBoardsList(boards) {
+            const content = document.getElementById('boardListContent');
+
+            if (boards.length === 0) {
+                content.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="bi bi-kanban display-1 text-muted"></i>
+                        <h5 class="mt-3">No Boards Yet</h5>
+                        <p class="text-muted">Create your first board to start organizing tasks</p>
+                        <button class="btn btn-primary" onclick="openCreateBoardModal()">
+                            <i class="bi bi-plus-lg me-2"></i>
+                            Create First Board
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<div class="row">';
+            boards.forEach(board => {
+                html += `
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100 board-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h6 class="card-title mb-0">
+                                        <i class="bi bi-kanban me-2"></i>
+                                        ${board.name}
+                                    </h6>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                            <i class="bi bi-three-dots-vertical"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="#" onclick="viewBoardDetail(${board.id})">
+                                                <i class="bi bi-eye me-2"></i>View Detail
+                                            </a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="editBoard(${board.id})">
+                                                <i class="bi bi-pencil me-2"></i>Edit
+                                            </a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-danger" href="#" onclick="deleteBoard(${board.id}, '${board.name}')">
+                                                <i class="bi bi-trash me-2"></i>Delete
+                                            </a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <p class="card-text text-muted small">
+                                    ${board.description || 'No description'}
+                                </p>
+
+                                <div class="row text-center mt-3">
+                                    <div class="col-3">
+                                        <div class="text-primary">
+                                            <strong>${board.total_cards || 0}</strong>
+                                            <small class="d-block">Total</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="text-secondary">
+                                            <strong>${board.todo_cards || 0}</strong>
+                                            <small class="d-block">To Do</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="text-warning">
+                                            <strong>${board.in_progress_cards || 0}</strong>
+                                            <small class="d-block">Progress</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="text-success">
+                                            <strong>${board.done_cards || 0}</strong>
+                                            <small class="d-block">Done</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <small class="text-muted">
+                                    Created: ${new Date(board.created_at).toLocaleDateString()}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+
+            content.innerHTML = html;
+        }
+
+        function viewBoardDetail(boardId) {
+            fetch(`/api/teamlead/boards/${boardId}/detail`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayBoardDetail(data);
+                } else {
+                    showNotification('error', 'Error', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading board detail:', error);
+                showNotification('error', 'Error', 'Failed to load board detail');
+            });
+        }
+
+        function displayBoardDetail(data) {
+            const modal = new bootstrap.Modal(document.getElementById('boardDetailModal'));
+            const content = document.getElementById('boardDetailContent');
+
+            document.getElementById('boardDetailModalLabel').innerHTML = `
+                <i class="bi bi-kanban me-2"></i>
+                ${data.board.board_name}
+            `;
+
+            let html = `
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <h6>Description</h6>
+                        <p class="text-muted">${data.board.description || 'No description provided'}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title">Statistics</h6>
+                                <div class="row text-center">
+                                    <div class="col-6">
+                                        <strong class="text-primary">${data.statistics.total_cards}</strong>
+                                        <small class="d-block">Total Cards</small>
+                                    </div>
+                                    <div class="col-6">
+                                        <strong class="text-success">${data.statistics.assigned_cards}</strong>
+                                        <small class="d-block">Assigned</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card border-secondary">
+                            <div class="card-header bg-secondary text-white">
+                                <h6 class="mb-0">📋 To Do (${data.statistics.todo_cards})</h6>
+                            </div>
+                            <div class="card-body">
+            `;
+
+            data.cards_by_status['To Do'].forEach(card => {
+                html += `
+                    <div class="card mb-2">
+                        <div class="card-body py-2">
+                            <h6 class="card-title mb-1">${card.title}</h6>
+                            <small class="text-muted">
+                                Priority: ${card.priority}
+                                ${card.assigned_user_name ? `| Assigned to: ${card.assigned_user_name}` : ''}
+                            </small>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-warning">
+                            <div class="card-header bg-warning text-dark">
+                                <h6 class="mb-0">⚡ In Progress (${data.statistics.in_progress_cards})</h6>
+                            </div>
+                            <div class="card-body">
+            `;
+
+            data.cards_by_status['In Progress'].forEach(card => {
+                html += `
+                    <div class="card mb-2">
+                        <div class="card-body py-2">
+                            <h6 class="card-title mb-1">${card.title}</h6>
+                            <small class="text-muted">
+                                Priority: ${card.priority}
+                                ${card.assigned_user_name ? `| Assigned to: ${card.assigned_user_name}` : ''}
+                            </small>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-success">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0">✅ Done (${data.statistics.done_cards})</h6>
+                            </div>
+                            <div class="card-body">
+            `;
+
+            data.cards_by_status['Done'].forEach(card => {
+                html += `
+                    <div class="card mb-2">
+                        <div class="card-body py-2">
+                            <h6 class="card-title mb-1">${card.title}</h6>
+                            <small class="text-muted">
+                                Priority: ${card.priority}
+                                ${card.assigned_user_name ? `| Assigned to: ${card.assigned_user_name}` : ''}
+                            </small>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            content.innerHTML = html;
+            modal.show();
+        }
+
+        function deleteBoard(boardId, boardName) {
+            if (confirm(`Are you sure you want to delete board "${boardName}"? This action cannot be undone.`)) {
+                fetch(`/api/teamlead/boards/${boardId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification('success', 'Board deleted successfully', data.message);
+                        loadBoardsList(); // Refresh the list
+                        loadCurrentProject(); // Refresh project data
+                    } else {
+                        showNotification('error', 'Error deleting board', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting board:', error);
+                    showNotification('error', 'Error', 'Failed to delete board');
+                });
+            }
+        }
+
+        // Initialize create board form
+        document.getElementById('createBoardForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitCreateBoard();
+        });
+    </script>
+
+    <!-- Feedback Modal for Card Review -->
+    <div class="modal fade" id="cardFeedbackModal" tabindex="-1" aria-labelledby="cardFeedbackModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" id="feedbackModalHeader">
+                    <h5 class="modal-title" id="cardFeedbackModalLabel">
+                        <i class="bi bi-chat-left-text me-2"></i>
+                        Card Review
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="cardFeedbackForm">
+                    <div class="modal-body">
+                        <div class="card border-0 bg-light mb-3">
+                            <div class="card-body">
+                                <h6 class="card-title mb-1" id="feedbackCardTitle">Card Title</h6>
+                                <small class="text-muted" id="feedbackCardInfo">Card info</small>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="feedbackText" class="form-label">
+                                <i class="bi bi-chat-square-text me-1"></i>
+                                Feedback <span id="feedbackRequired" class="text-danger"></span>
+                            </label>
+                            <textarea class="form-control" id="feedbackText" name="feedback" rows="4"
+                                    placeholder="Add your feedback here..."></textarea>
+                            <div class="form-text" id="feedbackHelp">
+                                Provide constructive feedback to help the team member improve.
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info d-none" id="approveInfo">
+                            <i class="bi bi-check-circle me-2"></i>
+                            This card will be marked as <strong>Done</strong> and moved to completed status.
+                        </div>
+
+                        <div class="alert alert-warning d-none" id="rejectInfo">
+                            <i class="bi bi-arrow-repeat me-2"></i>
+                            This card will be returned to <strong>In Progress</strong> status for revision.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-lg me-2"></i>
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn" id="submitFeedbackBtn">
+                            <i class="bi bi-check-lg me-2"></i>
+                            Submit
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Profile Edit Functions
+        function toggleEditProfile() {
+            document.getElementById('profile-display-mode').style.display = 'none';
+            document.getElementById('profile-edit-mode').style.display = 'block';
+        }
+
+        function cancelEditProfile() {
+            document.getElementById('profile-display-mode').style.display = 'block';
+            document.getElementById('profile-edit-mode').style.display = 'none';
+        }
+
+        // Handle profile update form submission
+        document.getElementById('profile-update-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+
+            try {
+                submitBtn.disabled = true;
+
+                const response = await fetch('/api/profile/update', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Update display values
+                    document.getElementById('display-name').textContent = formData.get('full_name') || '{{ $user->username }}';
+                    document.getElementById('display-email').textContent = formData.get('email');
+                    document.getElementById('profile-display-name').textContent = formData.get('full_name') || '{{ $user->username }}';
+
+                    // Show success message
+                    showNotification('Profile updated successfully', 'success');
+
+                    // Switch back to display mode
+                    cancelEditProfile();
+                } else {
+                    showNotification(result.message || 'Failed to update profile', 'error');
+                }
+
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                showNotification('An error occurred while updating profile', 'error');
+            } finally {
+                // Restore button state
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            }
+        });
+
+        // Upload profile photo
+        async function uploadProfilePhoto(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+
+                // Validate file size (2MB)
+                if (file.size > 2 * 1024 * 1024) {
+                    showNotification('File size must be less than 2MB', 'error');
+                    return;
+                }
+
+                // Validate file type
+                if (!file.type.startsWith('image/')) {
+                    showNotification('Please select a valid image file', 'error');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('profile_photo', file);
+
+                try {
+                    const response = await fetch('/api/profile/upload-photo', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Accept': 'application/json'
+                        },
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // Update profile photo display
+                        document.getElementById('profile-photo-display').src = result.data.profile_photo_url;
+                        showNotification('Profile photo updated successfully', 'success');
+
+                        // Reload page to show delete button
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        showNotification(result.message || 'Failed to upload photo', 'error');
+                    }
+
+                } catch (error) {
+                    console.error('Error uploading photo:', error);
+                    showNotification('An error occurred while uploading photo', 'error');
+                }
+            }
+        }
+
+        // Delete profile photo
+        async function deleteProfilePhoto() {
+            if (confirm('Are you sure you want to delete your profile photo?')) {
+                try {
+                    const response = await fetch('/api/profile/delete-photo', {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // Reset to default avatar
+                        document.getElementById('profile-photo-display').src = '/uploads/profiles/default-avatar.png';
+                        showNotification('Profile photo deleted successfully', 'success');
+
+                        // Reload page to hide delete button
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        showNotification(result.message || 'Failed to delete photo', 'error');
+                    }
+
+                } catch (error) {
+                    console.error('Error deleting photo:', error);
+                    showNotification('An error occurred while deleting photo', 'error');
+                }
+            }
+        }
+
+        // Utility Functions for Cards
+        function getStatusColor(status) {
+            const colors = {
+                'todo': 'info',
+                'in_progress': 'warning',
+                'review': 'primary',
+                'done': 'success'
+            };
+            return colors[status] || 'secondary';
+        }
+
+        function getPriorityColor(priority) {
+            const colors = {
+                'low': 'success',
+                'medium': 'warning',
+                'high': 'danger',
+                'urgent': 'dark'
+            };
+            return colors[priority] || 'secondary';
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 1) {
+                return 'Yesterday';
+            } else if (diffDays <= 7) {
+                return `${diffDays} days ago`;
+            } else {
+                return date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+            }
+        }
+
+        function viewCardDetails(cardId) {
+            // Implementation for viewing card details
+            console.log('Viewing card details for ID:', cardId);
+            // This would open a modal or navigate to card details page
+        }
+
+        function editCard(cardId) {
+            // Implementation for editing card
+            console.log('Editing card with ID:', cardId);
+            // This would open an edit modal or form
         }
     </script>
 </body>

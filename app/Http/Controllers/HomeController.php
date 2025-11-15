@@ -13,6 +13,7 @@ class HomeController extends Controller
         $userRole = $user->role ?? 'Member';
 
         switch ($userRole) {
+            case 'Admin':
             case 'Project_Admin':
                 return redirect()->route('admin.panel');
             case 'Team_Lead':

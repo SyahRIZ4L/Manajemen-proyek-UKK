@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Http\Middleware\CheckPermission;
+use App\Models\Card;
 
 class DeveloperController extends Controller
 {
@@ -333,13 +335,13 @@ class DeveloperController extends Controller
             $user = Auth::user();
 
             $projects = DB::table('projects')
-                ->join('project_members', 'projects.project_id', '=', 'project_members.project_id')
-                ->where('project_members.user_id', $user->user_id)
+                ->join('members', 'projects.project_id', '=', 'members.project_id')
+                ->where('members.user_id', $user->user_id)
                 ->select('projects.*')
                 ->distinct()
                 ->get()
                 ->map(function($project) {
-                    $memberCount = DB::table('project_members')
+                    $memberCount = DB::table('members')
                         ->where('project_id', $project->project_id)
                         ->count();
 
@@ -642,5 +644,359 @@ class DeveloperController extends Controller
         if ($time < 2592000) return floor($time/86400) . ' days ago';
         if ($time < 31104000) return floor($time/2592000) . ' months ago';
         return floor($time/31104000) . ' years ago';
+    }
+
+    /**
+     * Get cards assigned to developer - Optimized for slow networks
+     */
+    public function getCards(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            $perPage = $request->input('per_page', 20); // Pagination untuk reduce payload
+            $status = $request->input('status'); // Filter by status
+
+            // Base query - optimized dengan minimal joins
+            $query = DB::table('cards as c')
+                ->leftJoin('card_assignments as ca', 'c.card_id', '=', 'ca.card_id')
+                ->leftJoin('boards as b', 'c.board_id', '=', 'b.board_id')
+                ->leftJoin('projects as p', 'b.project_id', '=', 'p.project_id')
+                ->leftJoin('users as u', 'c.created_by', '=', 'u.user_id')
+                ->where('ca.user_id', $user->user_id)
+                ->select(
+                    'c.card_id',
+                    'c.card_title as title',
+                    'c.description',
+                    'c.status',
+                    'c.priority',
+                    'c.due_date',
+                    'c.deadline',
+                    'c.estimated_hours',
+                    'c.actual_hours',
+                    'c.is_timer_active',
+                    'c.timer_started_at',
+                    'c.started_at',
+                    'c.created_at',
+                    'b.board_name',
+                    'p.project_name',
+                    'u.username as assigned_by'
+                )
+                ->orderBy('c.created_at', 'desc');
+
+            // Apply filter
+            if ($status) {
+                $query->where('c.status', $status);
+            }
+
+            // Paginate
+            $paginatedCards = $query->paginate($perPage);
+            $cards = $paginatedCards->items();
+
+            // Paginate
+            $paginatedCards = $query->paginate($perPage);
+            $cards = $paginatedCards->items();
+
+            // Format the response - Optimize payload size
+            $formattedCards = array_map(function($card) {
+                // Truncate description untuk save bandwidth
+                $description = $card->description ?? '';
+                if (strlen($description) > 150) {
+                    $description = substr($description, 0, 150) . '...';
+                }
+
+                return [
+                    'card_id' => $card->card_id,
+                    'title' => $card->title,
+                    'description' => $description,
+                    'status' => $card->status,
+                    'priority' => $card->priority,
+                    'assigned_by' => $card->assigned_by ?? 'Unknown',
+                    'board_name' => $card->board_name ?? '',
+                    'project_name' => $card->project_name ?? '',
+                    'created_at' => $card->created_at,
+                    'due_date' => $card->due_date ?? $card->deadline,
+                    'estimated_hours' => $card->estimated_hours,
+                    'actual_hours' => $card->actual_hours,
+                    'is_timer_active' => (bool)$card->is_timer_active,
+                    'timer_started_at' => $card->timer_started_at,
+                    'started_at' => $card->started_at,
+                ];
+            }, $cards);
+
+            return response()->json([
+                'success' => true,
+                'cards' => $formattedCards,
+                'data' => $formattedCards,
+                'pagination' => [
+                    'current_page' => $paginatedCards->currentPage(),
+                    'total_pages' => $paginatedCards->lastPage(),
+                    'total' => $paginatedCards->total(),
+                    'per_page' => $paginatedCards->perPage()
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching cards: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update card status (todo -> in_progress -> review)
+     */
+    public function updateCardStatus(Request $request, $cardId)
+    {
+        try {
+            $user = Auth::user();
+            $status = $request->input('status');
+
+            // Validasi status yang diizinkan untuk developer
+            $allowedStatuses = ['todo', 'in_progress', 'review'];
+            if (!in_array($status, $allowedStatuses)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid status. Allowed statuses: todo, in_progress, review'
+                ], 400);
+            }
+
+            // Update card status in database - auto timer will be handled by CardObserver
+            $card = Card::where('card_id', $cardId)->first();
+
+            if (!$card) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Card not found'
+                ], 404);
+            }
+
+            // Update status - this will trigger CardObserver for auto timer
+            $card->update(['status' => $status]);
+
+            // Create notification for TeamLead if status is 'review'
+            if ($status === 'review') {
+                $this->createReviewNotification($cardId, $user);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Card status updated successfully',
+                'data' => [
+                    'card_id' => $cardId,
+                    'status' => $status,
+                    'updated_by' => $user->username
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating card status: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Submit card to TeamLead for review
+     */
+    public function submitCardToTeamLead(Request $request, $cardId)
+    {
+        try {
+            $user = Auth::user();
+            $comment = $request->input('comment', '');
+
+            // Find the card first
+            $card = Card::where('card_id', $cardId)->first();
+
+            if (!$card) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Card not found'
+                ], 404);
+            }
+
+            // Check if card is assigned to current user
+            $assignment = DB::table('card_assignments')
+                ->where('card_id', $cardId)
+                ->where('user_id', $user->user_id)
+                ->first();
+
+            if (!$assignment) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You are not assigned to this card'
+                ], 403);
+            }
+
+            // Update card status to 'review' - this will trigger CardObserver
+            $card->update(['status' => 'review']);
+
+            // Create notification for TeamLead
+            $this->createReviewNotification($cardId, $user, $comment);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Card submitted for review successfully',
+                'data' => [
+                    'card_id' => $cardId,
+                    'status' => 'review',
+                    'submitted_by' => $user->username,
+                    'comment' => $comment
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error submitting card: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Create notification for TeamLead when card is submitted for review
+     */
+    private function createReviewNotification($cardId, $user, $comment = '')
+    {
+        try {
+            // Get the card and project info
+            $card = DB::table('cards')
+                ->join('boards', 'cards.board_id', '=', 'boards.board_id')
+                ->join('projects', 'boards.project_id', '=', 'projects.project_id')
+                ->where('cards.card_id', $cardId)
+                ->select('cards.*', 'projects.project_id', 'projects.project_name')
+                ->first();
+
+            if (!$card) {
+                Log::warning("Card not found for notification: $cardId");
+                return;
+            }
+
+            // Find TeamLead for this project
+            $teamLead = DB::table('project_members')
+                ->join('users', 'project_members.user_id', '=', 'users.user_id')
+                ->where('project_members.project_id', $card->project_id)
+                ->where('project_members.role', 'Team_Lead')
+                ->select('users.*')
+                ->first();
+
+            if ($teamLead) {
+                // Create notification in database
+                DB::table('notifications')->insert([
+                    'user_id' => $teamLead->user_id,
+                    'type' => 'card_review',
+                    'title' => 'Card Ready for Review',
+                    'message' => "{$user->full_name} has submitted '{$card->card_title}' for review",
+                    'data' => json_encode([
+                        'card_id' => $cardId,
+                        'card_title' => $card->card_title,
+                        'project_name' => $card->project_name,
+                        'submitted_by' => $user->full_name,
+                        'comment' => $comment
+                    ]),
+                    'is_read' => false,
+                    'created_at' => now()
+                ]);
+
+                Log::info("Review notification created for TeamLead {$teamLead->username} - Card: $cardId");
+            } else {
+                Log::warning("No TeamLead found for project {$card->project_id}");
+            }
+
+        } catch (\Exception $e) {
+            Log::error("Error creating review notification: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get cards specifically assigned to the developer (for My Cards section)
+     */
+    public function getMyCards()
+    {
+        try {
+            $user = Auth::user();
+
+            // Get cards assigned to this user using CardAssignment table
+            $cards = DB::table('cards as c')
+                ->join('card_assignments as ca', 'c.card_id', '=', 'ca.card_id')
+                ->leftJoin('boards as b', 'c.board_id', '=', 'b.board_id')
+                ->leftJoin('projects as p', 'b.project_id', '=', 'p.project_id')
+                ->leftJoin('users as u', 'c.created_by', '=', 'u.user_id')
+                ->where('ca.user_id', $user->user_id)
+                ->select(
+                    'c.card_id',
+                    'c.card_title',
+                    'c.description',
+                    'c.status',
+                    'c.priority',
+                    'c.due_date',
+                    'c.deadline',
+                    'c.estimated_hours',
+                    'c.actual_hours',
+                    'c.created_at',
+                    'b.board_name',
+                    'p.project_name',
+                    'u.username as assigned_by'
+                )
+                ->orderBy('c.created_at', 'desc')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'cards' => $cards
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load cards: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get dashboard statistics for developer
+     */
+    public function getDashboardStats()
+    {
+        try {
+            $user = Auth::user();
+
+            // Get all cards assigned to this user
+            $totalCards = DB::table('cards')
+                ->join('card_assignments', 'cards.card_id', '=', 'card_assignments.card_id')
+                ->where('card_assignments.user_id', $user->user_id)
+                ->count();
+
+            // Count pending cards (todo and in_progress)
+            $pendingCards = DB::table('cards')
+                ->join('card_assignments', 'cards.card_id', '=', 'card_assignments.card_id')
+                ->where('card_assignments.user_id', $user->user_id)
+                ->whereIn('cards.status', ['todo', 'in_progress'])
+                ->count();
+
+            // Count completed cards
+            $completedCards = DB::table('cards')
+                ->join('card_assignments', 'cards.card_id', '=', 'card_assignments.card_id')
+                ->where('card_assignments.user_id', $user->user_id)
+                ->where('cards.status', 'done')
+                ->count();
+
+            return response()->json([
+                'success' => true,
+                'stats' => [
+                    'total' => $totalCards,
+                    'pending' => $pendingCards,
+                    'completed' => $completedCards
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load dashboard stats: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
