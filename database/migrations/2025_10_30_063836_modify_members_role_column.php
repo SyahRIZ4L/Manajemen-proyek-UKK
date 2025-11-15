@@ -13,8 +13,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('members', function (Blueprint $table) {
-            // Change role column from enum to varchar to accept all user roles
-            DB::statement("ALTER TABLE members MODIFY COLUMN role VARCHAR(50) NOT NULL DEFAULT 'member'");
+            // Change role column to support proper role-based access control
+            DB::statement("ALTER TABLE members MODIFY COLUMN role ENUM('Project_Admin', 'Team_Lead', 'Developer', 'Designer', 'Member') NOT NULL DEFAULT 'Member'");
         });
     }
 
@@ -24,7 +24,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('members', function (Blueprint $table) {
-            // Revert back to enum
+            // Revert back to old enum values
             DB::statement("ALTER TABLE members MODIFY COLUMN role ENUM('super admin', 'admin', 'member') NOT NULL DEFAULT 'member'");
         });
     }

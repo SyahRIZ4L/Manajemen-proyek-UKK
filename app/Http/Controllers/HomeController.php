@@ -20,7 +20,7 @@ class HomeController extends Controller
             case 'Developer':
                 return redirect()->route('developer.panel');
             case 'Designer':
-                return view('dashboard.designer', compact('user'));
+                return redirect()->route('designer.panel');
             case 'Member':
             default:
                 return view('dashboard.member', compact('user'));

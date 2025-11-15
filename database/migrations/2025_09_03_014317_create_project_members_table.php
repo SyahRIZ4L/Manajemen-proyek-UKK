@@ -12,7 +12,7 @@ return new class extends Migration
             $table->integer('member_id', true);
             $table->integer('project_id');
             $table->integer('user_id');
-            $table->enum('role', ['super admin', 'admin', 'member'])->default('member');
+            $table->enum('role', ['Project_Admin', 'Team_Lead', 'Developer', 'Designer', 'Member'])->default('Member');
             $table->timestamp('joined_at')->useCurrent();
 
             // Foreign keys

@@ -487,4 +487,263 @@ class DesignerController extends Controller
             'improvement_areas' => ['Mobile responsiveness', 'Loading speed', 'Navigation']
         ];
     }
+
+    /**
+     * Designer Panel (New Design-focused Interface)
+     */
+    public function panel()
+    {
+        if (!CheckPermission::hasPermission(Auth::user(), 'view_assigned_tasks')) {
+            return redirect()->route('home')->with('error', 'Akses ditolak. Anda tidak memiliki permission untuk melihat panel designer.');
+        }
+
+        return view('designer.panel');
+    }
+
+    /**
+     * Get designer statistics for panel API
+     */
+    public function getDesignerStatistics()
+    {
+        $user = Auth::user();
+
+        // Mock data for now - replace with actual queries later
+        $statistics = [
+            'active_projects' => 8,
+            'design_assets' => 45,
+            'completed_designs' => 127,
+            'pending_feedback' => 3,
+            'client_rating' => 4.8,
+            'total_designs' => 172,
+            'portfolio_views' => 2847
+        ];
+
+        return response()->json($statistics);
+    }
+
+    /**
+     * Get design assets for designer panel API
+     */
+    public function getPanelDesignAssets(Request $request)
+    {
+        $user = Auth::user();
+        $filter = $request->get('filter', 'all');
+
+        // Mock data for design assets
+        $assets = [
+            [
+                'id' => 1,
+                'title' => 'Homepage Hero Section',
+                'type' => 'web',
+                'status' => 'approved',
+                'updated_at' => '2024-11-01',
+                'file_types' => ['PSD', 'AI'],
+                'description' => 'Modern hero section design with animated elements and call-to-action buttons.'
+            ],
+            [
+                'id' => 2,
+                'title' => 'Mobile App Icons Set',
+                'type' => 'mobile',
+                'status' => 'in_progress',
+                'updated_at' => '2024-10-30',
+                'file_types' => ['SVG', 'PNG'],
+                'description' => 'Complete icon set for fitness mobile application with multiple sizes and variants.'
+            ],
+            [
+                'id' => 3,
+                'title' => 'Brand Identity Package',
+                'type' => 'brand',
+                'status' => 'review',
+                'updated_at' => '2024-10-28',
+                'file_types' => ['AI', 'PDF'],
+                'description' => 'Complete brand identity including logo, business cards, and letterhead designs.'
+            ]
+        ];
+
+        // Filter assets based on type if specified
+        if ($filter !== 'all') {
+            $assets = array_filter($assets, function($asset) use ($filter) {
+                return $asset['type'] === $filter;
+            });
+        }
+
+        return response()->json(array_values($assets));
+    }
+
+    /**
+     * Get design projects for designer panel
+     */
+    public function getDesignProjects()
+    {
+        $user = Auth::user();
+
+        // Mock data for design projects
+        $projects = [
+            [
+                'id' => 1,
+                'title' => 'E-Commerce Website Redesign',
+                'client' => 'TechCorp Ltd.',
+                'type' => 'web',
+                'status' => 'in_design',
+                'deadline' => '2024-11-15',
+                'progress' => 70,
+                'description' => 'Complete redesign of product catalog and checkout process with modern UI/UX principles.'
+            ],
+            [
+                'id' => 2,
+                'title' => 'Mobile App UI Kit',
+                'client' => 'StartupXYZ',
+                'type' => 'mobile',
+                'status' => 'review',
+                'deadline' => '2024-11-10',
+                'progress' => 90,
+                'description' => 'Complete UI component library for fitness tracking mobile application.'
+            ],
+            [
+                'id' => 3,
+                'title' => 'Corporate Branding Package',
+                'client' => 'Business Solutions Inc.',
+                'type' => 'brand',
+                'status' => 'in_design',
+                'deadline' => '2024-12-01',
+                'progress' => 55,
+                'description' => 'Complete brand identity including logo, color palette, typography, and brand guidelines.'
+            ]
+        ];
+
+        return response()->json($projects);
+    }
+
+    /**
+     * Get gallery items for designer panel
+     */
+    public function getGalleryItems()
+    {
+        $user = Auth::user();
+
+        // Mock data for gallery items
+        $galleryItems = [
+            [
+                'id' => 1,
+                'title' => 'E-commerce Homepage',
+                'type' => 'web',
+                'description' => 'Modern shopping website design',
+                'image_url' => '/images/gallery/ecommerce-homepage.jpg',
+                'likes' => 24,
+                'views' => 156
+            ],
+            [
+                'id' => 2,
+                'title' => 'Fitness App UI',
+                'type' => 'mobile',
+                'description' => 'Mobile app interface design',
+                'image_url' => '/images/gallery/fitness-app.jpg',
+                'likes' => 18,
+                'views' => 98
+            ],
+            [
+                'id' => 3,
+                'title' => 'Brand Identity',
+                'type' => 'brand',
+                'description' => 'Complete branding package',
+                'image_url' => '/images/gallery/brand-identity.jpg',
+                'likes' => 31,
+                'views' => 203
+            ],
+            [
+                'id' => 4,
+                'title' => 'Dashboard UI',
+                'type' => 'ui',
+                'description' => 'Analytics dashboard interface',
+                'image_url' => '/images/gallery/dashboard-ui.jpg',
+                'likes' => 27,
+                'views' => 174
+            ]
+        ];
+
+        return response()->json($galleryItems);
+    }
+
+    /**
+     * Get client feedback for designer panel
+     */
+    public function getClientFeedback()
+    {
+        $user = Auth::user();
+
+        // Mock data for client feedback
+        $feedback = [
+            [
+                'id' => 1,
+                'client_name' => 'Sarah Johnson',
+                'project_title' => 'E-Commerce Website Redesign',
+                'message' => 'Love the new color scheme! Could we make the CTA button slightly larger? Overall great work on the homepage design.',
+                'rating' => 5,
+                'created_at' => '2024-11-02 10:30:00',
+                'status' => 'pending'
+            ],
+            [
+                'id' => 2,
+                'client_name' => 'Mike Chen',
+                'project_title' => 'Mobile App UI Kit',
+                'message' => 'The mobile responsive design looks fantastic. The user flow is much clearer now. Ready to approve this version.',
+                'rating' => 5,
+                'created_at' => '2024-11-01 14:15:00',
+                'status' => 'approved'
+            ],
+            [
+                'id' => 3,
+                'client_name' => 'Emily Davis',
+                'project_title' => 'Corporate Branding',
+                'message' => 'Can we explore a darker theme option? The current design is great but our brand might benefit from a premium dark mode.',
+                'rating' => 4,
+                'created_at' => '2024-10-30 09:45:00',
+                'status' => 'pending'
+            ]
+        ];
+
+        return response()->json($feedback);
+    }
+
+    /**
+     * Get recent activities for designer panel
+     */
+    public function getDesignerActivities()
+    {
+        $user = Auth::user();
+
+        // Mock data for recent activities
+        $activities = [
+            [
+                'id' => 1,
+                'type' => 'design_uploaded',
+                'title' => 'Design uploaded',
+                'description' => 'Landing page mockup',
+                'created_at' => '2024-11-02 11:15:00'
+            ],
+            [
+                'id' => 2,
+                'type' => 'feedback_received',
+                'title' => 'Feedback received',
+                'description' => 'Client review on homepage',
+                'created_at' => '2024-11-02 08:30:00'
+            ],
+            [
+                'id' => 3,
+                'type' => 'design_revised',
+                'title' => 'Design revised',
+                'description' => 'Updated color scheme',
+                'created_at' => '2024-11-01 16:20:00'
+            ],
+            [
+                'id' => 4,
+                'type' => 'project_started',
+                'title' => 'Project started',
+                'description' => 'Mobile app redesign project',
+                'created_at' => '2024-11-01 09:00:00'
+            ]
+        ];
+
+        return response()->json($activities);
+    }
 }

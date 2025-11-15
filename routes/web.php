@@ -5,10 +5,12 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\TeamLeadController;
 use App\Http\Controllers\DeveloperController;
+use App\Http\Controllers\DesignerController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 
 
@@ -59,8 +61,19 @@ Route::middleware('auth')->group(function () {
     // Team Lead Panel Route - Only accessible by team leads
     Route::get('/teamlead/panel', [TeamLeadController::class, 'panel'])->name('teamlead.panel');
 
+        // Team Lead API routes (auth middleware)
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/api/teamlead/statistics', [TeamLeadController::class, 'getStatistics'])->name('teamlead.statistics');
+        Route::get('/api/teamlead/projects', [TeamLeadController::class, 'getProjects'])->name('teamlead.projects');
+        Route::get('/api/teamlead/boards', [TeamLeadController::class, 'getBoards'])->name('teamlead.boards');
+        Route::get('/api/teamlead/cards', [TeamLeadController::class, 'getCards'])->name('teamlead.cards');
+    });
+
     // Developer Panel Route - Only accessible by developers
     Route::get('/developer/panel', [DeveloperController::class, 'panel'])->name('developer.panel');
+
+    // Designer Panel Route - Only accessible by designers
+    Route::get('/designer/panel', [DesignerController::class, 'panel'])->name('designer.panel');
 
     // Developer API Routes - Only accessible by developers
     Route::middleware('role:Developer')->group(function () {
@@ -71,6 +84,16 @@ Route::middleware('auth')->group(function () {
         Route::get('/api/developer/activities', [DeveloperController::class, 'getRecentActivities'])->name('developer.activities');
         Route::get('/api/developer/time-logs', [DeveloperController::class, 'getTimeLogs'])->name('developer.time-logs');
         Route::put('/api/developer/tasks/{taskId}/status', [DeveloperController::class, 'updateTaskStatus'])->name('developer.update-task-status');
+    });
+
+    // Designer API Routes - Only accessible by designers
+    Route::middleware('auth')->group(function () {
+        Route::get('/api/designer/statistics', [DesignerController::class, 'getDesignerStatistics'])->name('designer.statistics');
+        Route::get('/api/designer/assets', [DesignerController::class, 'getPanelDesignAssets'])->name('designer.assets');
+        Route::get('/api/designer/projects', [DesignerController::class, 'getDesignProjects'])->name('designer.projects');
+        Route::get('/api/designer/gallery', [DesignerController::class, 'getGalleryItems'])->name('designer.gallery');
+        Route::get('/api/designer/feedback', [DesignerController::class, 'getClientFeedback'])->name('designer.feedback');
+        Route::get('/api/designer/activities', [DesignerController::class, 'getDesignerActivities'])->name('designer.activities');
     });
 
     // Project Management Routes - Only accessible by admins and team leads

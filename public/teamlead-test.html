@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Lead API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .project { border: 1px solid #ddd; margin: 10px 0; padding: 15px; border-radius: 8px; }
+        .member { background: #f8f9fa; margin: 5px 0; padding: 8px; border-radius: 4px; }
+        .member-avatar {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #007bff;
+            color: white;
+            text-align: center;
+            line-height: 30px;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Team Lead Projects with Team Members</h1>
+    <div id="projects-container">Loading...</div>
+
+    <script>
+        // Simulate API call (since we need authentication, this is just for demo)
+        const sampleData = {
+            "success": true,
+            "data": [
+                {
+                    "project_id": 1,
+                    "project_name": "E-Commerce Website",
+                    "description": "Full-stack e-commerce platform with payment integration",
+                    "status": "In Progress",
+                    "total_tasks": 10,
+                    "completed_tasks": 4,
+                    "in_progress_tasks": 3,
+                    "pending_tasks": 3,
+                    "overdue_tasks": 2,
+                    "team_member_count": 3,
+                    "team_members": [
+                        {
+                            "user_id": 3,
+                            "full_name": "Sarah Developer",
+                            "email": "sarah@example.com",
+                            "role": "Developer",
+                            "joined_at": "2025-11-07T10:28:24.000000Z"
+                        },
+                        {
+                            "user_id": 4,
+                            "full_name": "Mike Designer",
+                            "email": "mike@example.com",
+                            "role": "Designer",
+                            "joined_at": "2025-11-07T10:28:24.000000Z"
+                        },
+                        {
+                            "user_id": 5,
+                            "full_name": "Lisa Member",
+                            "email": "lisa@example.com",
+                            "role": "member",
+                            "joined_at": "2025-11-07T10:28:24.000000Z"
+                        }
+                    ]
+                },
+                {
+                    "project_id": 2,
+                    "project_name": "Mobile App Development",
+                    "description": "Cross-platform mobile app for task management",
+                    "status": "In Progress",
+                    "total_tasks": 5,
+                    "completed_tasks": 1,
+                    "in_progress_tasks": 2,
+                    "pending_tasks": 2,
+                    "overdue_tasks": 0,
+                    "team_member_count": 2,
+                    "team_members": [
+                        {
+                            "user_id": 6,
+                            "full_name": "David Developer",
+                            "email": "david@example.com",
+                            "role": "Developer",
+                            "joined_at": "2025-11-07T10:28:24.000000Z"
+                        },
+                        {
+                            "user_id": 4,
+                            "full_name": "Mike Designer",
+                            "email": "mike@example.com",
+                            "role": "Designer",
+                            "joined_at": "2025-11-07T10:28:24.000000Z"
+                        }
+                    ]
+                }
+            ]
+        };
+
+        function getRoleColor(role) {
+            const colors = {
+                'Developer': '#28a745',
+                'Designer': '#dc3545',
+                'member': '#6c757d',
+                'Member': '#6c757d',
+                'Project_Admin': '#007bff',
+                'Team_Lead': '#17a2b8'
+            };
+            return colors[role] || '#6c757d';
+        }
+
+        function getInitials(name) {
+            return name.split(' ').map(n => n.charAt(0)).join('').toUpperCase();
+        }
+
+        function renderProjects(data) {
+            const container = document.getElementById('projects-container');
+
+            if (!data.success || !data.data.length) {
+                container.innerHTML = '<p>No projects found</p>';
+                return;
+            }
+
+            container.innerHTML = data.data.map(project => `
+                <div class="project">
+                    <h3>${project.project_name}</h3>
+                    <p><strong>Status:</strong> ${project.status}</p>
+                    <p><strong>Description:</strong> ${project.description}</p>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 10px 0;">
+                        <div><strong>Total Tasks:</strong> ${project.total_tasks}</div>
+                        <div><strong>Completed:</strong> ${project.completed_tasks}</div>
+                        <div><strong>In Progress:</strong> ${project.in_progress_tasks}</div>
+                        <div><strong>Pending:</strong> ${project.pending_tasks}</div>
+                    </div>
+                    ${project.overdue_tasks > 0 ? `<p style="color: red;"><strong>⚠️ Overdue Tasks:</strong> ${project.overdue_tasks}</p>` : ''}
+
+                    <h4>Team Members (${project.team_member_count})</h4>
+                    <div class="team-members">
+                        ${project.team_members.map(member => `
+                            <div class="member">
+                                <span class="member-avatar" style="background-color: ${getRoleColor(member.role)};">
+                                    ${getInitials(member.full_name)}
+                                </span>
+                                <strong>${member.full_name}</strong>
+                                <span style="color: #666;">(${member.role.replace(/_/g, ' ')})</span>
+                                <br>
+                                <small style="color: #888;">${member.email}</small>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render the sample data
+        renderProjects(sampleData);
+    </script>
+</body>
+</html>
