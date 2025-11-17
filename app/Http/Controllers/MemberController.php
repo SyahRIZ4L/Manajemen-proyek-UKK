@@ -189,7 +189,7 @@ class MemberController extends Controller
             $user = Auth::user();
 
             // Log the request for debugging
-            \Log::info("Card status update request", [
+            Log::info("Card status update request", [
                 'card_id' => $cardId,
                 'user_id' => $user->user_id,
                 'requested_status' => $request->status,
@@ -201,7 +201,7 @@ class MemberController extends Controller
                 ->first();
 
             if (!$assignment) {
-                \Log::warning("User not assigned to card", ['card_id' => $cardId, 'user_id' => $user->user_id]);
+                Log::warning("User not assigned to card", ['card_id' => $cardId, 'user_id' => $user->user_id]);
                 return response()->json(['error' => 'You are not assigned to this card.'], 403);
             }
 
@@ -215,7 +215,7 @@ class MemberController extends Controller
 
             // Validate status transition
             if (!$this->isValidStatusTransition($oldStatus, $newStatus)) {
-                \Log::warning("Invalid status transition", [
+                Log::warning("Invalid status transition", [
                     'card_id' => $cardId,
                     'old_status' => $oldStatus,
                     'new_status' => $newStatus
@@ -226,7 +226,7 @@ class MemberController extends Controller
             }
 
             // Use database transaction to ensure data consistency
-            \DB::beginTransaction();
+            DB::beginTransaction();
 
             try {
                 $card->status = $newStatus;
@@ -260,9 +260,9 @@ class MemberController extends Controller
                 $card->save();
                 $assignment->save();
 
-                \DB::commit();
+                DB::commit();
 
-                \Log::info("Card status updated successfully", [
+                Log::info("Card status updated successfully", [
                     'card_id' => $cardId,
                     'old_status' => $oldStatus,
                     'new_status' => $newStatus,
@@ -277,8 +277,8 @@ class MemberController extends Controller
                 ]);
 
             } catch (\Exception $e) {
-                \DB::rollBack();
-                \Log::error("Database error during card status update", [
+                DB::rollBack();
+                Log::error("Database error during card status update", [
                     'card_id' => $cardId,
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString()
@@ -287,7 +287,7 @@ class MemberController extends Controller
             }
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            \Log::warning("Validation error in updateCardStatus", [
+            Log::warning("Validation error in updateCardStatus", [
                 'card_id' => $cardId,
                 'errors' => $e->errors()
             ]);
@@ -296,7 +296,7 @@ class MemberController extends Controller
                 'details' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
-            \Log::error("Unexpected error in updateCardStatus", [
+            Log::error("Unexpected error in updateCardStatus", [
                 'card_id' => $cardId,
                 'error' => $e->getMessage(),
                 'file' => $e->getFile(),
@@ -485,7 +485,7 @@ class MemberController extends Controller
                 ]);
 
             if ($updatedRows > 0) {
-                \Log::info("Stopped {$updatedRows} existing timer(s) for user {$userId}");
+                Log::info("Stopped {$updatedRows} existing timer(s) for user {$userId}");
             }
 
             // Create new timer
@@ -503,12 +503,12 @@ class MemberController extends Controller
                 $card->timer_started_at = now();
                 $card->save();
 
-                \Log::info("Timer started for card {$cardId}, user {$userId}", [
+                Log::info("Timer started for card {$cardId}, user {$userId}", [
                     'time_log_id' => $timeLog->id
                 ]);
             }
         } catch (\Exception $e) {
-            \Log::error("Error in autoStartTimer", [
+            Log::error("Error in autoStartTimer", [
                 'card_id' => $cardId,
                 'user_id' => $userId,
                 'error' => $e->getMessage()
@@ -544,16 +544,16 @@ class MemberController extends Controller
                     $card->actual_hours = round($totalMinutes / 60, 2);
                     $card->save();
 
-                    \Log::info("Timer stopped for card {$cardId}, user {$userId}", [
+                    Log::info("Timer stopped for card {$cardId}, user {$userId}", [
                         'duration_minutes' => $timeLog->duration_minutes,
                         'total_hours' => $card->actual_hours
                     ]);
                 }
             } else {
-                \Log::warning("No active timer found to stop for card {$cardId}, user {$userId}");
+                Log::warning("No active timer found to stop for card {$cardId}, user {$userId}");
             }
         } catch (\Exception $e) {
-            \Log::error("Error in autoStopTimer", [
+            Log::error("Error in autoStopTimer", [
                 'card_id' => $cardId,
                 'user_id' => $userId,
                 'error' => $e->getMessage()
