@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -19,12 +18,10 @@ class HomeController extends Controller
             case 'Team_Lead':
                 return redirect()->route('teamlead.panel');
             case 'Developer':
-                return redirect()->route('developer.panel');
             case 'Designer':
-                return redirect()->route('designer.panel');
             case 'Member':
             default:
-                return view('dashboard.member', compact('user'));
+                return redirect()->route('member.dashboard');
         }
     }
 }

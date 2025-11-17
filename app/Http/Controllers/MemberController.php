@@ -1,403 +1,1001 @@
 <?php
-
 namespace App\Http\Controllers;
 
+use App\Models\Card;
+use App\Models\CardAssignment;
+use App\Models\CardHistory;
+use App\Models\TimeLog;
+use App\Models\Project;
+use App\Models\ProjectMember;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use App\Http\Middleware\CheckPermission;
+use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class MemberController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-        $this->middleware(function ($request, $next) {
-            if (Auth::user()->role !== 'member') {
-                return redirect()->route('home')->with('error', 'Akses ditolak. Anda bukan Member.');
-            }
-            return $next($request);
-        });
-    }
-
-    /**
-     * Member Dashboard
-     */
     public function dashboard()
     {
-        if (!CheckPermission::hasPermission(Auth::user(), 'view_own_tasks')) {
-            return redirect()->route('home')->with('error', 'Akses ditolak. Anda tidak memiliki permission untuk melihat dashboard.');
-        }
-
         $user = Auth::user();
-        $userRole = 'Team Member';
 
-        // Get assigned tasks
-        $assignedTasks = $this->getAssignedTasks($user);
+        $assignedCards = CardAssignment::select("card_assignments.*")
+            ->with(["card:card_id,card_title,status,priority,due_date,created_at", "card.board:board_id,board_name"])
+            ->where("user_id", $user->user_id)
+            ->whereHas("card", function($query) {
+                $query->whereNotIn("status", ["done", "cancelled"]);
+            })
+            ->get();
 
-        // Get basic statistics
-        $taskStats = $this->getTaskStats($user);
+        $stats = [
+            "total_cards" => $assignedCards->count(),
+            "in_progress" => $assignedCards->where("card.status", "in_progress")->count(),
+            "todo" => $assignedCards->where("card.status", "todo")->count(),
+            "review" => $assignedCards->where("card.status", "review")->count(),
+            "overdue" => $assignedCards->filter(function($assignment) {
+                return $assignment->card->due_date && $assignment->card->due_date < Carbon::today() && $assignment->card->status !== "done";
+            })->count()
+        ];
 
-        // Get recent activities
-        $recentActivities = $this->getRecentActivities($user);
+        $recentCards = $assignedCards->sortByDesc("card.created_at")->take(5);
 
-        // Get time logs
-        $timeSpent = $this->getTimeSpent($user);
+        $todayTimeLogs = TimeLog::select("duration_minutes", "start_time", "end_time", "card_id")
+            ->with("card:card_id,card_title")
+            ->where("user_id", $user->user_id)
+            ->whereDate("start_time", Carbon::today())
+            ->orderBy("start_time", "desc")
+            ->get();
 
-        return view('member.dashboard', compact(
-            'user',
-            'userRole',
-            'assignedTasks',
-            'taskStats',
-            'recentActivities',
-            'timeSpent'
+        $totalTimeToday = $todayTimeLogs->sum("duration_minutes");
+
+        return view("member.dashboard", compact(
+            "stats",
+            "recentCards",
+            "todayTimeLogs",
+            "totalTimeToday"
         ));
     }
 
-    /**
-     * My Tasks page
-     */
-    public function myTasks()
+    public function myCards(Request $request)
     {
-        if (!CheckPermission::hasPermission(Auth::user(), 'view_own_tasks')) {
-            return redirect()->route('home')->with('error', 'Akses ditolak.');
-        }
-
         $user = Auth::user();
-        $tasks = $this->getAssignedTasks($user);
+        $status = $request->get("status", "all");
 
-        return view('member.tasks', compact('tasks'));
-    }
+        $query = CardAssignment::select("card_assignments.*")
+            ->with([
+                "card" => function($q) {
+                    $q->select('card_id', 'card_title', 'description', 'status', 'priority', 'due_date', 'created_at', 'created_by', 'board_id');
+                },
+                "card.board" => function($q) {
+                    $q->select('board_id', 'board_name', 'project_id');
+                },
+                "card.board.project" => function($q) {
+                    $q->select('project_id', 'project_name');
+                },
+                "card.creator" => function($q) {
+                    $q->select('user_id', 'full_name');
+                }
+            ])
+            ->where("user_id", $user->user_id);
 
-    /**
-     * Update own task status (limited options)
-     */
-    public function updateTaskStatus(Request $request)
-    {
-        if (!CheckPermission::hasPermission(Auth::user(), 'update_own_task_status')) {
-            return response()->json(['success' => false, 'message' => 'Akses ditolak']);
+        if ($status !== "all") {
+            $query->whereHas("card", function($q) use ($status) {
+                $q->where("status", $status);
+            });
         }
 
-        $validated = $request->validate([
-            'task_id' => 'required|exists:cards,id',
-            'status' => 'required|in:in_progress,completed' // Limited status options for members
-        ]);
+        $assignments = $query->orderBy("card_id", "desc")->get();
 
-        try {
-            $user = Auth::user();
-
-            // Verify task is assigned to user
-            $task = DB::table('cards')->where('id', $validated['task_id'])->first();
-            if ($task->assigned_to != $user->user_id) {
-                return response()->json(['success' => false, 'message' => 'Task ini tidak ditugaskan kepada Anda']);
+        // Get projects that this member is part of
+        $memberProjects = ProjectMember::with([
+            'project' => function($query) {
+                $query->select('project_id', 'project_name', 'description', 'status', 'created_at')
+                    ->withCount([
+                        'cards as total_cards',
+                        'cards as completed_cards' => function($q) {
+                            $q->where('status', 'done');
+                        }
+                    ])
+                    ->with(['members' => function($q) {
+                        $q->select('project_id', 'user_id', 'role');
+                    }]);
             }
+        ])
+        ->where('user_id', $user->user_id)
+        ->get();
 
-            DB::table('cards')->where('id', $validated['task_id'])->update([
-                'status' => $validated['status'],
-                'updated_at' => now()
-            ]);
+        // Debug: Check if user has project memberships
+        $debugMembershipCount = ProjectMember::where('user_id', $user->user_id)->count();
+        Log::info('User ID: ' . $user->user_id . ' has ' . $debugMembershipCount . ' project memberships');
+        Log::info('Raw member projects count: ' . $memberProjects->count());
 
-            return response()->json(['success' => true, 'message' => 'Status task berhasil diupdate']);
+        $memberProjects = $memberProjects->map(function($member) {
+            $project = $member->project;
+            if ($project) {
+                // Calculate progress percentage
+                $totalCards = $project->total_cards;
+                $completedCards = $project->completed_cards;
+                $project->progress_percentage = $totalCards > 0 ? round(($completedCards / $totalCards) * 100) : 0;
 
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan: ' . $e->getMessage()]);
-        }
-    }
+                // Add member role and team size
+                $project->member_role = $member->role;
+                $project->team_size = $project->members->count();
+                $project->joined_at = $member->joined_at;
 
-    /**
-     * Add comment to task
-     */
-    public function addTaskComment(Request $request)
-    {
-        if (!CheckPermission::hasPermission(Auth::user(), 'add_task_comments')) {
-            return response()->json(['success' => false, 'message' => 'Akses ditolak']);
-        }
-
-        $validated = $request->validate([
-            'task_id' => 'required|exists:cards,id',
-            'comment' => 'required|string|max:500' // Limited comment length for members
-        ]);
-
-        try {
-            $user = Auth::user();
-
-            // Verify user has access to this task
-            $hasAccess = DB::table('cards')
-                ->join('boards', 'cards.board_id', '=', 'boards.id')
-                ->join('project_members', 'boards.project_id', '=', 'project_members.project_id')
-                ->where('cards.id', $validated['task_id'])
-                ->where('project_members.user_id', $user->user_id)
-                ->exists();
-
-            if (!$hasAccess) {
-                return response()->json(['success' => false, 'message' => 'Anda tidak memiliki akses ke task ini']);
+                Log::info('Project found: ' . $project->project_name);
+                return $project;
             }
+            return null;
+        })
+        ->filter()
+        ->values();
 
-            DB::table('comments')->insert([
-                'card_id' => $validated['task_id'],
-                'user_id' => $user->user_id,
-                'content' => $validated['comment'],
-                'created_at' => now(),
-                'updated_at' => now()
-            ]);
+        $statusCounts = [
+            "all" => CardAssignment::where("user_id", $user->user_id)->count(),
+            "todo" => CardAssignment::where("user_id", $user->user_id)
+                ->whereHas("card", function($q) { $q->where("status", "todo"); })->count(),
+            "in_progress" => CardAssignment::where("user_id", $user->user_id)
+                ->whereHas("card", function($q) { $q->where("status", "in_progress"); })->count(),
+            "review" => CardAssignment::where("user_id", $user->user_id)
+                ->whereHas("card", function($q) { $q->where("status", "review"); })->count(),
+            "done" => CardAssignment::where("user_id", $user->user_id)
+                ->whereHas("card", function($q) { $q->where("status", "done"); })->count(),
+        ];
 
-            return response()->json(['success' => true, 'message' => 'Komentar berhasil ditambahkan']);
-
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan: ' . $e->getMessage()]);
-        }
+        return view("member.my-cards", compact("assignments", "statusCounts", "status", "memberProjects"));
     }
 
-    /**
-     * Log work time
-     */
-    public function logWorkTime(Request $request)
+    public function cardDetail($cardId)
     {
-        if (!CheckPermission::hasPermission(Auth::user(), 'log_own_time')) {
-            return response()->json(['success' => false, 'message' => 'Akses ditolak']);
-        }
-
-        $validated = $request->validate([
-            'task_id' => 'required|exists:cards,id',
-            'hours' => 'required|numeric|min:0.5|max:12', // Max 12 hours per day for members
-            'description' => 'required|string|max:255',
-            'work_date' => 'required|date|before_or_equal:today'
-        ]);
-
-        try {
-            $user = Auth::user();
-
-            // Verify task is assigned to user
-            $task = DB::table('cards')->where('id', $validated['task_id'])->first();
-            if ($task->assigned_to != $user->user_id) {
-                return response()->json(['success' => false, 'message' => 'Task ini tidak ditugaskan kepada Anda']);
-            }
-
-            // Check if already logged time for this date
-            $existingLog = DB::table('time_logs')
-                ->where('user_id', $user->user_id)
-                ->where('card_id', $validated['task_id'])
-                ->where('logged_date', $validated['work_date'])
-                ->exists();
-
-            if ($existingLog) {
-                return response()->json(['success' => false, 'message' => 'Anda sudah mencatat waktu untuk task ini pada tanggal tersebut']);
-            }
-
-            DB::table('time_logs')->insert([
-                'user_id' => $user->user_id,
-                'card_id' => $validated['task_id'],
-                'hours' => $validated['hours'],
-                'description' => $validated['description'],
-                'logged_date' => $validated['work_date'],
-                'created_at' => now(),
-                'updated_at' => now()
-            ]);
-
-            return response()->json(['success' => true, 'message' => 'Waktu kerja berhasil dicatat']);
-
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan: ' . $e->getMessage()]);
-        }
-    }
-
-    /**
-     * My timesheet
-     */
-    public function timesheet()
-    {
-        if (!CheckPermission::hasPermission(Auth::user(), 'view_own_timesheet')) {
-            return redirect()->route('home')->with('error', 'Akses ditolak.');
-        }
-
-        $user = Auth::user();
-        $timeLogs = $this->getTimeLogs($user);
-        $weeklyStats = $this->getWeeklyStats($user);
-
-        return view('member.timesheet', compact('timeLogs', 'weeklyStats'));
-    }
-
-    /**
-     * Download files
-     */
-    public function downloadFile($fileId)
-    {
-        if (!CheckPermission::hasPermission(Auth::user(), 'download_files')) {
-            return redirect()->back()->with('error', 'Akses ditolak.');
-        }
-
         $user = Auth::user();
 
-        // Verify user has access to this file
-        $file = DB::table('task_attachments')
-            ->join('cards', 'task_attachments.card_id', '=', 'cards.id')
-            ->join('boards', 'cards.board_id', '=', 'boards.id')
-            ->join('project_members', 'boards.project_id', '=', 'project_members.project_id')
-            ->where('task_attachments.id', $fileId)
-            ->where('project_members.user_id', $user->user_id)
-            ->select('task_attachments.*')
+        $assignment = CardAssignment::where('card_id', $cardId)
+            ->where('user_id', $user->user_id)
             ->first();
 
-        if (!$file) {
-            return redirect()->back()->with('error', 'File tidak ditemukan atau Anda tidak memiliki akses.');
+        if (!$assignment) {
+            abort(403, 'You are not assigned to this card.');
         }
 
-        $filePath = storage_path('app/public/' . $file->path);
+        $card = Card::with(['board', 'creator', 'subtasks', 'timeLogs'])
+            ->findOrFail($cardId);
 
-        if (!file_exists($filePath)) {
-            return redirect()->back()->with('error', 'File tidak ditemukan di server.');
-        }
+        $timeLogs = TimeLog::where('card_id', $cardId)
+            ->where('user_id', $user->user_id)
+            ->orderBy('start_time', 'desc')
+            ->get();
 
-        return response()->download($filePath, $file->original_name);
+        $totalTime = $timeLogs->sum('duration_minutes');
+
+        $comments = DB::table('card_comments')
+            ->join('users', 'card_comments.user_id', '=', 'users.user_id')
+            ->where('card_comments.card_id', $cardId)
+            ->select(
+                'card_comments.*',
+                'users.full_name',
+                'users.role',
+                'users.profile_photo'
+            )
+            ->orderBy('card_comments.created_at', 'asc')
+            ->get();
+
+        return view('member.card-detail', compact('card', 'assignment', 'timeLogs', 'totalTime', 'comments'));
     }
 
-    /**
-     * Upload own files (limited)
-     */
-    public function uploadFile(Request $request)
+    public function updateCardStatus(Request $request, $cardId)
     {
-        if (!CheckPermission::hasPermission(Auth::user(), 'upload_own_files')) {
-            return response()->json(['success' => false, 'message' => 'Akses ditolak']);
-        }
-
-        $validated = $request->validate([
-            'task_id' => 'required|exists:cards,id',
-            'file' => 'required|file|mimes:jpg,jpeg,png,pdf,doc,docx,txt|max:5120', // 5MB max for members
-            'description' => 'nullable|string|max:255'
-        ]);
-
         try {
             $user = Auth::user();
 
-            // Verify task is assigned to user
-            $task = DB::table('cards')->where('id', $validated['task_id'])->first();
-            if ($task->assigned_to != $user->user_id) {
-                return response()->json(['success' => false, 'message' => 'Task ini tidak ditugaskan kepada Anda']);
-            }
-
-            // Store file
-            $file = $request->file('file');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $path = $file->storeAs('task_attachments', $filename, 'public');
-
-            // Save to database
-            DB::table('task_attachments')->insert([
-                'card_id' => $validated['task_id'],
+            // Log the request for debugging
+            \Log::info("Card status update request", [
+                'card_id' => $cardId,
                 'user_id' => $user->user_id,
-                'filename' => $filename,
-                'original_name' => $file->getClientOriginalName(),
-                'path' => $path,
-                'description' => $validated['description'],
-                'file_size' => $file->getSize(),
-                'mime_type' => $file->getMimeType(),
-                'created_at' => now(),
-                'updated_at' => now()
+                'requested_status' => $request->status,
+                'timestamp' => now()
             ]);
 
-            return response()->json(['success' => true, 'message' => 'File berhasil diupload']);
+            $assignment = CardAssignment::where('card_id', $cardId)
+                ->where('user_id', $user->user_id)
+                ->first();
 
+            if (!$assignment) {
+                \Log::warning("User not assigned to card", ['card_id' => $cardId, 'user_id' => $user->user_id]);
+                return response()->json(['error' => 'You are not assigned to this card.'], 403);
+            }
+
+            $request->validate([
+                'status' => 'required|in:todo,in_progress,review,done'
+            ]);
+
+            $card = Card::findOrFail($cardId);
+            $oldStatus = $card->status;
+            $newStatus = $request->status;
+
+            // Validate status transition
+            if (!$this->isValidStatusTransition($oldStatus, $newStatus)) {
+                \Log::warning("Invalid status transition", [
+                    'card_id' => $cardId,
+                    'old_status' => $oldStatus,
+                    'new_status' => $newStatus
+                ]);
+                return response()->json([
+                    'error' => "Invalid status transition from {$oldStatus} to {$newStatus}"
+                ], 400);
+            }
+
+            // Use database transaction to ensure data consistency
+            \DB::beginTransaction();
+
+            try {
+                $card->status = $newStatus;
+                $timerStarted = false;
+
+                // Update assignment status based on card status
+                // Note: assignment_status ENUM values: ['assigned', 'in_progress', 'completed']
+                if ($newStatus === 'in_progress' && $oldStatus !== 'in_progress') {
+                    $assignment->started_at = now();
+                    $assignment->assignment_status = 'in_progress';
+                    $card->started_at = now();
+
+                    $this->autoStartTimer($cardId, $user->user_id);
+                    $timerStarted = true;
+                } elseif ($newStatus === 'done') {
+                    $assignment->completed_at = now();
+                    $assignment->assignment_status = 'completed';
+                    $card->completed_at = now();
+
+                    $this->autoStopTimer($cardId, $user->user_id);
+                } elseif ($newStatus === 'review') {
+                    // For review status, keep assignment as in_progress since 'review' is not in ENUM
+                    // The card status will be 'review' but assignment stays 'in_progress'
+                    $assignment->assignment_status = 'in_progress';
+                } elseif ($newStatus === 'todo') {
+                    // For todo status, set assignment back to assigned
+                    $assignment->assignment_status = 'assigned';
+                    $assignment->started_at = null;
+                }
+
+                $card->save();
+                $assignment->save();
+
+                \DB::commit();
+
+                \Log::info("Card status updated successfully", [
+                    'card_id' => $cardId,
+                    'old_status' => $oldStatus,
+                    'new_status' => $newStatus,
+                    'timer_started' => $timerStarted
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Card status updated successfully.',
+                    'status' => $newStatus,
+                    'timer_started' => $timerStarted
+                ]);
+
+            } catch (\Exception $e) {
+                \DB::rollBack();
+                \Log::error("Database error during card status update", [
+                    'card_id' => $cardId,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                throw $e;
+            }
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::warning("Validation error in updateCardStatus", [
+                'card_id' => $cardId,
+                'errors' => $e->errors()
+            ]);
+            return response()->json([
+                'error' => 'Validation failed',
+                'details' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+            \Log::error("Unexpected error in updateCardStatus", [
+                'card_id' => $cardId,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'error' => 'An error occurred while updating the card status. Please try again.',
+                'debug_info' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
         }
     }
 
-    /**
-     * Helper Methods
-     */
-
-    /**
-     * Get tasks assigned to member
-     */
-    private function getAssignedTasks($user)
+    public function timeLogs(Request $request)
     {
-        return DB::table('cards')
-            ->join('boards', 'cards.board_id', '=', 'boards.board_id')
-            ->join('projects', 'boards.project_id', '=', 'projects.project_id')
-            ->where('cards.assigned_to', $user->user_id)
-            ->select('cards.*', 'projects.project_name', 'boards.board_name')
-            ->orderBy('cards.due_date', 'asc')
-            ->get();
-    }
+        $user = Auth::user();
+        $date = $request->get('date', Carbon::today()->format('Y-m-d'));
 
-    /**
-     * Get basic task statistics
-     */
-    private function getTaskStats($user)
-    {
-        $tasks = DB::table('cards')->where('assigned_to', $user->user_id);
-
-        return [
-            'total' => $tasks->count(),
-            'pending' => $tasks->where('status', 'pending')->count(),
-            'in_progress' => $tasks->where('status', 'in_progress')->count(),
-            'completed' => $tasks->where('status', 'completed')->count(),
-            'overdue' => $tasks->where('due_date', '<', now())->where('status', '!=', 'completed')->count()
-        ];
-    }
-
-    /**
-     * Get recent activities
-     */
-    private function getRecentActivities($user)
-    {
-        return DB::table('comments')
-            ->join('cards', 'comments.card_id', '=', 'cards.id')
-            ->where('comments.user_id', $user->user_id)
-            ->select('comments.*', 'cards.title as task_title')
-            ->orderBy('comments.created_at', 'desc')
-            ->limit(5)
-            ->get();
-    }
-
-    /**
-     * Get time spent this week
-     */
-    private function getTimeSpent($user)
-    {
-        $startOfWeek = now()->startOfWeek();
-        $endOfWeek = now()->endOfWeek();
-
-        return DB::table('time_logs')
+        $timeLogs = TimeLog::with(['card:card_id,card_title', 'card.board:board_id,board_name'])
             ->where('user_id', $user->user_id)
-            ->whereBetween('logged_date', [$startOfWeek, $endOfWeek])
-            ->sum('hours');
-    }
+            ->whereDate('start_time', $date)
+            ->orderBy('start_time', 'desc')
+            ->get();
 
-    /**
-     * Get detailed time logs
-     */
-    private function getTimeLogs($user)
-    {
-        return DB::table('time_logs')
-            ->join('cards', 'time_logs.card_id', '=', 'cards.id')
-            ->where('time_logs.user_id', $user->user_id)
-            ->select('time_logs.*', 'cards.title as task_title')
-            ->orderBy('time_logs.logged_date', 'desc')
-            ->paginate(10);
-    }
+        $totalDuration = $timeLogs->sum('duration_minutes');
 
-    /**
-     * Get weekly statistics
-     */
-    private function getWeeklyStats($user)
-    {
-        $weeks = [];
+        $weekStart = Carbon::parse($date)->startOfWeek();
+        $weekEnd = Carbon::parse($date)->endOfWeek();
 
-        for ($i = 0; $i < 4; $i++) {
-            $weekStart = now()->subWeeks($i)->startOfWeek();
-            $weekEnd = now()->subWeeks($i)->endOfWeek();
+        $weeklyLogs = TimeLog::where('user_id', $user->user_id)
+            ->whereBetween('start_time', [$weekStart, $weekEnd])
+            ->selectRaw('DATE(start_time) as date, SUM(duration_minutes) as total_minutes')
+            ->groupBy('date')
+            ->get()
+            ->keyBy('date');
 
-            $hours = DB::table('time_logs')
-                ->where('user_id', $user->user_id)
-                ->whereBetween('logged_date', [$weekStart, $weekEnd])
-                ->sum('hours');
+        $weeklyTotal = $weeklyLogs->sum('total_minutes');
+        $dailySummary = [];
 
-            $weeks[] = [
-                'week' => $weekStart->format('M d') . ' - ' . $weekEnd->format('M d'),
-                'hours' => $hours
+        for ($i = 0; $i < 7; $i++) {
+            $day = $weekStart->copy()->addDays($i);
+            $dayKey = $day->format('Y-m-d');
+            $dayTotal = $weeklyLogs->get($dayKey)->total_minutes ?? 0;
+
+            $dailySummary[] = [
+                'date' => $day,
+                'total_minutes' => $dayTotal,
+                'total_hours' => round($dayTotal / 60, 2)
             ];
         }
 
-        return array_reverse($weeks);
+        return view('member.time-logs', compact(
+            'timeLogs',
+            'totalDuration',
+            'date',
+            'dailySummary',
+            'weeklyTotal'
+        ));
+    }
+
+    public function startTimer(Request $request, $cardId)
+    {
+        $user = Auth::user();
+
+        $assignment = CardAssignment::where('card_id', $cardId)
+            ->where('user_id', $user->user_id)
+            ->first();
+
+        if (!$assignment) {
+            return response()->json(['error' => 'You are not assigned to this card.'], 403);
+        }
+
+        TimeLog::where('user_id', $user->user_id)
+            ->whereNull('end_time')
+            ->update([
+                'end_time' => now(),
+                'duration_minutes' => DB::raw('TIMESTAMPDIFF(MINUTE, start_time, NOW())')
+            ]);
+
+        $timeLog = TimeLog::create([
+            'user_id' => $user->user_id,
+            'card_id' => $cardId,
+            'start_time' => now(),
+            'description' => $request->get('description', '')
+        ]);
+
+        $card = Card::findOrFail($cardId);
+        $card->is_timer_active = true;
+        $card->timer_started_at = now();
+        $card->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Timer started successfully.',
+            'time_log_id' => $timeLog->log_id
+        ]);
+    }
+
+    public function stopTimer(Request $request, $cardId)
+    {
+        $user = Auth::user();
+
+        $timeLog = TimeLog::where('user_id', $user->user_id)
+            ->where('card_id', $cardId)
+            ->whereNull('end_time')
+            ->first();
+
+        if (!$timeLog) {
+            return response()->json(['error' => 'No active timer found for this card.'], 404);
+        }
+
+        $timeLog->end_time = now();
+        $timeLog->duration_minutes = Carbon::parse($timeLog->start_time)
+            ->diffInMinutes($timeLog->end_time);
+
+        if ($request->has('description')) {
+            $timeLog->description = $request->description;
+        }
+
+        $timeLog->save();
+
+        $card = Card::findOrFail($cardId);
+        $card->is_timer_active = false;
+        $card->timer_started_at = null;
+
+        $totalMinutes = TimeLog::where('card_id', $cardId)->sum('duration_minutes');
+        $card->actual_hours = round($totalMinutes / 60, 2);
+        $card->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Timer stopped successfully.',
+            'duration' => $timeLog->duration_minutes
+        ]);
+    }
+
+    public function getActiveTimer()
+    {
+        $user = Auth::user();
+
+        $activeTimer = TimeLog::with('card:card_id,card_title')
+            ->where('user_id', $user->user_id)
+            ->whereNull('end_time')
+            ->first();
+
+        if (!$activeTimer) {
+            return response()->json(['active' => false]);
+        }
+
+        $duration = Carbon::parse($activeTimer->start_time)->diffInMinutes(now());
+
+        return response()->json([
+            'active' => true,
+            'card_id' => $activeTimer->card_id,
+            'card_title' => $activeTimer->card->card_title,
+            'start_time' => $activeTimer->start_time,
+            'duration' => $duration
+        ]);
+    }
+
+    /**
+     * Validate if status transition is allowed
+     */
+    private function isValidStatusTransition($oldStatus, $newStatus)
+    {
+        $validTransitions = [
+            'todo' => ['in_progress'],
+            'in_progress' => ['review', 'todo'],
+            'review' => ['done', 'in_progress'],
+            'done' => [] // No transitions from done
+        ];
+
+        return in_array($newStatus, $validTransitions[$oldStatus] ?? []);
+    }
+
+    private function autoStartTimer($cardId, $userId)
+    {
+        try {
+            // Stop any existing timers for this user
+            $updatedRows = TimeLog::where('user_id', $userId)
+                ->whereNull('end_time')
+                ->update([
+                    'end_time' => now(),
+                    'duration_minutes' => DB::raw('TIMESTAMPDIFF(MINUTE, start_time, NOW())')
+                ]);
+
+            if ($updatedRows > 0) {
+                \Log::info("Stopped {$updatedRows} existing timer(s) for user {$userId}");
+            }
+
+            // Create new timer
+            $timeLog = TimeLog::create([
+                'user_id' => $userId,
+                'card_id' => $cardId,
+                'start_time' => now(),
+                'description' => 'Auto-started when beginning work'
+            ]);
+
+            // Update card timer status
+            $card = Card::find($cardId);
+            if ($card) {
+                $card->is_timer_active = true;
+                $card->timer_started_at = now();
+                $card->save();
+
+                \Log::info("Timer started for card {$cardId}, user {$userId}", [
+                    'time_log_id' => $timeLog->id
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Log::error("Error in autoStartTimer", [
+                'card_id' => $cardId,
+                'user_id' => $userId,
+                'error' => $e->getMessage()
+            ]);
+            // Don't throw the error, just log it so main operation can continue
+        }
+    }
+
+    private function autoStopTimer($cardId, $userId)
+    {
+        try {
+            $timeLog = TimeLog::where('user_id', $userId)
+                ->where('card_id', $cardId)
+                ->whereNull('end_time')
+                ->first();
+
+            if ($timeLog) {
+                $timeLog->end_time = now();
+                $timeLog->duration_minutes = Carbon::parse($timeLog->start_time)
+                    ->diffInMinutes($timeLog->end_time);
+                $timeLog->save();
+
+                // Update card timer status and calculate total hours
+                $card = Card::find($cardId);
+                if ($card) {
+                    $card->is_timer_active = false;
+                    $card->timer_started_at = null;
+
+                    // Calculate total actual hours from all time logs
+                    $totalMinutes = TimeLog::where('card_id', $cardId)
+                        ->whereNotNull('duration_minutes')
+                        ->sum('duration_minutes');
+                    $card->actual_hours = round($totalMinutes / 60, 2);
+                    $card->save();
+
+                    \Log::info("Timer stopped for card {$cardId}, user {$userId}", [
+                        'duration_minutes' => $timeLog->duration_minutes,
+                        'total_hours' => $card->actual_hours
+                    ]);
+                }
+            } else {
+                \Log::warning("No active timer found to stop for card {$cardId}, user {$userId}");
+            }
+        } catch (\Exception $e) {
+            \Log::error("Error in autoStopTimer", [
+                'card_id' => $cardId,
+                'user_id' => $userId,
+                'error' => $e->getMessage()
+            ]);
+            // Don't throw the error, just log it so main operation can continue
+        }
+    }
+
+    public function getCardComments($cardId)
+    {
+        $user = Auth::user();
+
+        $hasAccess = CardAssignment::where('card_id', $cardId)
+            ->where('user_id', $user->user_id)
+            ->exists();
+
+        if (!$hasAccess && $user->role === 'Team_Lead') {
+            $hasAccess = DB::table('cards')
+                ->join('boards', 'cards.board_id', '=', 'boards.board_id')
+                ->join('projects', 'boards.project_id', '=', 'projects.project_id')
+                ->join('project_members', 'projects.project_id', '=', 'project_members.project_id')
+                ->where('cards.card_id', $cardId)
+                ->where('project_members.user_id', $user->user_id)
+                ->where('project_members.role', 'Team_Lead')
+                ->exists();
+        }
+
+        if (!$hasAccess) {
+            return response()->json(['error' => 'You do not have access to this card.'], 403);
+        }
+
+        $comments = DB::table('card_comments')
+            ->join('users', 'card_comments.user_id', '=', 'users.user_id')
+            ->where('card_comments.card_id', $cardId)
+            ->select(
+                'card_comments.*',
+                'users.full_name',
+                'users.role',
+                'users.profile_photo'
+            )
+            ->orderBy('card_comments.created_at', 'asc')
+            ->get();
+
+        $organizedComments = [];
+        $replies = [];
+
+        foreach ($comments as $comment) {
+            if ($comment->parent_id) {
+                if (!isset($replies[$comment->parent_id])) {
+                    $replies[$comment->parent_id] = [];
+                }
+                $replies[$comment->parent_id][] = $comment;
+            } else {
+                $organizedComments[] = $comment;
+            }
+        }
+
+        foreach ($organizedComments as &$comment) {
+            $comment->replies = $replies[$comment->comment_id] ?? [];
+        }
+
+        return response()->json([
+            'success' => true,
+            'comments' => $organizedComments
+        ]);
+    }
+
+    public function addCardComment(Request $request, $cardId)
+    {
+        $user = Auth::user();
+
+        $hasAccess = CardAssignment::where('card_id', $cardId)
+            ->where('user_id', $user->user_id)
+            ->exists();
+
+        if (!$hasAccess && $user->role === 'Team_Lead') {
+            $hasAccess = DB::table('cards')
+                ->join('boards', 'cards.board_id', '=', 'boards.board_id')
+                ->join('projects', 'boards.project_id', '=', 'projects.project_id')
+                ->join('project_members', 'projects.project_id', '=', 'project_members.project_id')
+                ->where('cards.card_id', $cardId)
+                ->where('project_members.user_id', $user->user_id)
+                ->where('project_members.role', 'Team_Lead')
+                ->exists();
+        }
+
+        if (!$hasAccess) {
+            return response()->json(['error' => 'You do not have access to this card.'], 403);
+        }
+
+        $request->validate([
+            'comment' => 'required|string|max:1000',
+            'parent_id' => 'nullable|integer|exists:card_comments,comment_id'
+        ]);
+
+        $commentId = DB::table('card_comments')->insertGetId([
+            'card_id' => $cardId,
+            'user_id' => $user->user_id,
+            'comment' => $request->comment,
+            'parent_id' => $request->parent_id,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        $comment = DB::table('card_comments')
+            ->join('users', 'card_comments.user_id', '=', 'users.user_id')
+            ->where('card_comments.comment_id', $commentId)
+            ->select(
+                'card_comments.*',
+                'users.full_name',
+                'users.role',
+                'users.profile_photo'
+            )
+            ->first();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Comment added successfully.',
+            'comment' => $comment
+        ]);
+    }
+
+    /**
+     * Get dashboard data for API
+     */
+    public function getDashboard()
+    {
+        try {
+            $user = Auth::user();
+
+            $assignedCards = CardAssignment::with(['card'])
+                ->where('user_id', $user->user_id)
+                ->whereHas('card', function($query) {
+                    $query->whereNotIn('status', ['cancelled']);
+                })
+                ->get();
+
+            $stats = [
+                'total' => $assignedCards->count(),
+                'in_progress' => $assignedCards->where('card.status', 'in_progress')->count(),
+                'completed' => $assignedCards->where('card.status', 'done')->count(),
+                'overdue' => $assignedCards->filter(function($assignment) {
+                    return $assignment->card->due_date &&
+                           $assignment->card->due_date < Carbon::today() &&
+                           $assignment->card->status !== 'done';
+                })->count()
+            ];
+
+            $recentActivities = [];
+
+            return response()->json([
+                'success' => true,
+                'stats' => $stats,
+                'activities' => $recentActivities
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error loading member dashboard: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error loading dashboard'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get cards for member API with caching
+     */
+    public function getMyCards()
+    {
+        try {
+            $user = Auth::user();
+
+            // Simple optimization: use direct query with minimal joins
+            $cards = DB::table('card_assignments as ca')
+                ->join('cards as c', 'ca.card_id', '=', 'c.card_id')
+                ->join('boards as b', 'c.board_id', '=', 'b.board_id')
+                ->leftJoin('projects as p', 'b.project_id', '=', 'p.project_id')
+                ->where('ca.user_id', $user->user_id)
+                ->select([
+                    'c.card_id',
+                    'c.card_title',
+                    'c.description',
+                    'c.status',
+                    'c.priority',
+                    'c.estimated_hours',
+                    'c.due_date',
+                    'b.board_name',
+                    'p.project_name'
+                ])
+                ->orderBy('c.card_id', 'desc')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'cards' => $cards
+            ])->header('Cache-Control', 'no-cache, must-revalidate');
+
+        } catch (\Exception $e) {
+            Log::error('Error loading member cards: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error loading cards'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get projects for member API
+     */
+    public function getProjects()
+    {
+        try {
+            $user = Auth::user();
+
+            $projects = DB::table('project_members as pm')
+                ->join('projects as p', 'pm.project_id', '=', 'p.project_id')
+                ->where('pm.user_id', $user->user_id)
+                ->select([
+                    'p.project_id',
+                    'p.project_name',
+                    'p.description',
+                    'pm.role',
+                    'p.created_at'
+                ])
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'projects' => $projects
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error loading member projects: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error loading projects'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get card detail for API
+     */
+    public function getCardDetail($cardId)
+    {
+        try {
+            $user = Auth::user();
+
+            // Check if user has access to this card
+            $hasAccess = DB::table('card_assignments')
+                ->where('card_id', $cardId)
+                ->where('user_id', $user->user_id)
+                ->exists();
+
+            if (!$hasAccess) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Access denied'
+                ], 403);
+            }
+
+            $card = DB::table('cards as c')
+                ->join('boards as b', 'c.board_id', '=', 'b.board_id')
+                ->leftJoin('projects as p', 'b.project_id', '=', 'p.project_id')
+                ->leftJoin('users as creator', 'c.created_by', '=', 'creator.user_id')
+                ->where('c.card_id', $cardId)
+                ->select([
+                    'c.*',
+                    'b.board_name',
+                    'p.project_name',
+                    'creator.full_name as created_by_name'
+                ])
+                ->first();
+
+            if (!$card) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Card not found'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'card' => $card
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error loading card detail: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error loading card detail'
+            ], 500);
+        }
+    }
+
+    /**
+     * Start working on a card
+     */
+    public function startCard($cardId)
+    {
+        try {
+            $user = Auth::user();
+
+            // Single query to check access and get card
+            $card = DB::table('cards as c')
+                ->join('card_assignments as ca', 'c.card_id', '=', 'ca.card_id')
+                ->where('c.card_id', $cardId)
+                ->where('ca.user_id', $user->user_id)
+                ->where('c.status', 'todo')
+                ->select('c.card_id', 'c.status')
+                ->first();
+
+            if (!$card) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Card not found or cannot be started'
+                ], 404);
+            }
+
+            // Quick update card status
+            $updated = DB::table('cards')
+                ->where('card_id', $cardId)
+                ->update([
+                    'status' => 'in_progress',
+                    'started_at' => now()
+                ]);
+
+            if (!$updated) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to update card status'
+                ], 500);
+            }
+
+            // Async history logging (non-blocking)
+            dispatch(function() use ($cardId, $user) {
+                try {
+                    CardHistory::create([
+                        'card_id' => $cardId,
+                        'user_id' => $user->user_id,
+                        'action' => 'started',
+                        'old_status' => 'todo',
+                        'new_status' => 'in_progress',
+                        'comment' => 'Card started by member',
+                        'action_date' => now()
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error('Error logging card history: ' . $e->getMessage());
+                }
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Card started successfully',
+                'data' => [
+                    'card_id' => $cardId,
+                    'status' => 'in_progress',
+                    'started_at' => now()->toISOString()
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error starting card: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error starting card'
+            ], 500);
+        }
+    }
+
+    /**
+     * Submit card for review
+     */
+    public function submitCard(Request $request, $cardId)
+    {
+        try {
+            $user = Auth::user();
+
+            // Single query to check access and get card
+            $card = DB::table('cards as c')
+                ->join('card_assignments as ca', 'c.card_id', '=', 'ca.card_id')
+                ->where('c.card_id', $cardId)
+                ->where('ca.user_id', $user->user_id)
+                ->where('c.status', 'in_progress')
+                ->select('c.card_id', 'c.status')
+                ->first();
+
+            if (!$card) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Card not found or cannot be submitted'
+                ], 404);
+            }
+
+            // Quick update card status
+            $updated = DB::table('cards')
+                ->where('card_id', $cardId)
+                ->update(['status' => 'review']);
+
+            if (!$updated) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to update card status'
+                ], 500);
+            }
+
+            // Async history logging (non-blocking)
+            $comment = $request->input('comment', '');
+            dispatch(function() use ($cardId, $user, $comment) {
+                try {
+                    CardHistory::create([
+                        'card_id' => $cardId,
+                        'user_id' => $user->user_id,
+                        'action' => 'submitted',
+                        'old_status' => 'in_progress',
+                        'new_status' => 'review',
+                        'comment' => 'Card submitted for review by member',
+                        'feedback' => $comment,
+                        'action_date' => now()
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error('Error logging card history: ' . $e->getMessage());
+                }
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Card submitted for review successfully',
+                'data' => [
+                    'card_id' => $cardId,
+                    'status' => 'review',
+                    'submitted_at' => now()->toISOString()
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error submitting card: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error submitting card'
+            ], 500);
+        }
     }
 }

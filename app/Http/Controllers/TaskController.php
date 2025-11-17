@@ -15,7 +15,7 @@ class TaskController extends Controller
     {
         $user = Auth::user();
         $tasks = $this->getUserTasks($user->id);
-        
+
         return view('tasks.index', compact('tasks'));
     }
 
@@ -51,7 +51,7 @@ class TaskController extends Controller
     {
         $task = $this->getTaskById($id);
         $history = $this->getTaskHistory($id);
-        
+
         return view('tasks.show', compact('task', 'history'));
     }
 
@@ -114,7 +114,7 @@ class TaskController extends Controller
         try {
             $task = $this->getTaskById($id);
             $currentStatus = $this->getCurrentTaskStatus($id);
-            
+
             // Status validation logic
             $newStatus = $request->status;
             $validTransitions = [
@@ -133,12 +133,12 @@ class TaskController extends Controller
 
             // In real implementation, update database here
             // For now, we'll just return success
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Status task berhasil diperbarui!'
             ]);
-            
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -159,7 +159,7 @@ class TaskController extends Controller
         ]);
 
         $task = $this->getTaskById($id);
-        
+
         // Handle file attachments if any
         $attachmentPaths = [];
         if ($request->hasFile('attachments')) {
@@ -196,7 +196,7 @@ class TaskController extends Controller
     public function startTask($id)
     {
         $task = $this->getTaskById($id);
-        
+
         if ($task['status'] === 'To Do') {
             $this->updateTaskStatus($id, 'In Progress');
             $this->logTaskHistory($id, 'started', [
@@ -228,7 +228,7 @@ class TaskController extends Controller
         ]);
 
         $task = $this->getTaskById($id);
-        
+
         $this->logTaskHistory($id, 'completed', [
             'completion_note' => $request->completion_note,
             'actual_hours' => $request->actual_hours,
@@ -264,150 +264,39 @@ class TaskController extends Controller
     }
 
     /**
-     * Get user tasks (mock data).
+     * Get user tasks - to be implemented with actual database queries.
      */
     private function getUserTasks($userId)
     {
-        return [
-            [
-                'id' => 1,
-                'title' => 'Develop user authentication system',
-                'description' => 'Create login, register, and password reset functionality',
-                'status' => 'In Progress',
-                'priority' => 'High',
-                'project' => 'E-commerce Website',
-                'project_id' => 1,
-                'due_date' => '2025-09-25',
-                'estimated_hours' => 40,
-                'actual_hours' => 25,
-                'created_at' => now()->subDays(5),
-                'updated_at' => now()->subHours(2),
-            ],
-            [
-                'id' => 2,
-                'title' => 'Design database schema',
-                'description' => 'Create ERD and implement database structure',
-                'status' => 'Completed',
-                'priority' => 'Medium',
-                'project' => 'CRM System',
-                'project_id' => 2,
-                'due_date' => '2025-09-20',
-                'estimated_hours' => 16,
-                'actual_hours' => 18,
-                'created_at' => now()->subDays(10),
-                'updated_at' => now()->subDays(2),
-            ],
-            [
-                'id' => 3,
-                'title' => 'API documentation',
-                'description' => 'Write comprehensive API documentation using Swagger',
-                'status' => 'To Do',
-                'priority' => 'Low',
-                'project' => 'Mobile App Backend',
-                'project_id' => 3,
-                'due_date' => '2025-10-01',
-                'estimated_hours' => 12,
-                'actual_hours' => 0,
-                'created_at' => now()->subDays(3),
-                'updated_at' => now()->subDays(3),
-            ],
-            [
-                'id' => 4,
-                'title' => 'Performance optimization',
-                'description' => 'Optimize database queries and implement caching',
-                'status' => 'Review',
-                'priority' => 'High',
-                'project' => 'E-commerce Website',
-                'project_id' => 1,
-                'due_date' => '2025-09-30',
-                'estimated_hours' => 24,
-                'actual_hours' => 22,
-                'created_at' => now()->subDays(7),
-                'updated_at' => now()->subDays(1),
-            ],
-        ];
+        // TODO: Implement with actual database queries
+        return [];
     }
 
     /**
-     * Get single task by ID (mock data).
+     * Get single task by ID - to be implemented with actual database queries.
      */
     private function getTaskById($id)
     {
-        $tasks = $this->getUserTasks(Auth::id());
-        
-        foreach ($tasks as $task) {
-            if ($task['id'] == $id) {
-                return $task;
-            }
-        }
-        
+        // TODO: Implement with actual database queries
         abort(404, 'Task not found');
     }
 
     /**
-     * Get task history (mock data).
+     * Get task history - to be implemented with actual database queries.
      */
     private function getTaskHistory($taskId)
     {
-        return [
-            (object) [
-                'action' => 'created',
-                'description' => 'Task dibuat',
-                'user' => 'John Doe',
-                'created_at' => now()->subDays(5),
-            ],
-            (object) [
-                'action' => 'started',
-                'description' => 'Mulai mengerjakan task',
-                'user' => 'John Doe',
-                'created_at' => now()->subDays(3),
-            ],
-            (object) [
-                'action' => 'time_logged',
-                'description' => 'Mencatat 8 jam kerja',
-                'user' => 'John Doe',
-                'created_at' => now()->subDays(2),
-            ],
-            (object) [
-                'action' => 'status_updated',
-                'description' => 'Status diubah dari To Do ke In Progress',
-                'user' => 'John Doe',
-                'created_at' => now()->subHours(4),
-            ],
-        ];
+        // TODO: Implement with actual database queries
+        return [];
     }
 
     /**
-     * Get all task history for user (mock data).
+     * Get all task history for user - to be implemented with actual database queries.
      */
     private function getAllTaskHistory($userId)
     {
-        return [
-            [
-                'task_id' => 1,
-                'task_title' => 'Develop user authentication system',
-                'action' => 'started',
-                'description' => 'Mulai mengerjakan task',
-                'user' => 'John Doe',
-                'created_at' => now()->subDays(3),
-            ],
-            [
-                'task_id' => 2,
-                'task_title' => 'Design database schema',
-                'action' => 'completed',
-                'description' => 'Task selesai dikerjakan',
-                'user' => 'John Doe',
-                'created_at' => now()->subDays(2),
-            ],
-            [
-                'task_id' => 1,
-                'task_title' => 'Develop user authentication system',
-                'action' => 'time_logged',
-                'description' => 'Mencatat 8 jam kerja',
-                'user' => 'John Doe',
-                'created_at' => now()->subHours(4),
-            ],
-        ];
+        // TODO: Implement with actual database queries
+        return [];
     }
 
     /**

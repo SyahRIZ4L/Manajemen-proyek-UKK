@@ -7,1763 +7,39 @@
     <title>Team Lead Panel - Manajemen Proyek</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-    <style>
-        /* Light Theme (Default) */
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            transition: all 0.3s ease;
-        }
 
-        /* Dark Theme */
-        body.dark-theme {
-            background-color: #1a1a1a;
-            color: #e0e0e0;
-        }
+    <!-- Team Lead Panel CSS Files -->
+    <link href="{{ asset('css/teamlead-panel.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/profile-avatar.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/dropdown-notifications.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/dashboard-stats.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/project-task.css') }}" rel="stylesheet">
 
-        body.dark-theme .main-content {
-            background-color: #1a1a1a;
-        }
+    <link href="{{ asset('css/project-details.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/modal-styles.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/form-controls.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/button-styles.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/timeline-activity.css') }}" rel="stylesheet">
 
-        body.dark-theme .content-header {
-            background: #2d2d2d;
-            color: #e0e0e0;
-            border-left-color: #667eea;
-        }
+    <link href="{{ asset('css/performance-animations.css') }}" rel="stylesheet">
 
-        body.dark-theme .content-area {
-            background: #2d2d2d;
-            color: #e0e0e0;
-        }
 
-        body.dark-theme .card {
-            background: #333333 !important;
-            color: #e0e0e0 !important;
-            border-color: #444444 !important;
-        }
-
-        body.dark-theme .alert-info {
-            background: rgba(102, 126, 234, 0.1);
-            border-color: rgba(102, 126, 234, 0.3);
-            color: #e0e0e0;
-        }
-
-        /* Dark theme for feature elements */
-        body.dark-theme .feature-card {
-            background: #333333;
-            border-color: #444444;
-            color: #e0e0e0;
-        }
-
-        body.dark-theme .feature-stats {
-            background: #2d2d2d;
-            color: #e0e0e0;
-        }
-
-        body.dark-theme .welcome-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100vh;
-            width: 280px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 0;
-            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-        }
-        .sidebar-header {
-            padding: 30px 20px;
-            text-align: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.1);
-            flex-shrink: 0;
-        }
-        .sidebar-header h4 {
-            margin: 0;
-            font-weight: 700;
-            font-size: 1.4rem;
-        }
-        .sidebar-header p {
-            margin: 5px 0 0 0;
-            opacity: 0.8;
-            font-size: 0.9rem;
-        }
-        .sidebar-nav {
-            padding: 30px 0;
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: hidden;
-        }
-
-        /* Custom scrollbar for sidebar navigation */
-        .sidebar-nav::-webkit-scrollbar {
-            width: 4px;
-        }
-        .sidebar-nav::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 2px;
-        }
-        .sidebar-nav::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 2px;
-        }
-        .sidebar-nav::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.5);
-        }
-        .nav-item {
-            margin: 0 15px 12px 15px;
-        }
-        .nav-item:last-child {
-            margin-bottom: 20px;
-        }
-        .nav-link {
-            color: rgba(255, 255, 255, 0.9);
-            text-decoration: none;
-            padding: 18px 20px;
-            display: flex;
-            align-items: center;
-            gap: 18px;
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            border-radius: 16px;
-            font-weight: 500;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            position: relative;
-            overflow: hidden;
-        }
-        .nav-link::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
-        }
-        .nav-link:hover::before {
-            left: 100%;
-        }
-        .nav-link:hover, .nav-link.active {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-            border-color: rgba(255, 255, 255, 0.3);
-        }
-        .nav-icon {
-            width: 45px;
-            height: 45px;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-        .nav-link:hover .nav-icon, .nav-link.active .nav-icon {
-            background: rgba(255, 255, 255, 0.25);
-            transform: scale(1.1);
-        }
-        .nav-icon i {
-            font-size: 1.3rem;
-            color: white;
-        }
-        .nav-content {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-        }
-        .nav-title {
-            font-size: 1rem;
-            font-weight: 600;
-            line-height: 1.2;
-            color: white;
-        }
-        .nav-subtitle {
-            font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.7);
-            margin-top: 2px;
-            font-weight: 400;
-        }
-
-        /* Profile Section Styles */
-        .sidebar-profile {
-            padding: 20px 15px;
-            flex-shrink: 0;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .profile-card {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 15px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .profile-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-        .profile-avatar {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            overflow: hidden;
-            position: relative;
-        }
-        .profile-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .avatar-placeholder i {
-            font-size: 1.8rem;
-        }
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background: #28a745;
-            border-radius: 50%;
-            display: inline-block;
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-        .profile-details h6 {
-            color: white;
-            margin: 0;
-            font-weight: 600;
-        }
-        .profile-details small {
-            color: rgba(255, 255, 255, 0.7);
-        }
-        .profile-actions {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-        }
-        .btn-action {
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex: 1;
-        }
-        .btn-action:hover {
-            background: rgba(255, 255, 255, 0.25);
-            color: white;
-            transform: translateY(-2px);
-        }
-        .logout-btn:hover {
-            background: rgba(220, 53, 69, 0.3);
-            border-color: rgba(220, 53, 69, 0.5);
-        }
-
-        /* Theme Toggle Button */
-        .theme-toggle:hover {
-            background: rgba(255, 193, 7, 0.3);
-            border-color: rgba(255, 193, 7, 0.5);
-        }
-
-        /* Dropdown Menu Styles */
-        .dropdown-menu {
-            backdrop-filter: blur(10px);
-            background: rgba(255, 255, 255, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            min-width: 200px;
-            margin-top: 8px;
-        }
-        .dropdown-item {
-            padding: 8px 16px;
-            transition: all 0.3s ease;
-            border-radius: 8px;
-            margin: 2px 4px;
-            color: #333;
-        }
-        .dropdown-item:hover {
-            background: rgba(0, 123, 255, 0.1);
-            color: #007bff;
-            transform: translateX(4px);
-        }
-        .dropdown-item i {
-            width: 20px;
-            margin-right: 8px;
-        }
-        .dropdown-divider {
-            margin: 8px 0;
-            border-color: rgba(0, 0, 0, 0.1);
-        }
-
-        /* Back Button Section */
-        .back-section {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .back-btn-new {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 12px 15px;
-            border-radius: 10px;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-            font-weight: 500;
-            width: 100%;
-        }
-        .back-btn-new:hover {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .main-content {
-            margin-left: 280px;
-            padding: 30px;
-            min-height: 100vh;
-        }
-        .content-header {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            border-left: 4px solid #667eea;
-        }
-        .content-area {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            min-height: 600px;
-        }
-        .back-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 50px;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-        .back-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            color: white;
-            transform: translateY(-2px);
-        }
-
-        /* Dashboard Statistics Styles */
-        .text-purple {
-            color: #6f42c1 !important;
-        }
-
-        .bg-purple {
-            background-color: #6f42c1 !important;
-        }
-
-        /* Team Members Styling */
-        .team-members-section {
-            margin-top: 15px;
-        }
-
-        .team-member-item {
-            padding: 8px;
-            border-radius: 8px;
-            background: rgba(0, 0, 0, 0.02);
-            transition: background-color 0.2s ease;
-        }
-
-        .team-member-item:hover {
-            background: rgba(0, 0, 0, 0.05);
-        }
-
-        .member-avatar {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 0.75rem;
-            flex-shrink: 0;
-        }
-
-        .member-info {
-            min-width: 0;
-        }
-
-        .member-name {
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: #333;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .member-role {
-            font-size: 0.7rem;
-            color: #666;
-            text-transform: capitalize;
-        }
-
-        .dark-theme .member-name {
-            color: #e0e0e0;
-        }
-
-        .dark-theme .member-role {
-            color: #aaa;
-        }
-
-        .dark-theme .team-member-item {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .dark-theme .team-member-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .team-member-more {
-            border-top: 1px solid #eee;
-            margin-top: 8px;
-        }
-
-        .dark-theme .team-member-more {
-            border-top-color: #444;
-        }
-
-        .role-summary {
-            border-top: 1px solid #eee;
-            font-style: italic;
-        }
-
-        .dark-theme .role-summary {
-            border-top-color: #444;
-        }
-
-        .role-summary small {
-            line-height: 1.2;
-        }
-        .stat-card {
-            background: #ffffff;
-            border-radius: 18px;
-            padding: 30px;
-            text-align: center;
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            border: 1px solid #f0f0f0;
-            height: 100%;
-            position: relative;
-            overflow: hidden;
-        }
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-            transition: left 0.5s;
-        }
-        .stat-card:hover::before {
-            left: 100%;
-        }
-        .stat-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
-            border-color: #e0e0e0;
-        }
-        .stat-icon {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-        }
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        .stat-label {
-            font-size: 1rem;
-            margin-bottom: 5px;
-            font-weight: 500;
-            color: #6c757d;
-        }
-
-        /* Project and Task Styles */
-        .project-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-        }
-        .recent-project-item {
-            border-bottom: 1px solid #f0f0f0;
-            padding-bottom: 15px;
-        }
-        .recent-project-item:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
-        }
-        .upcoming-task-item {
-            border-bottom: 1px solid #f0f0f0;
-            padding-bottom: 15px;
-        }
-        .upcoming-task-item:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
-        }
-        .task-priority {
-            width: 4px;
-            height: 40px;
-            border-radius: 2px;
-            margin-top: 2px;
-        }
-        .task-priority.high {
-            background-color: #dc3545;
-        }
-        .task-priority.medium {
-            background-color: #ffc107;
-        }
-        .task-priority.low {
-            background-color: #28a745;
-        }
-
-        /* Project Management Styles */
-        .project-stat-card {
-            background: #ffffff;
-            border-radius: 18px;
-            padding: 25px;
-            text-align: center;
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            border: 1px solid #f0f0f0;
-            height: 100%;
-            position: relative;
-            overflow: hidden;
-        }
-        .project-stat-card:hover {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
-        }
-
-        .search-container .input-group-text {
-            background: white;
-            border: 1px solid #dee2e6;
-        }
-        .search-container .form-control {
-            border: 1px solid #dee2e6;
-        }
-        .search-container .form-control:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-        }
-
-        .projects-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 25px;
-        }
-
-        .project-card {
-            background: white;
-            border-radius: 16px;
-            border: 1px solid #e9ecef;
-            transition: all 0.3s ease;
-            overflow: hidden;
-        }
-        .project-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
-            border-color: #667eea;
-        }
-
-        .board-card {
-            background: white;
-            border-radius: 16px;
-            border: 1px solid #e9ecef;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        .board-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-            border-color: #667eea;
-        }
-
-        .stat-box {
-            padding: 8px 4px;
-        }
-        .stat-number {
-            font-size: 1.5rem;
-            font-weight: 700;
-            line-height: 1;
-        }
-        .stat-label {
-            font-size: 0.75rem;
-            color: #6c757d;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .task-card {
-            background: white;
-            border-radius: 12px;
-            border: 1px solid #e9ecef;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        .task-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-            border-color: #667eea;
-        }
-
-        .stat-card {
-            background: white;
-            border-radius: 12px;
-            border: 1px solid #e9ecef;
-            transition: all 0.3s ease;
-        }
-        .stat-card:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .card-item {
-            transition: all 0.3s ease;
-        }
-
-        .project-header {
-            display: flex;
-            justify-content: between;
-            align-items: center;
-            padding: 20px 20px 0 20px;
-        }
-
-        .project-status {
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: 4px 12px;
-            border-radius: 20px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .status-todo {
-            background: #f8f9fa;
-            color: #6c757d;
-        }
-        .status-progress {
-            background: #fff3cd;
-            color: #856404;
-        }
-        .status-review {
-            background: #d1ecf1;
-            color: #0c5460;
-        }
-        .status-done {
-            background: #d4edda;
-            color: #155724;
-        }
-        .status-cancelled {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .project-body {
-            padding: 20px;
-        }
-
-        .project-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #333;
-        }
-
-        .project-description {
-            color: #6c757d;
-            font-size: 0.9rem;
-            margin-bottom: 15px;
-            line-height: 1.4;
-        }
-
-        .avatar-group {
-            display: flex;
-            align-items: center;
-            gap: -8px;
-        }
-        .avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-            font-weight: 600;
-            border: 2px solid white;
-            margin-left: -8px;
-        }
-        .avatar:first-child {
-            margin-left: 0;
-        }
-
-        .welcome-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 20px;
-            padding: 35px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-        }
-        .welcome-icon {
-            width: 60px;
-            height: 60px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-        }
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-            margin-top: 20px;
-        }
-        .feature-card {
-            background: #ffffff;
-            border-radius: 18px;
-            padding: 30px;
-            text-align: center;
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            border: 1px solid #f0f0f0;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-            transition: left 0.5s;
-        }
-        .feature-card:hover::before {
-            left: 100%;
-        }
-        .feature-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
-            border-color: #e0e0e0;
-        }
-        .feature-icon {
-            width: 70px;
-            height: 70px;
-            border-radius: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            margin: 0 auto 20px;
-            color: white;
-            transition: all 0.3s ease;
-        }
-        .feature-card:hover .feature-icon {
-            transform: scale(1.1) rotate(5deg);
-        }
-        .feature-stats {
-            margin-top: 15px;
-            padding: 10px 15px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            display: inline-block;
-        }
-        .coming-soon {
-            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-            color: white;
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            margin-top: 15px;
-        }
-
-        /* User Management Styles */
-        .user-stat-card {
-            background: #ffffff;
-            border-radius: 18px;
-            padding: 25px;
-            text-align: center;
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            border: 1px solid #f0f0f0;
-            height: 100%;
-            position: relative;
-            overflow: hidden;
-        }
-        .user-stat-card:hover {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-
-        .role-badge {
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: 4px 10px;
-            border-radius: 15px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .role-project-admin {
-            background: #dc3545;
-            color: white;
-        }
-        .role-team-lead {
-            background: #fd7e14;
-            color: white;
-        }
-        .role-developer {
-            background: #198754;
-            color: white;
-        }
-        .role-designer {
-            background: #6f42c1;
-            color: white;
-        }
-        .role-member {
-            background: #6c757d;
-            color: white;
-        }
-
-        .status-badge {
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: 4px 10px;
-            border-radius: 15px;
-        }
-        .status-working {
-            background: #d4edda;
-            color: #155724;
-        }
-        .status-idle {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .table-hover tbody tr:hover {
-            background-color: #f8f9fa;
-        }
-
-        .btn-action {
-            padding: 6px 10px;
-            margin: 0 2px;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .btn-action:hover {
-            transform: translateY(-1px);
-        }
-        .btn-action.btn-view {
-            background: #e3f2fd;
-            color: #1976d2;
-        }
-        .btn-action.btn-edit {
-            background: #fff3e0;
-            color: #f57c00;
-        }
-        .btn-action.btn-delete {
-            background: #ffebee;
-            color: #d32f2f;
-        }
-
-        /* Project Detail Styles */
-        .project-detail-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2rem;
-            margin: -1rem -1rem 0 -1rem;
-        }
-
-        .project-status-badge {
-            padding: 0.5rem 1rem;
-            border-radius: 2rem;
-            font-weight: 600;
-            font-size: 0.875rem;
-        }
-
-        .project-status-badge.planning {
-            background: rgba(108, 117, 125, 0.1);
-            color: #6c757d;
-            border: 2px solid rgba(108, 117, 125, 0.3);
-        }
-
-        .project-status-badge.in-progress {
-            background: rgba(255, 193, 7, 0.1);
-            color: #ffc107;
-            border: 2px solid rgba(255, 193, 7, 0.3);
-        }
-
-        .project-status-badge.on-hold {
-            background: rgba(220, 53, 69, 0.1);
-            color: #dc3545;
-            border: 2px solid rgba(220, 53, 69, 0.3);
-        }
-
-        .project-status-badge.completed {
-            background: rgba(25, 135, 84, 0.1);
-            color: #198754;
-            border: 2px solid rgba(25, 135, 84, 0.3);
-        }
-
-        .project-actions {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-            margin-top: 1rem;
-        }
-
-        .project-actions .btn {
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            transition: all 0.3s ease;
-        }
-
-        .project-actions .btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.5);
-            transform: translateY(-1px);
-        }
-
-        .project-actions .btn-success:hover {
-            background: #198754;
-            border-color: #198754;
-        }
-
-        .project-actions .btn-warning:hover {
-            background: #fd7e14;
-            border-color: #fd7e14;
-        }
-
-        .team-member-card {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 0.5rem;
-            padding: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .team-member-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-
-        .member-avatar {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 0.875rem;
-        }
-
-        .board-stat-card {
-            background: white;
-            border-radius: 1rem;
-            padding: 1.5rem;
-            text-align: center;
-            border: 1px solid #e9ecef;
-            transition: all 0.3s ease;
-        }
-
-        .board-stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-
-        .board-stat-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .board-stat-number {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .board-stat-label {
-            color: #6c757d;
-            font-weight: 500;
-            text-transform: uppercase;
-            font-size: 0.875rem;
-            letter-spacing: 0.5px;
-        }
-
-        .project-info-card {
-            background: white;
-            border-radius: 1rem;
-            padding: 1.5rem;
-            border: 1px solid #e9ecef;
-            height: 100%;
-        }
-
-        .info-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid #f8f9fa;
-        }
-
-        .info-item:last-child {
-            border-bottom: none;
-        }
-
-        .info-label {
-            font-weight: 600;
-            color: #495057;
-        }
-
-        .info-value {
-            color: #6c757d;
-        }
-
-        /* Reports Styles */
-        .report-stat-card {
-            background: #ffffff;
-            border-radius: 18px;
-            padding: 25px;
-            text-align: center;
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            border: 1px solid #f0f0f0;
-            height: 100%;
-            position: relative;
-            overflow: hidden;
-        }
-        .report-stat-card:hover {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
-        }
-
-        .chart-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .nav-tabs .nav-link {
-            border: none;
-            color: #6c757d;
-            font-weight: 500;
-            padding: 0.75rem 1.5rem;
-            transition: all 0.3s ease;
-        }
-
-        .nav-tabs .nav-link:hover {
-            border-color: transparent;
-            color: #667eea;
-        }
-
-        .nav-tabs .nav-link.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 0.5rem 0.5rem 0 0;
-        }
-
-        .table-hover tbody tr:hover {
-            background-color: rgba(102, 126, 234, 0.05);
-        }
-
-        /* Dark theme for reports */
-        body.dark-theme .report-stat-card {
-            background: #333333;
-            border-color: #444444;
-            color: #e0e0e0;
-        }
-
-        body.dark-theme .chart-container {
-            background: #2d2d2d !important;
-            color: #e0e0e0;
-        }
-
-        body.dark-theme .nav-tabs .nav-link {
-            color: #a0a0a0;
-        }
-
-        body.dark-theme .nav-tabs .nav-link:hover {
-            color: #667eea;
-        }
-
-        body.dark-theme .table-hover tbody tr:hover {
-            background-color: rgba(102, 126, 234, 0.1);
-        }
-
-        /* Notification Styles */
-        .notification-dropdown {
-            border: none;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-            border-radius: 12px;
-        }
-
-        .notification-item {
-            padding: 12px 16px;
-            border-bottom: 1px solid #f0f0f0;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .notification-item:hover {
-            background-color: #f8f9fa;
-        }
-
-        .notification-item.unread {
-            background-color: rgba(102, 126, 234, 0.05);
-            border-left: 3px solid #667eea;
-        }
-
-        .notification-title {
-            font-weight: 600;
-            font-size: 0.9rem;
-            margin-bottom: 4px;
-        }
-
-        .notification-message {
-            font-size: 0.8rem;
-            color: #6c757d;
-            margin-bottom: 4px;
-        }
-
-        .notification-time {
-            font-size: 0.75rem;
-            color: #adb5bd;
-        }
-
-        .notification-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-        }
-
-        .notification-icon.task-update {
-            background-color: rgba(40, 167, 69, 0.1);
-            color: #28a745;
-        }
-
-        .notification-icon.status-change {
-            background-color: rgba(255, 193, 7, 0.1);
-            color: #ffc107;
-        }
-
-        .notification-icon.project-update {
-            background-color: rgba(0, 123, 255, 0.1);
-            color: #007bff;
-        }
-
-        /* Dark theme for notifications */
-        body.dark-theme .notification-dropdown {
-            background: #2d2d2d;
-            color: #e0e0e0;
-        }
-
-        body.dark-theme .notification-item {
-            border-bottom-color: #444444;
-        }
-
-        body.dark-theme .notification-item:hover {
-            background-color: #3a3a3a;
-        }
-
-        body.dark-theme .notification-item.unread {
-            background-color: rgba(102, 126, 234, 0.1);
-        }
-
-        body.dark-theme .notification-message {
-            color: #a0a0a0;
-        }
-
-        body.dark-theme .notification-time {
-            color: #707070;
-        }
-
-        /* New Team Lead UI Styles */
-        .project-overview-card {
-            border-radius: 15px;
-            transition: all 0.3s ease;
-        }
-
-        .project-overview-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-
-        .progress-custom {
-            height: 10px;
-            border-radius: 10px;
-            background-color: #e9ecef;
-        }
-
-        .progress-custom .progress-bar {
-            border-radius: 10px;
-            transition: width 0.6s ease;
-        }
-
-        .detail-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-        }
-
-        .detail-label {
-            font-weight: 600;
-            margin-left: 8px;
-            margin-right: 8px;
-            color: #495057;
-        }
-
-        .detail-value {
-            color: #6c757d;
-        }
-
-        .stat-card {
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-
-        .stat-card .stat-icon {
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-            opacity: 0.8;
-        }
-
-        .stat-card .stat-number {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .stat-card .stat-label {
-            font-size: 0.9rem;
-            font-weight: 500;
-            opacity: 0.9;
-        }
-
-        .bg-gradient-success {
-            background: linear-gradient(135deg, #28a745, #20c997);
-        }
-
-        .bg-gradient-warning {
-            background: linear-gradient(135deg, #ffc107, #fd7e14);
-        }
-
-        .bg-gradient-info {
-            background: linear-gradient(135deg, #17a2b8, #6f42c1);
-        }
-
-        .quick-actions-card {
-            border-radius: 15px;
-        }
-
-        .timeline {
-            position: relative;
-            padding-left: 30px;
-        }
-
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: 15px;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: linear-gradient(to bottom, #007bff, #6c757d);
-        }
-
-        .timeline-item {
-            position: relative;
-            margin-bottom: 25px;
-            padding-left: 25px;
-        }
-
-        .timeline-marker {
-            position: absolute;
-            left: -25px;
-            top: 5px;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            border: 3px solid white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .timeline-content {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-
-        .timeline-header {
-            display: flex;
-            justify-content: between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .timeline-title {
-            font-weight: 600;
-            color: #495057;
-            margin: 0;
-            font-size: 0.95rem;
-        }
-
-        .timeline-description {
-            color: #6c757d;
-            margin: 0;
-            font-size: 0.85rem;
-            line-height: 1.4;
-        }
-
-        .activity-list {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .activity-item {
-            display: flex;
-            align-items: flex-start;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .activity-item:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
-
-        .activity-avatar {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 12px;
-            flex-shrink: 0;
-            font-size: 0.8rem;
-        }
-
-        .activity-content {
-            flex: 1;
-        }
-
-        .activity-text {
-            margin: 0 0 4px 0;
-            font-size: 0.85rem;
-            line-height: 1.4;
-            color: #495057;
-        }
-
-        .timeline-card, .recent-activities-card {
-            border-radius: 15px;
-            transition: all 0.3s ease;
-        }
-
-        .timeline-card:hover, .recent-activities-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-        }
-
-        /* Enhanced Assignment Styles */
-        .form-select optgroup {
-            font-weight: bold;
-            color: #6c757d;
-            background: #f8f9fa;
-            padding: 8px 12px;
-        }
-
-        .form-select option {
-            padding: 8px 12px;
-            font-weight: normal;
-        }
-
-        .modal-header {
-            background: linear-gradient(135deg, #007bff, #0056b3);
-            color: white;
-            border-radius: 0.375rem 0.375rem 0 0;
-        }
-
-        .modal-content {
-            border-radius: 0.375rem;
-            border: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-
-        .form-select:focus {
-            border-color: #007bff;
-            box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
-        }
-
-        #assignmentPreview {
-            margin-top: 15px;
-            border-radius: 8px;
-            border: 2px solid;
-            transition: all 0.3s ease;
-        }
-
-        #assignmentPreview.alert-success {
-            border-color: #d4edda;
-            background: linear-gradient(135deg, #d4edda, #c3e6cb);
-        }
-
-        #assignmentPreview.alert-warning {
-            border-color: #fff3cd;
-            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
-        }
-
-        #assignmentPreview.alert-danger {
-            border-color: #f8d7da;
-            background: linear-gradient(135deg, #f8d7da, #f1c0c7);
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-            }
-            .main-content {
-                margin-left: 0;
-                padding: 20px;
-            }
-
-            .timeline {
-                padding-left: 20px;
-            }
-
-            .timeline-marker {
-                left: -20px;
-            }
-
-            .activity-avatar {
-                width: 30px;
-                height: 30px;
-                font-size: 0.7rem;
-            }
-        }
-
-        /* Enhanced Modal Styles */
-        .modal-content {
-            border-radius: 15px;
-            overflow: hidden;
-        }
-
-        .modal-header.bg-gradient {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .modal-header.bg-gradient::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            animation: rotate 20s linear infinite;
-        }
-
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .input-group-text {
-            transition: all 0.3s ease;
-        }
-
-        .form-control:focus + .input-group-text,
-        .form-select:focus + .input-group-text {
-            background-color: #667eea !important;
-            color: white;
-            border-color: #667eea;
-        }
-
-        .form-control,
-        .form-select {
-            transition: all 0.3s ease;
-            border-left: 3px solid transparent;
-        }
-
-        .form-control:focus,
-        .form-select:focus {
-            border-left-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
-        }
-
-        #cardTitle {
-            font-weight: 500;
-            font-size: 1.1rem;
-        }
-
-        #titleCharCount {
-            transition: color 0.3s ease;
-        }
-
-        #titleCharCount.warning {
-            color: #ffc107 !important;
-        }
-
-        #titleCharCount.danger {
-            color: #dc3545 !important;
-            font-weight: bold;
-        }
-
-        #assignmentPreview {
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        #boardProjectInfo {
-            animation: fadeIn 0.4s ease;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-
-        .form-select option[data-color="success"] {
-            background-color: #d4edda;
-        }
-
-        .form-select option[data-color="warning"] {
-            background-color: #fff3cd;
-        }
-
-        .form-select option[data-color="danger"] {
-            background-color: #f8d7da;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-primary:active {
-            transform: translateY(0);
-        }
-
-        .modal.fade .modal-dialog {
-            transition: transform 0.3s ease-out;
-        }
-
-        .modal.show .modal-dialog {
-            transform: none;
-        }
-
-        /* Enhanced Modal Scrolling */
-        .modal-dialog-scrollable {
-            max-height: calc(100vh - 3rem);
-        }
-
-        .modal-dialog-scrollable .modal-content {
-            max-height: calc(100vh - 3rem);
-            overflow: hidden;
-        }
-
-        .modal-dialog-scrollable .modal-body {
-            overflow-y: auto;
-            max-height: calc(100vh - 200px);
-        }
-
-        /* Responsive Modal Heights */
-        @media (max-height: 768px) {
-            .modal-dialog-scrollable {
-                max-height: calc(100vh - 1rem);
-            }
-
-            .modal-dialog-scrollable .modal-content {
-                max-height: calc(100vh - 1rem);
-            }
-
-            .modal-dialog-scrollable .modal-body {
-                max-height: calc(100vh - 150px);
-            }
-        }
-
-        @media (max-height: 600px) {
-            .modal-dialog-scrollable .modal-body {
-                max-height: calc(100vh - 120px);
-            }
-        }
-
-        .badge.bg-white {
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.05);
-            }
-        }
-
-
-
-        /* Input Group Focus Effects */
-        .input-group.focused .input-group-text {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-            color: white !important;
-            border-color: #667eea !important;
-            transform: scale(1.05);
-        }
-
-        .input-group {
-            transition: all 0.3s ease;
-        }
-
-        /* Smooth Scroll */
-        html {
-            scroll-behavior: smooth;
-        }
-
-        /* Enhanced Alert Styles */
-        .alert {
-            border-radius: 12px;
-            border: none;
-        }
-
-        /* Card Hover in Modal */
-        .card {
-            transition: all 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-        }
-    </style>
 </head>
 <body>
 
-    </style>
+
 </head>
 <body>
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
     <!-- Sidebar -->
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
         <!-- Sidebar Header -->
         <div class="sidebar-header">
             <i class="bi bi-people-fill mb-2" style="font-size: 2.5rem;"></i>
             <h4>Team Lead Panel</h4>
-            <p>{{ auth()->user()->name ?? auth()->user()->username }}</p>
+            <p>{{ auth()->user()->full_name ?? auth()->user()->username }}</p>
         </div>
 
         <!-- Navigation -->
@@ -1813,28 +89,6 @@
                         </div>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#assigned-history" onclick="showContent('assigned-history', this)">
-                        <div class="nav-icon">
-                            <i class="bi bi-clock-history"></i>
-                        </div>
-                        <div class="nav-content">
-                            <span class="nav-title">Assigned History</span>
-                            <small class="nav-subtitle">Assignment Log</small>
-                        </div>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#card-time-logs" onclick="showContent('card-time-logs', this)">
-                        <div class="nav-icon">
-                            <i class="bi bi-stopwatch-fill"></i>
-                        </div>
-                        <div class="nav-content">
-                            <span class="nav-title">Card Time Logs</span>
-                            <small class="nav-subtitle">Time Tracking</small>
-                        </div>
-                    </a>
-                </li>
             </ul>
         </nav>
 
@@ -1852,7 +106,7 @@
                         @endif
                     </div>
                     <div class="profile-details flex-grow-1 ms-3">
-                        <h6 class="mb-0">{{ auth()->user()->name }}</h6>
+                        <h6 class="mb-0">{{ auth()->user()->full_name }}</h6>
                         <small class="d-flex align-items-center">
                             <span class="status-dot me-1"></span>
                             {{ ucfirst(auth()->user()->status ?? 'active') }}
@@ -1880,6 +134,11 @@
         <!-- Content Header -->
         <div class="content-header">
             <div class="d-flex justify-content-between align-items-center">
+                <!-- Mobile Menu Toggle -->
+                <button class="btn btn-light d-md-none me-3" id="mobile-menu-toggle" type="button">
+                    <i class="bi bi-list"></i>
+                </button>
+
                 <div>
                     <h2 id="content-title" class="mb-0">Team Lead Dashboard</h2>
                     <p class="text-muted mb-0" id="content-subtitle">Welcome to your Team Leadership center</p>
@@ -1908,9 +167,7 @@
                         </div>
                     </div>
                     <!-- Theme Toggle -->
-                    <button class="btn btn-light" id="theme-toggle">
-                        <i class="bi bi-moon-fill" id="theme-icon"></i>
-                    </button>
+
                 </div>
             </div>
         </div>
@@ -1918,42 +175,9 @@
         <!-- Content Area -->
         <div class="content-area">
             <!-- Dashboard Content -->
-            <div id="dashboard-content" class="content-section">
+            <div id="dashboard-content" class="content-section active" style="display: block; opacity: 1;">
                 <!-- Main Statistics -->
-                <div class="row g-4 mb-5">
-                    <div class="col-md-3">
-                        <div class="stat-card">
-                            <i class="bi bi-folder-check stat-icon text-primary"></i>
-                            <h3 class="stat-number text-primary" id="my-projects-count">0</h3>
-                            <p class="stat-label">My Project</p>
-                            <small class="text-muted" id="active-projects-text">Dashboard</small>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stat-card">
-                            <i class="bi bi-people-fill stat-icon text-info"></i>
-                            <h3 class="stat-number text-info" id="team-members-count">0</h3>
-                            <p class="stat-label">Team Members</p>
-                            <small class="text-muted">Under my leadership</small>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stat-card">
-                            <i class="bi bi-list-task stat-icon text-warning"></i>
-                            <h3 class="stat-number text-warning" id="pending-tasks-count">0</h3>
-                            <p class="stat-label">Pending Tasks</p>
-                            <small class="text-muted">Needs attention</small>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stat-card">
-                            <i class="bi bi-exclamation-triangle-fill stat-icon text-danger"></i>
-                            <h3 class="stat-number text-danger" id="overdue-tasks-count">0</h3>
-                            <p class="stat-label">Overdue Tasks</p>
-                            <small class="text-muted">Requires action</small>
-                        </div>
-                    </div>
-                </div>
+
 
                 <!-- Task Progress Overview -->
                 <div class="row g-4 mb-4">
@@ -2129,25 +353,10 @@
             <!-- Projects Content -->
             <div id="projects-content" class="content-section" style="display: none;">
                 <!-- My Project Header -->
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div>
-                        <h4 class="mb-1">My Project</h4>
-                        <p class="text-muted mb-0">Project assigned to your leadership with detailed insights</p>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-outline-primary" onclick="refreshMyProject()">
-                            <i class="bi bi-arrow-clockwise me-2"></i>
-                            Refresh
-                        </button>
-                        <button class="btn btn-primary" onclick="viewProjectDetails()">
-                            <i class="bi bi-eye me-2"></i>
-                            View Details
-                        </button>
-                    </div>
-                </div>
+
 
                 <!-- Project Overview Section -->
-                <div class="row g-4 mb-5">
+                <div class="row g-4 mb-4">
                     <div class="col-md-8">
                         <!-- Main Project Card -->
                         <div class="card project-overview-card shadow-sm border-0">
@@ -2281,13 +490,13 @@
                             <div class="col-md-2">
                                 <button class="btn btn-outline-info w-100" onclick="viewProjectReports()" id="btn-view-reports" disabled>
                                     <i class="bi bi-graph-up me-2"></i>
-                                    Reports
+                                    -
                                 </button>
                             </div>
                             <div class="col-md-2">
                                 <button class="btn btn-outline-warning w-100" onclick="manageProject()" id="btn-manage-project" disabled>
                                     <i class="bi bi-gear me-2"></i>
-                                    Manage
+                                    -
                                 </button>
                             </div>
                         </div>
@@ -2492,10 +701,7 @@
             <div id="my-cards-content" class="content-section" style="display: none;">
                 <!-- Header Section -->
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div>
-                        <h2 class="mb-0">My Cards</h2>
-                        <p class="text-muted mb-0">Cards created by you across all projects</p>
-                    </div>
+
                     <div class="d-flex gap-2">
                         <button class="btn btn-primary" onclick="openCreateCardModal()">
                             <i class="bi bi-plus-lg me-2"></i>
@@ -2617,14 +823,9 @@
             <div id="assigned-cards-content" class="content-section" style="display: none;">
                 <!-- Header Section -->
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div>
-                        <h2 class="mb-0">Card Reviews</h2>
-                        <p class="text-muted mb-0">Review and approve cards submitted by developers/designers</p>
-                    </div>
+
                     <div class="d-flex gap-2">
-                        <button class="btn btn-outline-primary" onclick="refreshPendingReviews()">
-                            <i class="bi bi-arrow-clockwise me-1"></i>Refresh
-                        </button>
+
                     </div>
                 </div>
 
@@ -2687,10 +888,7 @@
             <div id="assigned-history-content" class="content-section" style="display: none;">
                 <!-- Header Section -->
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div>
-                        <h4 class="mb-1">Assignment History</h4>
-                        <p class="text-muted mb-0">Track assignment progress and history</p>
-                    </div>
+
                     <div class="d-flex gap-2">
                         <button class="btn btn-outline-primary" onclick="exportAssignmentHistory()">
                             <i class="bi bi-download me-1"></i>Export
@@ -2849,10 +1047,7 @@
             <div id="card-time-logs-content" class="content-section" style="display: none;">
                 <!-- Header Section -->
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div>
-                        <h4 class="mb-1">Time Tracking</h4>
-                        <p class="text-muted mb-0">Monitor team time logs and productivity</p>
-                    </div>
+
                     <div class="d-flex gap-2">
                         <button class="btn btn-outline-primary" onclick="exportTimeLogs()">
                             <i class="bi bi-download me-1"></i>Export
@@ -4135,52 +2330,151 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
+        // Enhanced showContent function with better error handling
         function showContent(section, element = null) {
-            // Hide all content sections
-            document.querySelectorAll('.content-section').forEach(content => {
-                content.style.display = 'none';
-            });
+            console.log('🎯 TeamLead showContent called:', section);
 
-            // Remove active class from all nav links
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.classList.remove('active');
-            });
-
-            // Show selected content
-            const contentElement = document.getElementById(section + '-content');
-            if (contentElement) {
-                contentElement.style.display = 'block';
+            if (!section) {
+                console.error('❌ No section provided');
+                return;
             }
 
-            // Add active class to clicked nav link
-            if (element) {
-                const navLink = element.closest('.nav-link') || element.closest('.btn-action');
-                if (navLink) {
-                    navLink.classList.add('active');
+            try {
+                // Hide all content sections
+                const allSections = document.querySelectorAll('.content-section');
+                console.log('📊 Found content sections:', allSections.length);
+
+                allSections.forEach(content => {
+                    if (content) {
+                        content.style.display = 'none';
+                        content.style.opacity = '0';
+                        content.style.visibility = 'hidden';
+                        content.classList.remove('active');
+                    }
+                });
+
+                // Remove active class from all nav links
+                const allNavLinks = document.querySelectorAll('.nav-link');
+                console.log('📊 Found nav links:', allNavLinks.length);
+
+                allNavLinks.forEach(link => {
+                    if (link) {
+                        link.classList.remove('active');
+                    }
+                });
+
+                // Find and show target section
+                const contentElement = document.getElementById(section + '-content');
+                console.log('🔍 Looking for element:', section + '-content');
+
+                if (contentElement) {
+                    // Force display with animation
+                    contentElement.style.display = 'block';
+                    contentElement.style.visibility = 'visible';
+                    contentElement.classList.add('active');
+
+                    // Immediate opacity transition for faster loading
+                    contentElement.style.opacity = '1';
+
+                    // Scroll to top of content
+                    if (contentElement.scrollTop !== undefined) {
+                        contentElement.scrollTop = 0;
+                    }
+
+                    console.log('✅ Showed section:', section);
+                } else {
+                    console.error('❌ Section not found:', section + '-content');
+                    // List available sections for debugging
+                    const availableSections = Array.from(document.querySelectorAll('.content-section')).map(s => s.id).filter(id => id);
+                    console.log('🔍 Available sections:', availableSections);
+
+                    // Show error message to user
+                    showNotification('Section not found: ' + section, 'error');
+                    return;
                 }
+
+                // Add active class to clicked nav link
+                if (element) {
+                    const navLink = element.closest('.nav-link') || element.closest('.btn-action');
+                    if (navLink) {
+                        navLink.classList.add('active');
+                        console.log('✅ Activated nav link');
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Error in showContent:', error);
+                showNotification('Navigation error occurred', 'error');
+                return;
             }
 
-            // Load data when section is opened
-            if (section === 'users') {
-                loadUserStatistics();
-                loadUsersList();
-            } else if (section === 'projects') {
-                loadCurrentProject();
-            } else if (section === 'my-cards') {
-                loadMyCards();
-            } else if (section === 'assigned-cards') {
-                loadPendingReviews();
-            } else if (section === 'assigned-history') {
-                loadAssignmentHistory();
-            } else if (section === 'card-time-logs') {
-                loadCardTimeLogs();
-            } else if (section === 'reports') {
-                if (typeof loadReportData === 'function') {
-                    loadReportData();
-                }
+            // Load section specific data with error handling
+            try {
+                loadSectionData(section);
+            } catch (error) {
+                console.error('❌ Error loading section data:', error);
             }
 
             // Update header based on section
+            updateContentHeader(section);
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(notification);
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+
+        // Section data loading with better error handling
+        function loadSectionData(section) {
+            const loadFunctions = {
+                'dashboard': () => {
+                    if (typeof loadDashboardStatistics === 'function') loadDashboardStatistics();
+                    if (typeof loadRecentActivities === 'function') loadRecentActivities();
+                },
+                'projects': () => {
+                    if (typeof loadCurrentProject === 'function') loadCurrentProject();
+                },
+                'my-cards': () => {
+                    if (typeof loadMyCards === 'function') loadMyCards();
+                },
+                'assigned-cards': () => {
+                    if (typeof loadPendingReviews === 'function') loadPendingReviews();
+                },
+
+                'reports': () => {
+                    if (typeof loadReportData === 'function') loadReportData();
+                },
+                'users': () => {
+                    if (typeof loadUserStatistics === 'function') loadUserStatistics();
+                    if (typeof loadUsersList === 'function') loadUsersList();
+                }
+            };
+
+            const loadFunction = loadFunctions[section];
+            if (loadFunction) {
+                try {
+                    loadFunction();
+                } catch (error) {
+                    console.error(`❌ Error loading ${section} data:`, error);
+                }
+            }
+        }
+
+        // Update content header
+        function updateContentHeader(section) {
             const titles = {
                 'dashboard': 'Team Lead Dashboard',
                 'projects': 'My Project',
@@ -4188,9 +2482,10 @@
                 'cards': 'Task Cards',
                 'my-cards': 'My Cards',
                 'assigned-cards': 'Assigned Cards',
-                'assigned-history': 'Assignment History',
-                'card-time-logs': 'Time Tracking',
-                'profile': 'Profile Settings'
+
+                'profile': 'Profile Settings',
+                'users': 'User Management',
+                'reports': 'Reports & Analytics'
             };
 
             const subtitles = {
@@ -4200,15 +2495,22 @@
                 'cards': 'Manage task cards and assignments',
                 'my-cards': 'Cards created by you across all projects',
                 'assigned-cards': 'Monitor and manage assigned tasks',
-                'assigned-history': 'Track assignment progress and history',
-                'card-time-logs': 'Monitor team time logs and productivity',
+
                 'users': 'Manage user accounts, roles, and permissions',
                 'reports': 'View comprehensive reports and analytics insights',
                 'profile': 'Manage your account settings and preferences'
             };
 
-            document.getElementById('content-title').textContent = titles[section];
-            document.getElementById('content-subtitle').textContent = subtitles[section];
+            const titleElement = document.getElementById('content-title');
+            const subtitleElement = document.getElementById('content-subtitle');
+
+            if (titleElement) {
+                titleElement.textContent = titles[section] || 'TeamLead Panel';
+            }
+
+            if (subtitleElement) {
+                subtitleElement.textContent = subtitles[section] || '';
+            }
         }
 
         // Theme Toggle Function
@@ -4945,7 +3247,7 @@
                 // Update project info
                 document.getElementById('current-project-name').textContent = project.project_name || 'Unknown Project';
                 document.getElementById('current-project-description').textContent = project.description || 'No description available';
-                document.getElementById('current-project-status').textContent = project.status || 'Unknown';
+                document.getElementById('current-project-status').textContent = project.status || ':V';
 
                 // Show project details section
                 document.getElementById('project-progress-section').style.display = 'block';
@@ -5294,17 +3596,7 @@
             }
         }
 
-        function viewProjectReports() {
-            alert('View Project Reports - This will show project analytics and reports');
-        }
 
-        function manageProject() {
-            alert('Manage Project - This will open project management interface');
-        }
-
-        function viewAllActivities() {
-            alert('View All Activities - This will show complete activity log');
-        }
 
         function updateTimeline(timelineData) {
             const timelineContainer = document.getElementById('project-timeline');
@@ -5429,31 +3721,83 @@
 
         // Create Card Functions
         function openCreateCardModal() {
+            console.log('Opening create card modal...');
+
+            const modalElement = document.getElementById('createCardModal');
+            if (!modalElement) {
+                console.error('Create card modal not found!');
+                showNotification('error', 'Modal Error', 'Create card modal not found');
+                return;
+            }
+
+            // Reset form before loading data
+            const form = document.getElementById('createCardForm');
+            if (form) {
+                form.reset();
+                const assignmentPreview = document.getElementById('assignmentPreview');
+                if (assignmentPreview) {
+                    assignmentPreview.style.display = 'none';
+                }
+
+                // Reset character counter
+                const charCount = document.getElementById('titleCharCount');
+                if (charCount) {
+                    charCount.textContent = '0/100';
+                }
+            }
+
+            // Reinitialize form handlers to ensure they work
+            try {
+                initializeCreateCardForm();
+            } catch (error) {
+                console.error('Error reinitializing form handlers:', error);
+            }
+
             // Load boards and team members data
             loadBoardsForCard();
             loadTeamMembersForAssignment();
 
             // Show modal
-            const modal = new bootstrap.Modal(document.getElementById('createCardModal'));
+            const modal = new bootstrap.Modal(modalElement);
             modal.show();
         }
 
         function loadBoardsForCard() {
+            console.log('Loading boards for card creation...');
+
+            const boardSelect = document.getElementById('cardBoard');
+            if (!boardSelect) {
+                console.error('Board select element not found!');
+                return;
+            }
+
+            // Show loading state
+            boardSelect.innerHTML = '<option value="">Loading boards...</option>';
+            boardSelect.disabled = true;
+
             fetch('/api/teamlead/boards-for-card', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
                 }
             })
                 .then(response => {
                     console.log('Boards API response status:', response.status);
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+
                     return response.json();
                 })
                 .then(data => {
                     console.log('Boards API data:', data);
-                    if (data.success && data.data) {
-                        const boardSelect = document.getElementById('cardBoard');
+
+                    boardSelect.disabled = false;
+
+                    if (data.success && data.data && data.data.length > 0) {
                         boardSelect.innerHTML = '<option value="">Select Board</option>';
 
                         data.data.forEach(board => {
@@ -5464,13 +3808,19 @@
                         });
                         console.log(`Loaded ${data.data.length} boards`);
                     } else {
-                        console.error('Boards API failed:', data.message || 'Unknown error');
-                        showNotification('error', 'Error', 'Failed to load boards: ' + (data.message || 'Unknown error'));
+                        boardSelect.innerHTML = '<option value="">No boards available</option>';
+                        console.warn('No boards available or API failed:', data.message || 'Unknown error');
+
+                        if (!data.success) {
+                            showNotification('warning', 'No Boards', data.message || 'No boards available for card creation');
+                        }
                     }
                 })
                 .catch(error => {
                     console.error('Error loading boards:', error);
-                    showNotification('error', 'Error', 'Failed to load boards');
+                    boardSelect.disabled = false;
+                    boardSelect.innerHTML = '<option value="">Error loading boards</option>';
+                    showNotification('error', 'Error', 'Failed to load boards: ' + error.message);
                 });
         }
 
@@ -5680,31 +4030,79 @@
             assignmentPreview.style.display = 'block';
         }
 
-        function submitCreateCard() {
+        function submitCreateCard(event) {
+            // Prevent any form submission that might cause URL change
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
             const form = document.getElementById('createCardForm');
             const formData = new FormData(form);
             const createBtn = document.getElementById('createCardBtn');
 
+            // Debug logging
+            console.log('Starting card creation...');
+            console.log('Form element:', form);
+            console.log('Event object:', event);
+
+            if (!form) {
+                console.error('Create card form not found!');
+                showNotification('error', 'Form Error', 'Create card form not found');
+                return;
+            }
+
             createBtn.disabled = true;
+            createBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating...';
 
             // Convert FormData to JSON
             const data = {};
             formData.forEach((value, key) => {
-                if (value.trim() !== '') {
+                if (value && value.toString().trim() !== '') {
                     data[key] = value;
                 }
             });
+
+            console.log('Form data to send:', data);
+
+            // Validate required fields
+            if (!data.board_id || !data.card_title || !data.priority) {
+                showNotification('error', 'Validation Error', 'Please fill in all required fields (Board, Title, Priority)');
+                createBtn.disabled = false;
+                createBtn.innerHTML = '<i class="bi bi-plus-lg me-2"></i>Create Card';
+                return;
+            }
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            if (!csrfToken) {
+                console.error('CSRF token not found!');
+                showNotification('error', 'Security Error', 'CSRF token not found');
+                createBtn.disabled = false;
+                createBtn.innerHTML = '<i class="bi bi-plus-lg me-2"></i>Create Card';
+                return;
+            }
 
             fetch('/api/teamlead/cards', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify(data)
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                return response.json();
+            })
             .then(data => {
+                console.log('Response data:', data);
                 if (data.success) {
                     // If user is assigned, create assignment
                     if (formData.get('assigned_to') && formData.get('assigned_to').trim() !== '') {
@@ -5761,7 +4159,13 @@
             })
             .catch(error => {
                 console.error('Error creating card:', error);
-                showNotification('error', 'Error creating card', 'An unexpected error occurred');
+
+                let errorMessage = 'An unexpected error occurred';
+                if (error.message) {
+                    errorMessage = error.message;
+                }
+
+                showNotification('error', 'Error creating card', errorMessage);
             })
             .finally(() => {
                 // Re-enable button
@@ -5792,6 +4196,8 @@
         }
 
         function initializeCreateCardForm() {
+            console.log('Initializing create card form...');
+
             const assignSelect = document.getElementById('cardAssignTo');
             const assignmentPreview = document.getElementById('assignmentPreview');
             const assignmentDetails = document.getElementById('assignmentDetails');
@@ -5799,8 +4205,17 @@
             const cardTitle = document.getElementById('cardTitle');
             const titleCharCount = document.getElementById('titleCharCount');
             const cardPriority = document.getElementById('cardPriority');
-            const boardProjectInfo = document.getElementById('boardProjectInfo');
-            const boardProjectName = document.getElementById('boardProjectName');
+            // Removed non-existent boardProjectInfo and boardProjectName elements
+
+            console.log('Form elements found:', {
+                assignSelect: !!assignSelect,
+                assignmentPreview: !!assignmentPreview,
+                assignmentDetails: !!assignmentDetails,
+                boardSelect: !!boardSelect,
+                cardTitle: !!cardTitle,
+                titleCharCount: !!titleCharCount,
+                cardPriority: !!cardPriority
+            });
 
             // Character counter for title with animation
             if (cardTitle && titleCharCount) {
@@ -5848,47 +4263,48 @@
             }
 
             // Add event listener for board selection
-            if (boardSelect) {
+            if (boardSelect && assignSelect) {
                 boardSelect.addEventListener('change', function() {
                     const selectedBoardId = this.value;
 
-                    // Show loading state
-                    assignSelect.classList.add('loading');
-                    assignSelect.disabled = true;
+                    // Show loading state only if assignSelect exists
+                    if (assignSelect) {
+                        assignSelect.classList.add('loading');
+                        assignSelect.disabled = true;
+                    }
 
                     if (selectedBoardId) {
                         // Get selected board details
                         const selectedOption = this.options[this.selectedIndex];
                         const boardName = selectedOption.textContent;
 
-                        // Show project info
-                        if (boardProjectInfo && boardProjectName) {
-                            boardProjectName.textContent = `This card will be added to: ${boardName}`;
-                            boardProjectInfo.style.display = 'block';
-                        }
+                        console.log('Board selected:', boardName);
 
                         // Reload team members based on selected board
                         loadTeamMembersForAssignment(selectedBoardId);
 
                         // Enable assign select after loading
                         setTimeout(() => {
-                            assignSelect.classList.remove('loading');
-                            assignSelect.disabled = false;
+                            if (assignSelect) {
+                                assignSelect.classList.remove('loading');
+                                assignSelect.disabled = false;
+                            }
                         }, 500);
                     } else {
                         // Reset assignment select when no board is selected
-                        assignSelect.innerHTML = '<option value="">� No Assignment - Keep Unassigned</option>';
-                        assignmentPreview.style.display = 'none';
-                        if (boardProjectInfo) {
-                            boardProjectInfo.style.display = 'none';
+                        if (assignSelect) {
+                            assignSelect.innerHTML = '<option value="">� No Assignment - Keep Unassigned</option>';
+                            assignSelect.classList.remove('loading');
+                            assignSelect.disabled = false;
                         }
-                        assignSelect.classList.remove('loading');
-                        assignSelect.disabled = false;
+                        if (assignmentPreview) {
+                            assignmentPreview.style.display = 'none';
+                        }
                     }
                 });
             }
 
-            if (assignSelect) {
+            if (assignSelect && assignmentDetails && assignmentPreview) {
                 assignSelect.addEventListener('change', function() {
                     if (this.value) {
                         const selectedOption = this.options[this.selectedIndex];
@@ -5937,21 +4353,38 @@
             // Handle form submission
             const createCardForm = document.getElementById('createCardForm');
             if (createCardForm) {
-                createCardForm.addEventListener('submit', function(e) {
+                // Remove any existing event listeners to prevent duplicates
+                const newForm = createCardForm.cloneNode(true);
+                createCardForm.parentNode.replaceChild(newForm, createCardForm);
+
+                newForm.addEventListener('submit', function(e) {
+                    console.log('Form submit event triggered');
                     e.preventDefault();
-                    submitCreateCard();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+
+                    // Call submitCreateCard with event parameter
+                    submitCreateCard(e);
+
+                    return false;
                 });
 
                 // Add smooth focus effects
                 const formInputs = createCardForm.querySelectorAll('.form-control, .form-select');
-            formInputs.forEach(input => {
-                input.addEventListener('focus', function() {
-                    this.parentElement.classList.add('focused');
+                formInputs.forEach(input => {
+                    if (input) {
+                        input.addEventListener('focus', function() {
+                            if (this.parentElement) {
+                                this.parentElement.classList.add('focused');
+                            }
+                        });
+                        input.addEventListener('blur', function() {
+                            if (this.parentElement) {
+                                this.parentElement.classList.remove('focused');
+                            }
+                        });
+                    }
                 });
-                input.addEventListener('blur', function() {
-                    this.parentElement.classList.remove('focused');
-                });
-            });
             }
         }
 
@@ -6424,8 +4857,402 @@
         }
 
         function viewCard(cardId) {
-            // TODO: Implement card detail view
-            console.log('View card:', cardId);
+            showCardDetailModal(cardId);
+        }
+
+        // Alias untuk kompatibilitas
+        function viewCardDetails(cardId) {
+            viewCard(cardId);
+        }
+
+        function showCardDetailModal(cardId) {
+            const modal = new bootstrap.Modal(document.getElementById('cardDetailModal'));
+            const content = document.getElementById('cardDetailContent');
+            const modalTitle = document.getElementById('cardDetailModalLabel');
+            const editBtn = document.getElementById('editCardFromDetail');
+
+            // Reset modal state
+            modalTitle.innerHTML = '<i class="bi bi-card-text me-2"></i>Card Detail';
+            editBtn.style.display = 'none';
+            editBtn.dataset.cardId = cardId;
+
+            // Show loading
+            content.innerHTML = `
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Loading card details...</p>
+                </div>
+            `;
+
+            modal.show();
+
+            // Fetch card details (universal API for all user types)
+            fetch(`/api/cards/${cardId}/detail`)
+                .then(response => {
+                    console.log('Card detail response status:', response.status);
+                    console.log('Card detail response headers:', response.headers);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: Failed to fetch card details`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Card detail response data:', data);
+                    if (data.success) {
+                        console.log('Card data:', data.card);
+                        console.log('Comments data:', data.comments);
+                        console.log('Assigned users:', data.assigned_users);
+
+                        // Store assigned users globally for template access
+                        window.currentCardAssignments = data.assigned_users || [];
+
+                        displayCardDetail(data.card, data.comments || []);
+                        modalTitle.innerHTML = `<i class="bi bi-card-text me-2"></i>${data.card.card_title}`;
+                        editBtn.style.display = 'inline-block';
+                    } else {
+                        console.error('API returned success=false:', data);
+                        throw new Error(data.message || 'Failed to load card details');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading card details:', error);
+                    console.error('Error stack:', error.stack);
+                    content.innerHTML = `
+                        <div class="alert alert-danger m-4">
+                            <h6 class="alert-heading"><i class="bi bi-exclamation-triangle me-2"></i>Error Loading Card</h6>
+                            <p class="mb-2"><strong>Error:</strong> ${error.message}</p>
+                            <p class="mb-2"><strong>Card ID:</strong> ${cardId}</p>
+                            <p class="mb-2"><strong>API URL:</strong> /api/teamlead/cards/${cardId}/detail</p>
+                            <hr>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-outline-danger btn-sm" onclick="showCardDetailModal(${cardId})">
+                                    <i class="bi bi-arrow-clockwise me-1"></i>Retry
+                                </button>
+                                <button class="btn btn-outline-info btn-sm" onclick="console.log('Card ID: ${cardId}')">
+                                    <i class="bi bi-info-circle me-1"></i>Debug Info
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+        }
+
+        function displayCardDetail(card, comments) {
+            const content = document.getElementById('cardDetailContent');
+
+            // Format dates
+            const createdDate = new Date(card.created_at).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            const updatedDate = new Date(card.updated_at).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            const dueDate = card.due_date ? new Date(card.due_date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            }) : 'No due date';
+
+            // Get status and priority colors
+            const statusClass = getStatusBadgeClass(card.status);
+            const priorityClass = getPriorityBadgeClass(card.priority);
+
+            content.innerHTML = `
+                <div class="container-fluid p-4">
+                    <!-- Card Header -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h4 class="card-title mb-2">${card.card_title}</h4>
+                                            <p class="text-muted mb-2">${card.card_description || 'No description provided'}</p>
+                                            <div class="d-flex flex-wrap gap-2">
+                                                <span class="badge ${statusClass} fs-6">${formatStatus(card.status)}</span>
+                                                <span class="badge ${priorityClass} fs-6">${card.priority.charAt(0).toUpperCase() + card.priority.slice(1)} Priority</span>
+                                                <span class="badge bg-info text-dark fs-6"><i class="bi bi-folder me-1"></i>${card.project_name || 'No Project'}</span>
+                                                <span class="badge bg-secondary fs-6"><i class="bi bi-kanban me-1"></i>${card.board_name || 'No Board'}</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 text-md-end">
+                                            <div class="card-meta">
+                                                <small class="text-muted d-block"><i class="bi bi-calendar-plus me-1"></i>Created: ${createdDate}</small>
+                                                <small class="text-muted d-block"><i class="bi bi-calendar-check me-1"></i>Updated: ${updatedDate}</small>
+                                                <small class="text-muted d-block"><i class="bi bi-calendar-event me-1"></i>Due: ${dueDate}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card Details Sections -->
+                    <div class="row">
+                        <!-- Main Content -->
+                        <div class="col-lg-8">
+                            <!-- Assignees Section -->
+                            <div class="card border-0 shadow-sm mb-4">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0"><i class="bi bi-people me-2"></i>Assigned To</h6>
+                                </div>
+                                <div class="card-body">
+                                    ${window.currentCardAssignments && window.currentCardAssignments.length > 0 ?
+                                        window.currentCardAssignments.map(assignment => `
+                                            <div class="d-flex align-items-center mb-2">
+                                                <div class="user-avatar me-3 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-size: 14px;">${assignment.full_name ? assignment.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'N/A'}</div>
+                                                <div>
+                                                    <div class="fw-semibold">${assignment.full_name || 'Unknown'}</div>
+                                                    <small class="text-muted">@${assignment.username || 'unknown'} • ${assignment.role ? assignment.role.replace('_', ' ') : 'No Role'}</small>
+                                                    <div><small class="text-muted">Assigned: ${assignment.assigned_at ? new Date(assignment.assigned_at).toLocaleDateString() : 'Unknown date'}</small></div>
+                                                </div>
+                                            </div>
+                                        `).join('') :
+                                        '<p class="text-muted mb-0">No assignments found</p>'
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Comments Section -->
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0"><i class="bi bi-chat-dots me-2"></i>Comments (${comments ? comments.length : 0})</h6>
+                                    <button class="btn btn-sm btn-primary" onclick="showAddCommentForm(${card.card_id})">
+                                        <i class="bi bi-plus me-1"></i>Add Comment
+                                    </button>
+                                </div>
+                                <div class="card-body" id="cardCommentsSection">
+                                    ${displayCardComments(comments)}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sidebar -->
+                        <div class="col-lg-4">
+                            <!-- Actions -->
+                            <div class="card border-0 shadow-sm mb-4">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0"><i class="bi bi-gear me-2"></i>Actions</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-grid gap-2">
+                                        ${card.status === 'review' ? `
+                                            <button class="btn btn-success btn-sm" onclick="approveCard(${card.card_id}, '${card.card_title.replace(/'/g, '\\\'')}')">
+                                                <i class="bi bi-check-circle me-1"></i>Approve Card
+                                            </button>
+                                            <button class="btn btn-danger btn-sm" onclick="rejectCard(${card.card_id}, '${card.card_title.replace(/'/g, '\\\'')}')">
+                                                <i class="bi bi-x-circle me-1"></i>Reject Card
+                                            </button>
+                                        ` : ''}
+                                        <button class="btn btn-outline-primary btn-sm" onclick="viewCardHistory(${card.card_id})">
+                                            <i class="bi bi-clock-history me-1"></i>View History
+                                        </button>
+                                        <button class="btn btn-outline-secondary btn-sm" onclick="exportCardDetails(${card.card_id})">
+                                            <i class="bi bi-download me-1"></i>Export Details
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card Information -->
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Card Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="info-item mb-3">
+                                        <label class="form-label text-muted small">Card ID</label>
+                                        <div class="fw-semibold">#${card.card_id}</div>
+                                    </div>
+                                    <div class="info-item mb-3">
+                                        <label class="form-label text-muted small">Created By</label>
+                                        <div class="d-flex align-items-center">
+                                            <div class="user-avatar-sm me-2">${card.creator_name ? card.creator_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'N/A'}</div>
+                                            <div>
+                                                <div class="fw-semibold small">${card.creator_name || 'Unknown'}</div>
+                                                <small class="text-muted">@${card.creator_username || 'unknown'}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="info-item mb-3">
+                                        <label class="form-label text-muted small">Project</label>
+                                        <div class="fw-semibold">${card.project_name || 'No Project'}</div>
+                                    </div>
+                                    <div class="info-item mb-3">
+                                        <label class="form-label text-muted small">Board</label>
+                                        <div class="fw-semibold">${card.board_name || 'No Board'}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <label class="form-label text-muted small">Total Comments</label>
+                                        <div class="fw-semibold">${comments ? comments.length : 0}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function displayCardComments(comments) {
+            if (!comments || comments.length === 0) {
+                return `
+                    <div class="text-center py-4">
+                        <div class="text-muted">
+                            <i class="bi bi-chat-square-dots fs-1 mb-3 d-block opacity-25"></i>
+                            <p class="mb-0">No comments yet</p>
+                            <small>Be the first to add a comment</small>
+                        </div>
+                    </div>
+                `;
+            }
+
+            return comments.map(comment => {
+                const commentDate = new Date(comment.created_at).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                const userInitials = comment.user_name ? comment.user_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'N/A';
+                const roleClass = comment.user_role ? `role-${comment.user_role.toLowerCase().replace('_', '')}` : 'role-unknown';
+
+                return `
+                    <div class="comment-item border-bottom pb-3 mb-3">
+                        <div class="d-flex">
+                            <div class="user-avatar me-3">${userInitials}</div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="fw-semibold me-2">${comment.user_name || 'Unknown User'}</span>
+                                    <span class="role-badge ${roleClass} me-2">${comment.user_role ? comment.user_role.replace('_', ' ') : 'Unknown'}</span>
+                                    <small class="text-muted">${commentDate}</small>
+                                </div>
+                                <div class="comment-content">
+                                    ${formatCommentContent(comment.comment_text || '')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function formatCommentContent(content) {
+            // Format URLs
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            let formattedContent = content.replace(urlRegex, '<a href="$1" target="_blank" class="text-primary">$1</a>');
+
+            // Format line breaks
+            formattedContent = formattedContent.replace(/\n/g, '<br>');
+
+            return formattedContent;
+        }
+
+        function showAddCommentForm(cardId) {
+            const commentsSection = document.getElementById('cardCommentsSection');
+
+            // Check if form already exists
+            if (document.getElementById('addCommentForm')) {
+                return;
+            }
+
+            const formHtml = `
+                <div id="addCommentForm" class="border rounded p-3 mb-3 bg-light">
+                    <h6 class="mb-3"><i class="bi bi-plus-circle me-2"></i>Add New Comment</h6>
+                    <form onsubmit="submitCardComment(event, ${cardId})">
+                        <div class="mb-3">
+                            <textarea class="form-control" id="commentText" rows="3" placeholder="Write your comment here..." required></textarea>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="bi bi-send me-1"></i>Post Comment
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="cancelAddComment()">
+                                <i class="bi bi-x me-1"></i>Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+
+            commentsSection.insertAdjacentHTML('afterbegin', formHtml);
+            document.getElementById('commentText').focus();
+        }
+
+        function cancelAddComment() {
+            const form = document.getElementById('addCommentForm');
+            if (form) {
+                form.remove();
+            }
+        }
+
+        function submitCardComment(event, cardId) {
+            event.preventDefault();
+
+            const commentText = document.getElementById('commentText').value.trim();
+            if (!commentText) {
+                return;
+            }
+
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+
+            // Show loading
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Posting...';
+            submitBtn.disabled = true;
+
+            fetch(`/api/cards/${cardId}/comments`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    comment_text: commentText
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Refresh card detail to show new comment
+                    showCardDetailModal(cardId);
+                    showNotification('success', 'Success', 'Comment added successfully');
+                } else {
+                    throw new Error(data.message || 'Failed to add comment');
+                }
+            })
+            .catch(error => {
+                console.error('Error adding comment:', error);
+                showNotification('error', 'Error', error.message);
+
+                // Reset button
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            });
+        }
+
+        function viewCardHistory(cardId) {
+            showNotification('info', 'Feature Coming Soon', 'Card history feature will be available soon');
+        }
+
+        function exportCardDetails(cardId) {
+            const url = `/api/teamlead/cards/${cardId}/export`;
+            window.open(url, '_blank');
         }
 
         // My Cards Functions
@@ -6562,7 +5389,7 @@
                                     Created: ${formatDate(card.created_at)}
                                 </small>
                                 <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-primary btn-sm" onclick="viewCardDetails(${card.id || card.card_id})" title="View Details">
+                                    <button class="btn btn-outline-primary btn-sm" onclick="viewCard(${card.id || card.card_id})" title="View Details">
                                         <i class="bi bi-eye"></i>
                                     </button>
                                     <button class="btn btn-outline-secondary btn-sm" onclick="editCard(${card.id || card.card_id})" title="Edit Card">
@@ -6629,10 +5456,14 @@
             const reviewsGrid = document.getElementById('pending-reviews-grid');
             const emptyElement = document.getElementById('reviews-empty');
 
-            emptyElement.style.display = 'none';
-            reviewsGrid.innerHTML = '';
 
-            fetch('/api/teamlead/pending-reviews')
+
+            fetch('/api/teamlead/pending-reviews', {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
@@ -6710,11 +5541,11 @@
                             </div>
                             <div class="card-footer bg-transparent">
                                 <div class="d-grid gap-2">
-                                    <button class="btn btn-success btn-sm" onclick="approveCard(${card.card_id}, '${card.title}')">
-                                        <i class="bi bi-check-lg"></i> Approve
+                                    <button class="btn btn-success btn-sm enhanced" onclick="approveCard(${card.card_id}, '${card.title}')">
+                                        <i class="bi bi-check-lg me-1"></i> Approve
                                     </button>
-                                    <button class="btn btn-danger btn-sm" onclick="rejectCard(${card.card_id}, '${card.title}')">
-                                        <i class="bi bi-x-lg"></i> Reject
+                                    <button class="btn btn-danger btn-sm enhanced" onclick="rejectCard(${card.card_id}, '${card.title}')">
+                                        <i class="bi bi-x-lg me-1"></i> Reject
                                     </button>
                                 </div>
                             </div>
@@ -6732,11 +5563,234 @@
         let currentReviewAction = null;
 
         function approveCard(cardId, cardTitle) {
-            showFeedbackModal(cardId, cardTitle, 'approve');
+            console.log('ApproveCard called with:', cardId, cardTitle);
+
+            // Handle both single parameter and double parameter calls
+            if (!cardTitle) {
+                cardTitle = `Card #${cardId}`;
+            }
+
+            // Create enhanced approval modal
+            const modal = `
+                <div class="modal fade" id="approveModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header bg-success text-white">
+                                <h5 class="modal-title">
+                                    <i class="bi bi-check-circle me-2"></i>Approve Card
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="success-icon me-3">
+                                        <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-1">Ready to approve:</h6>
+                                        <strong>${cardTitle}</strong>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Approval Comments (Optional)</label>
+                                    <textarea class="form-control" id="approvalComments" rows="3"
+                                        placeholder="Add any feedback or comments for the team member..."></textarea>
+                                </div>
+
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="notifyTeam" checked>
+                                    <label class="form-check-label" for="notifyTeam">
+                                        Notify team member and stakeholders
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-success" onclick="confirmApproval(${cardId})">
+                                    <i class="bi bi-check-lg me-1"></i>Confirm Approval
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', modal);
+            const modalElement = new bootstrap.Modal(document.getElementById('approveModal'));
+            modalElement.show();
+
+            // Clean up modal when hidden
+            const approveModal = document.getElementById('approveModal');
+            if (approveModal) {
+                approveModal.addEventListener('hidden.bs.modal', function() {
+                    this.remove();
+                });
+            }
+        }
+
+        function confirmApproval(cardId) {
+            console.log('Confirming approval for card:', cardId);
+
+            try {
+                const comments = document.getElementById('approvalComments')?.value || '';
+                const notify = document.getElementById('notifyTeam')?.checked || true;
+                const submitBtn = document.querySelector('#approveModal .btn-success');
+
+                console.log('Approval comments:', comments);
+                console.log('Notify team:', notify);
+
+                // Disable submit button and show loading
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Approving...';
+                }
+
+                // Get CSRF token
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                console.log('CSRF Token found:', !!csrfToken);
+
+                if (!csrfToken) {
+                    throw new Error('CSRF token not found');
+                }
+
+                // Prepare request data
+                const requestData = {
+                    feedback: comments,
+                    notify_team: notify
+                };
+
+                console.log('Request data:', requestData);
+                console.log('Request URL:', `/api/teamlead/cards/${cardId}/approve`);
+
+                // Make API call to approve card
+                fetch(`/api/teamlead/cards/${cardId}/approve`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify(requestData),
+                    credentials: 'same-origin'
+                })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
+                    if (!response.ok) {
+                        // Try to get error details from response
+                        return response.text().then(text => {
+                            console.error('Error response body:', text);
+                            throw new Error(`HTTP ${response.status}: ${text || response.statusText}`);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Approval response:', data);
+                    if (data.success) {
+                        showNotification('success', 'Card Approved', data.message || 'Card approved successfully!');
+
+                        // Close modal
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('approveModal'));
+                        if (modal) {
+                            modal.hide();
+                        }
+
+                        // Refresh the list
+                        setTimeout(() => {
+                            if (typeof loadPendingReviews === 'function') {
+                                loadPendingReviews();
+                            }
+                            if (typeof loadAssignedCards === 'function') {
+                                loadAssignedCards();
+                            }
+                        }, 500);
+
+                    } else {
+                        throw new Error(data.message || 'Failed to approve card');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error in confirmApproval:', error);
+                    showNotification('error', 'Approval Failed', error.message || 'Failed to approve card');
+                })
+                .finally(() => {
+                    // Re-enable submit button
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Confirm Approval';
+                    }
+                });
+
+            } catch (error) {
+                console.error('Error in confirmApproval:', error);
+                showNotification('error', 'Error', error.message || 'Failed to approve card');
+            }
         }
 
         function rejectCard(cardId, cardTitle) {
-            showFeedbackModal(cardId, cardTitle, 'reject');
+            console.log('🚫 Reject card called:', cardId, cardTitle);
+
+            // Check if modal exists, if not use prompt fallback
+            const modal = document.getElementById('cardFeedbackModal');
+
+            if (modal) {
+                showFeedbackModal(cardId, cardTitle, 'reject');
+            } else {
+                // Fallback: use prompt for feedback
+                const feedback = prompt(`Reject Card: "${cardTitle}"\n\nPlease provide feedback on what needs to be improved:`);
+
+                if (feedback && feedback.trim()) {
+                    submitRejectDirectly(cardId, feedback.trim());
+                } else if (feedback === null) {
+                    console.log('Reject cancelled by user');
+                } else {
+                    alert('Feedback is required when rejecting a card.');
+                }
+            }
+        }
+
+        // Direct reject submission function
+        function submitRejectDirectly(cardId, feedback) {
+            console.log('📤 Submitting reject directly for card:', cardId);
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            if (!csrfToken) {
+                alert('Security error: CSRF token not found');
+                return;
+            }
+
+            fetch(`/api/teamlead/cards/${cardId}/reject`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ feedback: feedback })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('success', 'Card Rejected', data.message + ' - Status changed to In Progress');
+                    // Refresh the review list
+                    setTimeout(() => {
+                        if (typeof loadPendingReviews === 'function') {
+                            loadPendingReviews();
+                        }
+                    }, 500);
+                } else {
+                    showNotification('error', 'Error', data.message || 'Failed to reject card');
+                }
+            })
+            .catch(error => {
+                console.error('Error rejecting card:', error);
+                showNotification('error', 'Error', error.message || 'Failed to reject card');
+            });
         }
 
         function showFeedbackModal(cardId, cardTitle, action) {
@@ -6790,69 +5844,110 @@
             modalInstance.show();
         }
 
-        // Handle feedback form submission
-        document.getElementById('cardFeedbackForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+        // Handle feedback form submission (for reject functionality)
+        function initializeFeedbackForm() {
+            const feedbackForm = document.getElementById('cardFeedbackForm');
+            if (feedbackForm) {
+                feedbackForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
 
-            const feedback = document.getElementById('feedbackText').value.trim();
+                    const feedback = document.getElementById('feedbackText').value.trim();
+                    const submitBtn = document.getElementById('submitFeedbackBtn');
 
-            // Validate required feedback for reject
-            if (currentReviewAction === 'reject' && !feedback) {
-                showNotification('error', 'Feedback Required', 'Please provide feedback when rejecting a card.');
-                return;
+                    // Validate required feedback for reject
+                    if (currentReviewAction === 'reject' && !feedback) {
+                        showNotification('error', 'Feedback Required', 'Please provide feedback when rejecting a card.');
+                        return;
+                    }
+
+                    // Disable submit button and show loading
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        const originalText = submitBtn.innerHTML;
+                        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+                    }
+
+                    const endpoint = currentReviewAction === 'approve' ? 'approve' : 'reject';
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+                    if (!csrfToken) {
+                        showNotification('error', 'Security Error', 'CSRF token not found');
+                        return;
+                    }
+
+                    console.log('Making request to:', `/api/teamlead/cards/${currentReviewCard}/${endpoint}`);
+                    console.log('Request payload:', { feedback: feedback });
+                    console.log('CSRF Token:', csrfToken);
+
+                    fetch(`/api/teamlead/cards/${currentReviewCard}/${endpoint}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({ feedback: feedback }),
+                        credentials: 'same-origin'
+                    })
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
+                        if (!response.ok) {
+                            // Try to get error details from response
+                            return response.text().then(text => {
+                                console.error('Error response body:', text);
+                                throw new Error(`HTTP ${response.status}: ${text || response.statusText}`);
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Review response:', data);
+                        if (data.success) {
+                            const actionText = currentReviewAction === 'approve' ? 'approved' : 'rejected';
+                            showNotification('success', `Card ${actionText}`, data.message);
+
+                            // Close modal
+                            const modal = bootstrap.Modal.getInstance(document.getElementById('cardFeedbackModal'));
+                            if (modal) {
+                                modal.hide();
+                            }
+
+                            // Refresh the list
+                            setTimeout(() => {
+                                if (typeof loadPendingReviews === 'function') {
+                                    loadPendingReviews();
+                                }
+                                if (typeof loadAssignedCards === 'function') {
+                                    loadAssignedCards();
+                                }
+                            }, 500);
+                        } else {
+                            throw new Error(data.message || `Failed to ${currentReviewAction} card`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showNotification('error', 'Error', error.message || `Failed to ${currentReviewAction} card`);
+                    })
+                    .finally(() => {
+                        // Re-enable submit button
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            const actionText = currentReviewAction === 'approve' ? 'Approve' : 'Reject';
+                            const icon = currentReviewAction === 'approve' ? 'check-lg' : 'x-lg';
+                            submitBtn.innerHTML = `<i class="bi bi-${icon} me-2"></i>${actionText} Card`;
+                        }
+                    });
+                });
             }
+        }
 
-            const endpoint = currentReviewAction === 'approve' ? 'approve' : 'reject';
 
-            fetch(`/api/teamlead/cards/${currentReviewCard}/${endpoint}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({ feedback: feedback })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const actionText = currentReviewAction === 'approve' ? 'approved' : 'rejected';
-                    showNotification('success', `Card ${actionText}`, data.message);
 
-                    // Close modal
-                    bootstrap.Modal.getInstance(document.getElementById('cardFeedbackModal')).hide();
-
-                    // Refresh the list
-                    loadPendingReviews();
-                } else {
-                    showNotification('error', 'Error', data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('error', 'Error', `Failed to ${currentReviewAction} card`);
-            });
-        });
-
-        // Show notification function
-        function showNotification(type, title, message) {
-            // Create notification element
-            const notification = document.createElement('div');
-            notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show`;
-            notification.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 400px;';
-            notification.innerHTML = `
-                <strong>${title}:</strong> ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-
-            document.body.appendChild(notification);
-
-            // Auto dismiss after 5 seconds
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.remove();
-                }
-            }, 5000);
-        }        function getPriorityClass(priority) {
+        function getPriorityClass(priority) {
             switch(priority) {
                 case 'high': return 'danger';
                 case 'medium': return 'warning';
@@ -7021,11 +6116,11 @@
                                             </small>
                                         </div>
                                         <div class="d-flex gap-2">
-                                            <button class="btn btn-sm btn-success flex-fill" onclick="approveCard(${assignment.card_id}, '${assignment.assigned_username}')">
-                                                <i class="bi bi-check-circle"></i> Approve
+                                            <button class="btn btn-sm btn-success enhanced flex-fill" onclick="approveCard(${assignment.card_id}, '${assignment.assigned_username}')">
+                                                <i class="bi bi-check-circle me-1"></i> Approve
                                             </button>
-                                            <button class="btn btn-sm btn-danger flex-fill" onclick="rejectCard(${assignment.card_id}, '${assignment.assigned_username}')">
-                                                <i class="bi bi-x-circle"></i> Reject
+                                            <button class="btn btn-sm btn-danger enhanced flex-fill" onclick="rejectCard(${assignment.card_id}, '${assignment.assigned_username}')">
+                                                <i class="bi bi-x-circle me-1"></i> Reject
                                             </button>
                                         </div>
                                     </div>
@@ -7159,12 +6254,14 @@
                 const priorityBadge = getPriorityBadge(history.priority);
 
                 return `
-                    <tr class="history-item" data-status="${history.assignment_status}" data-user="${history.user_id}" data-project="${history.project_id}">
+                    <tr class="history-item" data-status="${history.action}" data-user="${history.user_id}" data-project="${history.project_id}">
                         <td>
                             <div>
                                 <strong>${history.title}</strong>
+                                ${history.estimated_hours ? ` <span class="text-muted">(${history.estimated_hours} jam)</span>` : ''}
+                                ${history.priority ? ` <span class="text-${history.priority === 'high' ? 'danger' : history.priority === 'medium' ? 'warning' : 'success'}">- priority: ${history.priority}</span>` : ''}
                                 <br>
-                                <small class="text-muted">${history.board_name}</small>
+                                <small class="text-muted">Board: ${history.board_name}</small>
                             </div>
                         </td>
                         <td>
@@ -7183,28 +6280,27 @@
                                 <strong>${history.project_name}</strong>
                             </div>
                         </td>
-                        <td>${statusBadge}</td>
+                        <td>
+                            <span class="badge bg-${getActionBadgeColor(history.action)}">${formatAction(history.action)}</span>
+                            <br>
+                            <small class="text-muted">${history.old_status} → ${history.new_status}</small>
+                        </td>
                         <td>
                             <div>
                                 <div>${assignedDate}</div>
-                                ${history.started_at ? `<small class="text-muted">Started: ${new Date(history.started_at).toLocaleDateString()}</small>` : ''}
-                                ${history.completed_at ? `<small class="text-success d-block">Completed: ${new Date(history.completed_at).toLocaleDateString()}</small>` : ''}
+                                ${history.feedback ? `<small class="text-muted">Feedback: ${history.feedback.substring(0, 50)}${history.feedback.length > 50 ? '...' : ''}</small>` : ''}
                             </div>
                         </td>
                         <td>
                             <div>
                                 <strong>${duration}</strong>
-                                ${history.is_overdue ? '<br><small class="text-danger">Overdue</small>' : ''}
                             </div>
                         </td>
                         <td>${priorityBadge}</td>
                         <td>
                             <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-primary" onclick="viewHistoryDetail(${history.card_id})" title="View Details">
+                                <button class="btn btn-outline-primary" onclick="viewHistoryDetail('${history.history_id}')" title="View Details">
                                     <i class="bi bi-eye"></i>
-                                </button>
-                                <button class="btn btn-outline-secondary" onclick="viewAssignmentTimeline(${history.card_id}, ${history.user_id})" title="View Timeline">
-                                    <i class="bi bi-clock-history"></i>
                                 </button>
                             </div>
                         </td>
@@ -7219,13 +6315,11 @@
             if (!summary) return;
 
             document.getElementById('totalAssignments').textContent = summary.total_assignments || 0;
-            document.getElementById('assignedCount').textContent = summary.assigned_count || 0;
-            document.getElementById('inProgressCount').textContent = summary.in_progress_count || 0;
-            document.getElementById('completedCount').textContent = summary.completed_count || 0;
-            document.getElementById('overdueCount').textContent = summary.overdue_count || 0;
-
-            const avgHours = summary.avg_completion_hours ? Math.round(summary.avg_completion_hours) : 0;
-            document.getElementById('avgCompletionTime').textContent = avgHours + 'h';
+            document.getElementById('assignedCount').textContent = summary.submitted_count || 0;
+            document.getElementById('inProgressCount').textContent = summary.submitted_count || 0;
+            document.getElementById('completedCount').textContent = summary.approved_count || 0;
+            document.getElementById('overdueCount').textContent = summary.rejected_count || 0;
+            document.getElementById('avgCompletionTime').textContent = '0h';
         }
 
         function updateHistoryPagination(pagination) {
@@ -7388,9 +6482,23 @@
             return `<span class="badge ${config.class}">${config.text}</span>`;
         }
 
-        function viewHistoryDetail(cardId) {
+        function getActionBadgeColor(action) {
+            switch (action) {
+                case 'submitted': return 'info';
+                case 'approved': return 'success';
+                case 'rejected': return 'danger';
+                case 'assigned': return 'primary';
+                default: return 'secondary';
+            }
+        }
+
+        function formatAction(action) {
+            return action.charAt(0).toUpperCase() + action.slice(1);
+        }
+
+        function viewHistoryDetail(historyId) {
             // TODO: Implement history detail view
-            console.log('View history detail:', cardId);
+            console.log('View history detail:', historyId);
         }
 
         function viewAssignmentTimeline(cardId, userId) {
@@ -7505,7 +6613,7 @@
                                 <button class="btn btn-outline-primary" onclick="viewTimeLogDetail(${log.time_log_id})" title="View Details">
                                     <i class="bi bi-eye"></i>
                                 </button>
-                                <button class="btn btn-outline-secondary" onclick="viewCardDetail(${log.card_id})" title="View Task">
+                                <button class="btn btn-outline-secondary" onclick="viewCard(${log.card_id})" title="View Task">
                                     <i class="bi bi-card-text"></i>
                                 </button>
                             </div>
@@ -7746,11 +6854,6 @@
         function viewTimeLogDetail(timeLogId) {
             // TODO: Implement time log detail view
             console.log('View time log detail:', timeLogId);
-        }
-
-        function viewCardDetail(cardId) {
-            // TODO: Implement card detail view
-            console.log('View card detail:', cardId);
         }
 
         function filterCards() {
@@ -9548,29 +8651,206 @@
             });
         }
 
+        // Enhanced navigation system with comprehensive error handling
+        function initTeamLeadNavigation() {
+            console.log('🚀 Initializing TeamLead navigation...');
+
+            try {
+                const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
+                console.log('📊 Found navigation links:', navLinks.length);
+
+                if (navLinks.length === 0) {
+                    console.warn('⚠️ No navigation links found!');
+                    return;
+                }
+
+                navLinks.forEach((link, index) => {
+                    if (!link) return;
+
+                    const onclick = link.getAttribute('onclick');
+                    const href = link.getAttribute('href');
+                    console.log(`🔗 Link ${index}:`, onclick, href);
+
+                    // Remove existing click handlers and add new ones
+                    const newLink = link.cloneNode(true);
+                    if (link.parentNode) {
+                        link.parentNode.replaceChild(newLink, link);
+                    }
+
+                    // Add robust click handler
+                    newLink.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        let section = null;
+
+                        // Extract section from onclick
+                        if (onclick && onclick.includes('showContent')) {
+                            const match = onclick.match(/showContent\('([^']+)'/);
+                            if (match) section = match[1];
+                        }
+                        // Fallback to href
+                        else if (href && href.startsWith('#')) {
+                            section = href.substring(1);
+                        }
+
+                        if (section) {
+                            console.log('🎯 Navigation clicked:', section);
+                            showContent(section, this);
+                        } else {
+                            console.warn('⚠️ Could not determine section for link');
+                        }
+                    });
+                });
+
+                // Verify sections exist
+                const expectedSections = ['dashboard', 'projects', 'my-cards', 'assigned-cards'];
+                expectedSections.forEach(section => {
+                    const element = document.getElementById(section + '-content');
+                    if (element) {
+                        console.log(`✅ Section found: ${section}-content`);
+                    } else {
+                        console.warn(`⚠️ Missing section: ${section}-content`);
+                    }
+                });
+
+                // Show dashboard by default with delay
+                setTimeout(() => {
+                    console.log('🏠 Loading default dashboard...');
+                    if (typeof showContent === 'function') {
+                        showContent('dashboard');
+                    } else {
+                        console.error('❌ showContent function not available');
+                    }
+                }, 200);
+
+                console.log('✅ TeamLead navigation initialized successfully');
+
+            } catch (error) {
+                console.error('❌ Navigation initialization failed:', error);
+                if (typeof showNotification === 'function') {
+                    showNotification('Navigation setup failed', 'danger');
+                }
+            }
+        }
+
+        // Safe navigation wrapper
+        window.safeShowContent = function(section, element = null) {
+            if (typeof showContent === 'function') {
+                return showContent(section, element);
+            } else {
+                console.error('❌ showContent function not available');
+                return false;
+            }
+        };
+
+        // Global debug functions for testing
+        window.debugTeamLeadNavigation = function() {
+            console.log('=== TEAMLEAD NAVIGATION DEBUG ===');
+            const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
+            const sections = document.querySelectorAll('.content-section');
+
+            console.log('Navigation Links:', navLinks.length);
+            navLinks.forEach((link, i) => {
+                console.log(`  ${i+1}. ${link.textContent.trim()} - onclick: ${link.getAttribute('onclick')}`);
+            });
+
+            console.log('Content Sections:', sections.length);
+            sections.forEach((section, i) => {
+                console.log(`  ${i+1}. ${section.id} - display: ${section.style.display}, visible: ${section.offsetHeight > 0}`);
+            });
+            console.log('=== END DEBUG ===');
+        };
+
+        window.testTeamLeadNavigation = function(section) {
+            console.log('🧪 Testing navigation to:', section);
+            showContent(section);
+        };
+
         // Initialize everything when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎯 TeamLead Panel DOM loaded');
+
             const savedTheme = localStorage.getItem('theme');
             const themeIcon = document.getElementById('theme-icon');
 
             if (savedTheme === 'dark') {
                 document.body.classList.add('dark-theme');
-                themeIcon.className = 'bi bi-sun-fill';
+                if (themeIcon) themeIcon.className = 'bi bi-sun-fill';
             } else {
-                themeIcon.className = 'bi bi-moon-fill';
+                if (themeIcon) themeIcon.className = 'bi bi-moon-fill';
             }
 
-            // Initialize all modules
-            initializeProjectFilters();
-            initializeProjectManagement();
-            initializeUserManagement();
-            initializeMemberManagement();
+            // Initialize navigation system with retry
+            try {
+                initTeamLeadNavigation();
+            } catch (error) {
+                console.error('First navigation init failed, retrying...', error);
+                setTimeout(() => {
+                    try {
+                        initTeamLeadNavigation();
+                    } catch (retryError) {
+                        console.error('Navigation retry failed:', retryError);
+                        if (typeof showNotification === 'function') {
+                            showNotification('Navigation system failed to initialize', 'danger');
+                        }
+                    }
+                }, 1000);
+            }
+
+            // Initialize all modules with error handling
+            try {
+                initializeProjectFilters();
+            } catch (error) {
+                console.error('Error initializing project filters:', error);
+            }
+
+            try {
+                initializeProjectManagement();
+            } catch (error) {
+                console.error('Error initializing project management:', error);
+            }
+
+            try {
+                initializeUserManagement();
+            } catch (error) {
+                console.error('Error initializing user management:', error);
+            }
+
+            try {
+                initializeMemberManagement();
+            } catch (error) {
+                console.error('Error initializing member management:', error);
+            }
 
             // Load current project data
-            loadCurrentProject();
+            try {
+                loadCurrentProject();
+            } catch (error) {
+                console.error('Error loading current project:', error);
+            }
 
-            // Initialize create card form handlers
-            initializeCreateCardForm();
+            // Initialize create card form handlers with extended delay
+            setTimeout(() => {
+                try {
+                    console.log('About to initialize create card form...');
+                    const modal = document.getElementById('createCardModal');
+                    const form = document.getElementById('createCardForm');
+
+                    console.log('Modal exists:', !!modal);
+                    console.log('Form exists:', !!form);
+
+                    if (modal && form) {
+                        initializeCreateCardForm();
+                        console.log('Create card form initialized successfully');
+                    } else {
+                        console.warn('Modal or form not found, skipping initialization');
+                    }
+                } catch (error) {
+                    console.error('Error initializing create card form:', error);
+                    console.error('Stack trace:', error.stack);
+                }
+            }, 500);
         });
 
         // Member Management System
@@ -10480,7 +9760,7 @@
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="createCardForm">
+                <form id="createCardForm" onsubmit="return false;">
                     <div class="modal-body">
                         <div class="row g-3">
                             <!-- Board Selection -->
@@ -10505,7 +9785,7 @@
                                     <option value="">Select Priority</option>
                                     <option value="low">🟢 Low</option>
                                     <option value="medium">🟡 Medium</option>
-                                    <option value="high">� High</option>
+                                    <option value="high">🔴 High</option>
                                 </select>
                             </div>
 
@@ -10517,7 +9797,10 @@
                                 </label>
                                 <input type="text" class="form-control" id="cardTitle" name="card_title"
                                        placeholder="Enter card title" maxlength="100" required>
-                                <div class="form-text">Brief, descriptive title for the task</div>
+                                <div class="form-text d-flex justify-content-between">
+                                    <span>Brief, descriptive title for the task</span>
+                                    <span id="titleCharCount" class="text-muted">0/100</span>
+                                </div>
                             </div>
 
                             <!-- Description -->
@@ -10574,7 +9857,7 @@
                             <i class="bi bi-x-lg me-2"></i>
                             Cancel
                         </button>
-                        <button type="submit" class="btn btn-primary" id="createCardBtn">
+                        <button type="button" class="btn btn-primary" id="createCardBtn" onclick="submitCreateCard(event)">
                             <i class="bi bi-plus-lg me-2"></i>
                             Create Card
                         </button>
@@ -11328,17 +10611,175 @@
             }
         }
 
-        function viewCardDetails(cardId) {
-            // Implementation for viewing card details
-            console.log('Viewing card details for ID:', cardId);
-            // This would open a modal or navigate to card details page
-        }
 
         function editCard(cardId) {
             // Implementation for editing card
             console.log('Editing card with ID:', cardId);
             // This would open an edit modal or form
         }
+
+        // Initialize forms and event listeners when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 TeamLead Panel DOM loaded');
+
+            // Wait a bit for all functions to be properly defined
+            setTimeout(() => {
+                // Initialize feedback form
+                try {
+                    if (typeof initializeFeedbackForm === 'function') {
+                        initializeFeedbackForm();
+                        console.log('✅ Feedback form initialized');
+                    } else {
+                        console.warn('⚠️ initializeFeedbackForm not available yet');
+                    }
+                } catch (error) {
+                    console.error('❌ Error initializing feedback form:', error);
+                }
+
+                // Initialize navigation
+                try {
+                    if (typeof showContent === 'function') {
+                        showContent('projects');
+                        console.log('✅ Initial navigation set to projects');
+                    } else {
+                        console.warn('⚠️ showContent not available yet');
+                    }
+                } catch (error) {
+                    console.error('❌ Error during initial navigation:', error);
+                }
+            }, 100);
+
+            // Load critical data with staggered approach
+            setTimeout(() => {
+                try {
+                    if (typeof loadCurrentProject === 'function') {
+                        loadCurrentProject();
+                        console.log('✅ Project data loading started');
+                    } else {
+                        console.warn('⚠️ loadCurrentProject not available yet');
+                    }
+                } catch (error) {
+                    console.error('❌ Error loading project:', error);
+                }
+            }, 200);
+
+            // Load secondary data
+            setTimeout(() => {
+                try {
+                    if (typeof loadProjectTimeline === 'function') {
+                        loadProjectTimeline();
+                        console.log('✅ Timeline loading started');
+                    } else {
+                        console.warn('⚠️ loadProjectTimeline not available yet');
+                    }
+                } catch (error) {
+                    console.error('❌ Error loading timeline:', error);
+                }
+            }, 300);
+
+            setTimeout(() => {
+                try {
+                    if (typeof loadRecentActivities === 'function') {
+                        loadRecentActivities();
+                        console.log('✅ Activities loading started');
+                    } else {
+                        console.warn('⚠️ loadRecentActivities not available yet');
+                    }
+                } catch (error) {
+                    console.error('❌ Error loading activities:', error);
+                }
+            }, 400);
+        });
     </script>
+
+    <!-- Card Detail Modal -->
+    <div class="modal fade" id="cardDetailModal" tabindex="-1" aria-labelledby="cardDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-fullscreen-lg-down">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="cardDetailModalLabel">
+                        <i class="bi bi-card-text me-2"></i>Card Detail
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0" style="max-height: 80vh; overflow-y: auto;">
+                    <div id="cardDetailContent">
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2 text-muted">Loading card details...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i>Close
+                    </button>
+                    <button type="button" class="btn btn-primary" id="editCardFromDetail" style="display: none;">
+                        <i class="bi bi-pencil me-1"></i>Edit Card
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Menu Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+            // Function to toggle mobile menu
+            function toggleMobileMenu() {
+                sidebar.classList.toggle('show');
+                sidebarOverlay.classList.toggle('show');
+                document.body.style.overflow = sidebar.classList.contains('show') ? 'hidden' : '';
+            }
+
+            // Function to close mobile menu
+            function closeMobileMenu() {
+                sidebar.classList.remove('show');
+                sidebarOverlay.classList.remove('show');
+                document.body.style.overflow = '';
+            }
+
+            // Event listeners
+            if (mobileMenuToggle) {
+                mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+            }
+
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', closeMobileMenu);
+            }
+
+            // Close menu when clicking on nav links (mobile)
+            const navLinks = sidebar.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    // Only close on mobile
+                    if (window.innerWidth <= 768) {
+                        setTimeout(closeMobileMenu, 100);
+                    }
+                });
+            });
+
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) {
+                    closeMobileMenu();
+                }
+            });
+
+            // Handle escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && sidebar.classList.contains('show')) {
+                    closeMobileMenu();
+                }
+            });
+        });
+    </script>
+
 </body>
 </html>

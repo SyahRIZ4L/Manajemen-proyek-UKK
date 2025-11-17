@@ -1,0 +1,208 @@
+/* Enhanced Modal Styles */
+.modal-content {
+    border-radius: 15px;
+    overflow: hidden;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.modal-header.bg-gradient {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    border-radius: 0.375rem 0.375rem 0 0;
+}
+
+.modal-header.bg-gradient::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: rotate 20s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    border-radius: 0.375rem 0.375rem 0 0;
+}
+
+/* Card Detail Modal Styles */
+#cardDetailModal .modal-dialog {
+    max-width: 95vw;
+    margin: 1rem auto;
+}
+
+#cardDetailModal .modal-content {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+#cardDetailModal .modal-header {
+    border-radius: 12px 12px 0 0;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+
+#cardDetailModal .modal-body {
+    padding: 0;
+    background: #f8f9fa;
+}
+
+#cardDetailModal .modal-footer {
+    border-top: 1px solid #e9ecef;
+    padding: 1rem 1.5rem;
+    background: white;
+    border-radius: 0 0 12px 12px;
+}
+
+/* Modal Scrolling */
+.modal-dialog-scrollable {
+    max-height: calc(100vh - 3rem);
+}
+
+.modal-dialog-scrollable .modal-content {
+    max-height: calc(100vh - 3rem);
+    overflow: hidden;
+}
+
+.modal-dialog-scrollable .modal-body {
+    overflow-y: auto;
+    max-height: calc(100vh - 200px);
+}
+
+/* Modal Animation */
+.modal.fade .modal-dialog {
+    transition: transform 0.3s ease-out;
+    transform: scale(0.9);
+}
+
+.modal.show .modal-dialog {
+    transform: scale(1);
+}
+
+#cardDetailModal.fade .modal-dialog {
+    transition: transform 0.3s ease-out;
+    transform: scale(0.9);
+}
+
+#cardDetailModal.show .modal-dialog {
+    transform: scale(1);
+}
+
+/* Comments Section */
+.comment-item {
+    padding: 1rem 0;
+    border-bottom: 1px solid #e9ecef !important;
+}
+
+.comment-item:last-child {
+    border-bottom: none !important;
+}
+
+.comment-content {
+    color: #495057;
+    line-height: 1.6;
+    word-wrap: break-word;
+}
+
+.comment-content a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.comment-content a:hover {
+    text-decoration: underline;
+}
+
+/* Comment Form */
+#addCommentForm {
+    background: #ffffff;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    transition: border-color 0.2s ease;
+}
+
+#addCommentForm:hover {
+    border-color: #007bff;
+}
+
+#addCommentForm textarea {
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    resize: vertical;
+    min-height: 80px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#addCommentForm textarea:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.1);
+}
+
+/* Badge Improvements */
+.badge.fs-6 {
+    font-size: 0.875rem !important;
+    padding: 0.5rem 0.75rem;
+    font-weight: 500;
+}
+
+.badge.bg-white {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* Success Icon Animation for Approval Modal */
+.success-icon {
+    animation: pulseGlow 2s infinite;
+}
+
+@keyframes pulseGlow {
+    0%, 100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 5px rgba(40, 167, 69, 0.3));
+    }
+    50% {
+        transform: scale(1.1);
+        filter: drop-shadow(0 0 15px rgba(40, 167, 69, 0.6));
+    }
+}
+
+/* Responsive Modal Heights */
+@media (max-height: 768px) {
+    .modal-dialog-scrollable {
+        max-height: calc(100vh - 1rem);
+    }
+
+    .modal-dialog-scrollable .modal-content {
+        max-height: calc(100vh - 1rem);
+    }
+
+    .modal-dialog-scrollable .modal-body {
+        max-height: calc(100vh - 150px);
+    }
+}
+
+@media (max-height: 600px) {
+    .modal-dialog-scrollable .modal-body {
+        max-height: calc(100vh - 120px);
+    }
+}

@@ -11,6 +11,7 @@ use App\Http\Controllers\ProjectController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 // Root redirect - SIMPLIFIED
 Route::get('/', function () {
@@ -20,123 +21,96 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-// Test API route
-Route::get('/test-api', function () {
-    return view('test-api');
-})->middleware('auth');
-
-// Auto login test route
-Route::get('/auto-login', function () {
-    return view('auto-login');
-});
-
-// Test login route
-Route::get('/test-login', function () {
-    return view('test-login');
-});
-
-// Test my cards data without auth
-Route::get('/test-my-cards-data', function () {
+// Debug route for card details issue
+Route::get('/debug-card/{cardId}', function($cardId) {
     try {
-        $teamLeadId = 2; // existing team lead
+        $user = Auth::user();
 
-        $myCards = DB::table('cards')
-            ->join('boards', 'cards.board_id', '=', 'boards.board_id')
-            ->join('projects', 'boards.project_id', '=', 'projects.project_id')
-            ->leftJoin('card_assignments', 'cards.card_id', '=', 'card_assignments.card_id')
-            ->leftJoin('users as assigned_user', 'card_assignments.assigned_user_id', '=', 'assigned_user.user_id')
-            ->where('cards.created_by', $teamLeadId)
-            ->select(
-                'cards.card_id as id',
-                'cards.card_title as title',
-                'cards.description',
-                'cards.status',
-                'cards.priority',
-                'cards.due_date',
-                'cards.created_at',
-                'cards.estimated_hours',
-                'cards.actual_hours',
-                'boards.board_name',
-                'projects.project_id',
-                'projects.project_name',
-                'assigned_user.username as assigned_to',
-                'assigned_user.full_name as assigned_to_name',
-                'card_assignments.assigned_at'
-            )
-            ->orderBy('cards.created_at', 'desc')
-            ->get();
-
-        // Group cards by status
-        $cardsByStatus = [
-            'todo' => [],
-            'in_progress' => [],
-            'review' => [],
-            'done' => []
+        $response = [
+            'card_id' => $cardId,
+            'user_authenticated' => $user ? true : false,
+            'user_id' => $user ? $user->user_id : null,
+            'user_role' => $user ? $user->role : null,
         ];
 
-        foreach ($myCards as $card) {
-            $status = strtolower($card->status);
-            if (!isset($cardsByStatus[$status])) {
-                $cardsByStatus[$status] = [];
-            }
-            $cardsByStatus[$status][] = $card;
+        // Test database connection
+        try {
+            $cardCount = DB::table('cards')->count();
+            $response['total_cards'] = $cardCount;
+        } catch (Exception $e) {
+            $response['db_error'] = $e->getMessage();
         }
+
+        // Test specific card
+        try {
+            $card = DB::table('cards')->where('card_id', $cardId)->first();
+            $response['card_exists'] = $card ? true : false;
+            if ($card) {
+                $response['card_title'] = $card->card_title;
+                $response['card_status'] = $card->status;
+            }
+        } catch (Exception $e) {
+            $response['card_query_error'] = $e->getMessage();
+        }
+
+        return response()->json($response);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
+})->middleware('auth');
+
+
+
+
+
+
+
+
+
+// Test route to create a card in review status for testing
+Route::post('/api/test/create-review-card', function () {
+    try {
+        $user = Auth::user();
+
+        // Create a test card in review status
+        $cardId = DB::table('cards')->insertGetId([
+            'title' => 'Test Card for Review - ' . now()->format('Y-m-d H:i:s'),
+            'description' => 'This is a test card created for testing the approve/reject functionality.',
+            'status' => 'review',
+            'priority' => 'medium',
+            'due_date' => now()->addDays(7),
+            'created_by' => $user->user_id,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        // Create assignment for the card
+        DB::table('card_assignments')->insert([
+            'card_id' => $cardId,
+            'user_id' => $user->user_id,
+            'assigned_by' => $user->user_id,
+            'assigned_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
 
         return response()->json([
             'success' => true,
-            'data' => $cardsByStatus,
-            'total_cards' => count($myCards),
-            'debug_info' => [
-                'team_lead_id' => $teamLeadId,
-                'raw_cards_count' => count($myCards),
-                'status_counts' => [
-                    'todo' => count($cardsByStatus['todo']),
-                    'in_progress' => count($cardsByStatus['in_progress']),
-                    'review' => count($cardsByStatus['review']),
-                    'done' => count($cardsByStatus['done'])
-                ]
-            ]
+            'message' => 'Test card created successfully',
+            'card_id' => $cardId,
+            'card' => DB::table('cards')->where('card_id', $cardId)->first()
         ]);
+
     } catch (\Exception $e) {
         return response()->json([
             'success' => false,
-            'error' => $e->getMessage(),
-            'line' => $e->getLine(),
-            'file' => $e->getFile()
+            'error' => $e->getMessage()
         ], 500);
     }
-});
-
-// Test calling TeamLeadController getMyCards directly
-Route::get('/test-teamlead-my-cards', function () {
-    try {
-        // Simulate authentication by getting user with ID 2
-        $user = \App\Models\User::find(2);
-        if (!$user) {
-            return response()->json(['error' => 'User not found'], 404);
-        }
-
-        // Manually authenticate
-        Auth::login($user);
-
-        // Call the controller method
-        $controller = new \App\Http\Controllers\TeamLeadController();
-        $request = new \Illuminate\Http\Request();
-
-        return $controller->getMyCards($request);
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'error' => $e->getMessage(),
-            'line' => $e->getLine(),
-            'file' => $e->getFile()
-        ], 500);
-    }
-});
-
-// Frontend test route
-Route::get('/frontend-test', function () {
-    return view('frontend-test');
 })->middleware('auth');
 
 // Debug route for checking authentication
@@ -179,15 +153,7 @@ Route::get('/test-api-with-session', function () {
     return response()->json(['error' => 'Team lead not found']);
 });
 
-// Quick login as team lead for testing
-Route::get('/quick-login', function () {
-    $teamLead = \App\Models\User::where('username', 'teamlead')->first();
-    if ($teamLead) {
-        Auth::login($teamLead);
-        return redirect('/teamlead/panel')->with('message', 'Logged in as Team Lead for testing');
-    }
-    return redirect('/login')->with('error', 'Team Lead user not found');
-});
+
 
 // Authentication Routes
 Route::middleware('guest')->group(function () {
@@ -201,8 +167,13 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    // Profile update routes
-    Route::post('/api/profile/update', [UserController::class, 'updateProfile'])->name('profile.update');
+    // Profile routes
+    Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'show'])->name('profile.show');
+    Route::get('/profile/edit', [App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+
+    // Profile API routes (legacy)
+    Route::post('/api/profile/update', [UserController::class, 'updateProfile'])->name('profile.api.update');
     Route::post('/api/profile/upload-photo', [UserController::class, 'uploadProfilePhoto'])->name('profile.upload-photo');
     Route::delete('/api/profile/delete-photo', [UserController::class, 'deleteProfilePhoto'])->name('profile.delete-photo');
 
@@ -212,6 +183,7 @@ Route::middleware('auth')->group(function () {
 
     // Admin Panel Route - Only accessible by admins
     Route::get('/admin/panel', [AdminController::class, 'panel'])->name('admin.panel');
+    Route::put('/admin/profile/update', [AdminController::class, 'updateProfile'])->name('admin.profile.update');
 
     // Admin API Routes for Team Lead Management
     Route::middleware('auth')->group(function () {
@@ -258,6 +230,8 @@ Route::middleware('auth')->group(function () {
 
     // Card Workflow Routes for TeamLead
     Route::get('/api/teamlead/pending-reviews', [TeamLeadController::class, 'getPendingCardReviews'])->name('teamlead.pending-reviews');
+    Route::get('/api/teamlead/cards/{cardId}/detail', [TeamLeadController::class, 'getCardDetails'])->name('teamlead.card-details');
+    Route::post('/api/teamlead/cards/{cardId}/comments', [TeamLeadController::class, 'addCardComment'])->name('teamlead.add-card-comment');
     Route::post('/api/teamlead/cards/{cardId}/approve', [TeamLeadController::class, 'approveCard'])->name('teamlead.approve-card');
     Route::post('/api/teamlead/cards/{cardId}/reject', [TeamLeadController::class, 'rejectCard'])->name('teamlead.reject-card');
 
@@ -271,6 +245,122 @@ Route::middleware('auth')->group(function () {
 
     // Designer Panel Route - Only accessible by designers
     Route::get('/designer/panel', [DesignerController::class, 'panel'])->name('designer.panel');
+
+    // Debug route for testing card details (no auth required)
+    Route::get('/debug/cards/{cardId}/detail', function($cardId) {
+        try {
+            // Basic card query
+            $card = DB::table('cards')->where('card_id', $cardId)->first();
+
+            if (!$card) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Card not found',
+                    'card_id' => $cardId
+                ], 404);
+            }
+
+            // Get comments
+            $comments = DB::table('card_comments as cc')
+                ->leftJoin('users as u', 'cc.user_id', '=', 'u.user_id')
+                ->where('cc.card_id', $cardId)
+                ->select([
+                    'cc.comment_id',
+                    DB::raw('COALESCE(cc.comment_text, cc.comment, "No comment") as comment_text'),
+                    'cc.created_at',
+                    DB::raw('COALESCE(u.full_name, u.username, "Unknown") as user_name'),
+                    DB::raw('COALESCE(u.role, "Member") as user_role')
+                ])
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'card' => $card,
+                'comments' => $comments,
+                'debug_info' => [
+                    'requested_card_id' => $cardId,
+                    'card_found' => $card ? true : false,
+                    'comments_count' => $comments->count()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Debug error: ' . $e->getMessage(),
+                'error_trace' => $e->getTraceAsString()
+            ], 500);
+        }
+    })->name('debug.card-details');
+
+    // Debug route to list all cards
+    Route::get('/debug/cards/list', function() {
+        try {
+            $cards = DB::table('cards')->select('card_id', 'card_title', 'status')->limit(10)->get();
+            $cardCount = DB::table('cards')->count();
+
+            return response()->json([
+                'success' => true,
+                'total_cards' => $cardCount,
+                'sample_cards' => $cards,
+                'message' => "Found {$cardCount} cards in database"
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Database error: ' . $e->getMessage()
+            ], 500);
+        }
+    })->name('debug.cards-list');
+
+    // API Routes that should return JSON responses
+    Route::prefix('api')->group(function () {
+        // Universal card comment routes with custom auth handling
+        Route::get('/cards/{cardId}/detail', function($cardId) {
+            if (!Auth::check()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Authentication required. Please login first.',
+                    'redirect' => '/login'
+                ], 401);
+            }
+            return app(TeamLeadController::class)->getCardDetails($cardId);
+        })->name('universal.card-details');
+
+        Route::get('/cards/{cardId}/comments', function($cardId) {
+            if (!Auth::check()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Authentication required. Please login first.',
+                    'redirect' => '/login'
+                ], 401);
+            }
+            return app(TeamLeadController::class)->getCardComments($cardId);
+        })->name('universal.card-comments');
+
+        Route::post('/cards/{cardId}/comments', function(Request $request, $cardId) {
+            if (!Auth::check()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Authentication required. Please login first.',
+                    'redirect' => '/login'
+                ], 401);
+            }
+            return app(TeamLeadController::class)->addCardComment($request, $cardId);
+        })->name('universal.add-card-comment');
+    });
+
+        })->name('debug.cards-list');
+
+    // Simple test route
+    Route::get('/test/api', function() {
+        return response()->json([
+            'success' => true,
+            'message' => 'API is working!',
+            'timestamp' => now(),
+            'auth_status' => Auth::check() ? 'authenticated' : 'not authenticated',
+            'user' => Auth::user() ? Auth::user()->name : null
+        ]);
+    });
 
     // Developer API Routes - Only accessible by developers
     Route::middleware(['auth'])->group(function () {
@@ -286,8 +376,27 @@ Route::middleware('auth')->group(function () {
         Route::get('/api/developer/cards', [DeveloperController::class, 'getCards'])->name('developer.cards');
         Route::get('/api/developer/my-cards', [DeveloperController::class, 'getMyCards'])->name('developer.my-cards');
         Route::get('/api/developer/dashboard', [DeveloperController::class, 'getDashboardStats'])->name('developer.dashboard');
+        Route::get('/api/developer/cards/{cardId}/details', [DeveloperController::class, 'getCardDetails'])->name('developer.card-details');
+
+        // Card Actions
+        Route::post('/api/developer/cards/{cardId}/accept', [DeveloperController::class, 'acceptCard'])->name('developer.accept-card');
+        Route::post('/api/developer/cards/{cardId}/start', [DeveloperController::class, 'startCard'])->name('developer.start-card');
         Route::put('/api/developer/cards/{cardId}/status', [DeveloperController::class, 'updateCardStatus'])->name('developer.update-card-status');
         Route::post('/api/developer/cards/{cardId}/submit', [DeveloperController::class, 'submitCardToTeamLead'])->name('developer.submit-card');
+        Route::post('/api/developer/cards/{cardId}/submit-alt', [DeveloperController::class, 'submitCard'])->name('developer.submit-card-alt');
+
+        // Timer and Comments
+        Route::post('/api/developer/cards/{cardId}/toggle-timer', [DeveloperController::class, 'toggleTimer'])->name('developer.toggle-timer');
+        Route::post('/api/developer/cards/{cardId}/comments', [DeveloperController::class, 'addCardComment'])->name('developer.add-comment');
+
+        // Legacy routes kept for API compatibility
+        Route::get('/developer/dashboard', [DeveloperController::class, 'dashboard'])->name('developer.dashboard.page');
+        Route::get('/developer/work', [DeveloperController::class, 'myTasks'])->name('developer.work.legacy');
+        Route::get('/developer/notifications', [DeveloperController::class, 'notifications'])->name('developer.notifications.legacy');
+        Route::get('/developer/comments', [DeveloperController::class, 'comments'])->name('developer.comments.legacy');
+        Route::get('/developer/profile', [DeveloperController::class, 'profile'])->name('developer.profile.legacy');
+        Route::get('/developer/bugs', [DeveloperController::class, 'bugReports'])->name('developer.bugs');
+        Route::post('/developer/bugs', [DeveloperController::class, 'createBugReport'])->name('developer.create-bug');
     });
 
     // Designer API Routes - Only accessible by designers
@@ -303,8 +412,88 @@ Route::middleware('auth')->group(function () {
         Route::get('/api/designer/cards', [DesignerController::class, 'getCards'])->name('designer.cards');
         Route::get('/api/designer/my-cards', [DesignerController::class, 'getMyCards'])->name('designer.my-cards');
         Route::get('/api/designer/dashboard', [DesignerController::class, 'getDashboardStats'])->name('designer.dashboard');
+        Route::get('/api/designer/cards/{cardId}/details', [DesignerController::class, 'getCardDetails'])->name('designer.card-details');
+
+        // Card Actions for Designer
+        Route::post('/api/designer/cards/{cardId}/accept', [DesignerController::class, 'acceptCard'])->name('designer.accept-card');
+        Route::post('/api/designer/cards/{cardId}/start', [DesignerController::class, 'startCard'])->name('designer.start-card');
         Route::put('/api/designer/cards/{cardId}/status', [DesignerController::class, 'updateCardStatus'])->name('designer.update-card-status');
         Route::post('/api/designer/cards/{cardId}/submit', [DesignerController::class, 'submitCardToTeamLead'])->name('designer.submit-card');
+        Route::post('/api/designer/cards/{cardId}/submit-alt', [DesignerController::class, 'submitCard'])->name('designer.submit-card-alt');
+
+        // Designer Specific Features
+        Route::post('/api/designer/cards/{cardId}/upload-files', [DesignerController::class, 'uploadDesignFiles'])->name('designer.upload-files');
+        Route::post('/api/designer/cards/{cardId}/toggle-timer', [DesignerController::class, 'toggleTimer'])->name('designer.toggle-timer');
+        Route::post('/api/designer/cards/{cardId}/comments', [DesignerController::class, 'addCardComment'])->name('designer.add-comment');
+
+        // Legacy routes kept for API compatibility
+        Route::get('/designer/dashboard', [DesignerController::class, 'dashboard'])->name('designer.dashboard.page');
+        Route::get('/designer/work', [DesignerController::class, 'myTasks'])->name('designer.work.legacy');
+        Route::get('/designer/notifications', [DesignerController::class, 'notifications'])->name('designer.notifications.legacy');
+        Route::get('/designer/comments', [DesignerController::class, 'comments'])->name('designer.comments.legacy');
+        Route::get('/designer/profile', [DesignerController::class, 'profile'])->name('designer.profile.legacy');
+        Route::get('/designer/portfolio', [DesignerController::class, 'portfolio'])->name('designer.portfolio.legacy');
+        Route::get('/designer/brand-guidelines', [DesignerController::class, 'brandGuidelines'])->name('designer.brand-guidelines.legacy');
+        Route::get('/designer/user-research', [DesignerController::class, 'userResearch'])->name('designer.user-research.legacy');
+        Route::post('/designer/upload-design', [DesignerController::class, 'uploadDesignFile'])->name('designer.upload-design');
+        Route::post('/designer/create-mockup', [DesignerController::class, 'createMockup'])->name('designer.create-mockup');
+        Route::post('/designer/submit-review', [DesignerController::class, 'submitForReview'])->name('designer.submit-review');
+    });
+
+    // Unified Routes for both Developer and Designer
+    Route::middleware(['auth'])->group(function () {
+        // Main dashboard routes - automatically route based on user role
+        Route::get('/dashboard', function () {
+            $user = Auth::user();
+            if ($user->role === 'Developer') {
+                return app(App\Http\Controllers\DeveloperController::class)->dashboard();
+            } elseif ($user->role === 'Designer') {
+                return app(App\Http\Controllers\DesignerController::class)->dashboard();
+            }
+            return redirect('/');
+        })->name('dashboard');
+
+        Route::get('/work', function () {
+            $user = Auth::user();
+            if ($user->role === 'Developer') {
+                return app(App\Http\Controllers\DeveloperController::class)->myTasks();
+            } elseif ($user->role === 'Designer') {
+                return app(App\Http\Controllers\DesignerController::class)->myTasks();
+            }
+            return redirect('/');
+        })->name('work');
+
+        Route::get('/notifications', function () {
+            $user = Auth::user();
+            if ($user->role === 'Developer') {
+                return app(App\Http\Controllers\DeveloperController::class)->notifications();
+            } elseif ($user->role === 'Designer') {
+                return app(App\Http\Controllers\DesignerController::class)->notifications();
+            }
+            return redirect('/');
+        })->name('notifications');
+
+        Route::get('/comments', function () {
+            $user = Auth::user();
+            if ($user->role === 'Developer') {
+                return app(App\Http\Controllers\DeveloperController::class)->comments();
+            } elseif ($user->role === 'Designer') {
+                return app(App\Http\Controllers\DesignerController::class)->comments();
+            }
+            return redirect('/');
+        })->name('comments');
+
+        // Profile route moved to main section
+
+        // Designer-specific routes
+        Route::get('/portfolio', [DesignerController::class, 'portfolio'])->name('portfolio');
+        Route::get('/brand-guidelines', [DesignerController::class, 'brandGuidelines'])->name('brand-guidelines');
+        Route::get('/user-research', [DesignerController::class, 'userResearch'])->name('user-research');
+        Route::post('/upload-design', [DesignerController::class, 'uploadDesignFile'])->name('upload-design');
+
+        // Developer-specific routes
+        Route::get('/bugs', [DeveloperController::class, 'bugReports'])->name('bugs');
+        Route::post('/bugs', [DeveloperController::class, 'createBugReport'])->name('create-bug');
     });
 
     // Project Management Routes - Only accessible by admins and team leads
@@ -387,4 +576,115 @@ Route::middleware('auth')->group(function () {
     Route::delete('/api/time-logs/{id}', [App\Http\Controllers\TimeLogController::class, 'destroy'])->name('time-logs.destroy');
     Route::get('/api/time-logs/statistics', [App\Http\Controllers\TimeLogController::class, 'getStatistics'])->name('time-logs.statistics');
     Route::get('/api/cards/{cardId}/time-logs', [App\Http\Controllers\TimeLogController::class, 'getCardTimeLogs'])->name('cards.time-logs');
-});
+
+    // Member Panel Routes - For developers, designers, and regular members
+    Route::prefix('member')->name('member.')->group(function () {
+        Route::get('/panel', function() {
+            return view('member.panel');
+        })->name('panel');
+        Route::get('/dashboard', [App\Http\Controllers\MemberController::class, 'dashboard'])->name('dashboard');
+        Route::get('/my-cards', [App\Http\Controllers\MemberController::class, 'myCards'])->name('my-cards');
+        Route::get('/card/{cardId}', [App\Http\Controllers\MemberController::class, 'cardDetail'])->name('card-detail');
+        Route::get('/time-logs', [App\Http\Controllers\MemberController::class, 'timeLogs'])->name('time-logs');
+
+        // Debug route untuk troubleshoot member projects
+        Route::get('/debug-projects', function() {
+            $user = Auth::user();
+
+            // Check raw memberships
+            $rawMemberships = \App\Models\ProjectMember::where('user_id', $user->user_id)->get();
+
+            // Check memberships with projects
+            $membershipsWithProjects = \App\Models\ProjectMember::with('project')
+                ->where('user_id', $user->user_id)->get();
+
+            // Check all projects
+            $allProjects = \App\Models\Project::all();
+
+            // Check all members
+            $allMembers = \App\Models\ProjectMember::with(['project', 'user'])->get();
+
+            // Test Board-Project relations
+            $boardProjectTest = \App\Models\Board::with('project')->first();
+
+            return response()->json([
+                'current_user' => [
+                    'id' => $user->user_id,
+                    'name' => $user->full_name,
+                    'role' => $user->role
+                ],
+                'raw_memberships_count' => $rawMemberships->count(),
+                'raw_memberships' => $rawMemberships,
+                'memberships_with_projects_count' => $membershipsWithProjects->count(),
+                'memberships_with_projects' => $membershipsWithProjects,
+                'all_projects_count' => $allProjects->count(),
+                'all_projects' => $allProjects,
+                'all_members_count' => $allMembers->count(),
+                'all_members' => $allMembers,
+                'board_project_relation_test' => $boardProjectTest
+            ], 200, [], JSON_PRETTY_PRINT);
+        })->name('debug-projects');
+
+        // Card actions
+        Route::post('/card/{cardId}/status', [App\Http\Controllers\MemberController::class, 'updateCardStatus'])->name('card.update-status');
+
+        // Timer actions
+        Route::post('/card/{cardId}/timer/start', [App\Http\Controllers\MemberController::class, 'startTimer'])->name('card.timer.start');
+        Route::post('/card/{cardId}/timer/stop', [App\Http\Controllers\MemberController::class, 'stopTimer'])->name('card.timer.stop');
+        Route::get('/timer/active', [App\Http\Controllers\MemberController::class, 'getActiveTimer'])->name('timer.active');
+
+        // Comment actions
+        Route::get('/card/{cardId}/comments', [App\Http\Controllers\MemberController::class, 'getCardComments'])->name('card.comments');
+        Route::post('/card/{cardId}/comments', [App\Http\Controllers\MemberController::class, 'addCardComment'])->name('card.add-comment');
+    });
+
+    // Member Panel API Routes
+    Route::prefix('api/member')->middleware(['auth'])->group(function () {
+        Route::get('/dashboard', [App\Http\Controllers\MemberController::class, 'getDashboard'])->name('api.member.dashboard');
+        Route::get('/my-cards', [App\Http\Controllers\MemberController::class, 'getMyCards'])->name('api.member.my-cards');
+        Route::get('/projects', [App\Http\Controllers\MemberController::class, 'getProjects'])->name('api.member.projects');
+    });
+
+    // Card API Routes for Member Panel
+    Route::prefix('api/cards')->middleware(['auth'])->group(function () {
+        Route::get('/{cardId}', [App\Http\Controllers\MemberController::class, 'getCardDetail'])->name('api.card.detail');
+        Route::post('/{cardId}/start', [App\Http\Controllers\MemberController::class, 'startCard'])->name('api.card.start');
+        Route::post('/{cardId}/submit', [App\Http\Controllers\MemberController::class, 'submitCard'])->name('api.card.submit');
+    });
+
+    // Quick test route for card observer fix
+    Route::get('/test-card-observer-fix', function() {
+        try {
+            $card = \App\Models\Card::find(1);
+            if (!$card) {
+                return response()->json(['error' => 'Card not found'], 404);
+            }
+
+            $oldStatus = $card->status;
+            $newStatus = $oldStatus === 'todo' ? 'in_progress' : 'todo';
+
+            $card->status = $newStatus;
+            $card->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Card status updated successfully - Observer fix working!',
+                'data' => [
+                    'card_id' => $card->card_id,
+                    'old_status' => $oldStatus,
+                    'new_status' => $card->status,
+                    'fixed_issue' => 'handlingStatusChange property is now static and guarded'
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'file' => basename($e->getFile()),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ], 500);
+        }
+    });
+

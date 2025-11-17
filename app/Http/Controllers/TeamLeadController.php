@@ -10,6 +10,7 @@ use App\Http\Middleware\CheckPermission;
 use App\Http\Middleware\TeamLeadMiddleware;
 use App\Models\Card;
 use App\Models\CardReview;
+use App\Models\CardHistory;
 use App\Models\User;
 
 class TeamLeadController extends Controller
@@ -1208,31 +1209,44 @@ class TeamLeadController extends Controller
             $user = Auth::user();
 
             if (!$user) {
+                Log::warning('Create card attempt without authentication');
                 return response()->json([
                     'success' => false,
                     'message' => 'User not authenticated'
                 ], 401);
             }
 
-            $request->validate([
-                'board_id' => 'required|integer',
-                'card_title' => 'required|string|max:100', // Match database limit
-                'description' => 'nullable|string',
-                'priority' => 'required|in:low,medium,high', // Remove urgent as it's not in enum
-                'due_date' => 'nullable|date'
+            Log::info('Create card request', [
+                'user_id' => $user->user_id,
+                'request_data' => $request->all()
             ]);
 
-        // Verify the board belongs to Team Lead's project
-        $board = DB::table('boards')
-            ->join('projects', 'boards.project_id', '=', 'projects.project_id')
-            ->join('members', 'projects.project_id', '=', 'members.project_id')
-            ->where('boards.board_id', $request->board_id)
-            ->where('members.user_id', $user->user_id)
-            ->where('members.role', 'Team_Lead')
-            ->first();            if (!$board) {
+            $request->validate([
+                'board_id' => 'required|integer|min:1',
+                'card_title' => 'required|string|max:100|min:3',
+                'description' => 'nullable|string|max:1000',
+                'priority' => 'required|in:low,medium,high',
+                'due_date' => 'nullable|date|after:today'
+            ]);
+
+            // Verify the board belongs to Team Lead's project
+            $board = DB::table('boards')
+                ->join('projects', 'boards.project_id', '=', 'projects.project_id')
+                ->join('members', 'projects.project_id', '=', 'members.project_id')
+                ->where('boards.board_id', $request->board_id)
+                ->where('members.user_id', $user->user_id)
+                ->where('members.role', 'Team_Lead')
+                ->select('boards.*', 'projects.project_name')
+                ->first();
+
+            if (!$board) {
+                Log::warning('Create card attempt on unauthorized board', [
+                    'user_id' => $user->user_id,
+                    'board_id' => $request->board_id
+                ]);
                 return response()->json([
                     'success' => false,
-                    'message' => 'Board not found or access denied'
+                    'message' => 'Board not found or you do not have permission to create cards on this board'
                 ], 403);
             }
 
@@ -1241,36 +1255,58 @@ class TeamLeadController extends Controller
                 ->where('board_id', $request->board_id)
                 ->max('position') + 1;
 
-            // Create the card
-            $cardId = DB::table('cards')->insertGetId([
+            // Prepare card data
+            $cardData = [
                 'board_id' => $request->board_id,
-                'card_title' => $request->card_title,
-                'description' => $request->description,
+                'card_title' => trim($request->card_title),
+                'description' => $request->description ? trim($request->description) : null,
                 'position' => $nextPosition ?? 1,
-                'status' => 'todo', // Use lowercase as per enum definition
-                'priority' => strtolower($request->priority), // Ensure lowercase
+                'status' => 'todo',
+                'priority' => strtolower($request->priority),
                 'due_date' => $request->due_date,
                 'created_by' => $user->user_id,
                 'created_at' => now()
+            ];
+
+            // Create the card
+            $cardId = DB::table('cards')->insertGetId($cardData);
+
+            Log::info('Card created successfully', [
+                'card_id' => $cardId,
+                'user_id' => $user->user_id,
+                'board_id' => $request->board_id
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Card created successfully',
-                'card_id' => $cardId
+                'card_id' => $cardId,
+                'card_title' => $cardData['card_title'],
+                'board_name' => $board->board_name
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::warning('Create card validation failed', [
+                'user_id' => $user->user_id ?? null,
+                'errors' => $e->errors()
+            ]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Validation error',
                 'errors' => $e->errors()
             ], 422);
+
         } catch (\Exception $e) {
-            Log::error('Error creating card: ' . $e->getMessage());
+            Log::error('Error creating card', [
+                'user_id' => $user->user_id ?? null,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred while creating the card: ' . $e->getMessage()
+                'message' => 'An error occurred while creating the card. Please try again.'
             ], 500);
         }
     }
@@ -1424,6 +1460,33 @@ class TeamLeadController extends Controller
             ->where('user_id', $request->user_id)
             ->select('full_name', 'email')
             ->first();
+
+        // Get card details for notification
+        $cardDetails = DB::table('cards')
+            ->where('card_id', $request->card_id)
+            ->select('card_title', 'description', 'priority', 'due_date')
+            ->first();
+
+        // Create notification for the assigned user
+        DB::table('notifications')->insert([
+            'user_id' => $request->user_id,
+            'project_id' => $card->project_id,
+            'triggered_by' => $user->user_id,
+            'type' => 'card_assignment',
+            'title' => 'New Card Assigned',
+            'message' => 'You have been assigned to work on: ' . $cardDetails->card_title,
+            'data' => json_encode([
+                'card_id' => $request->card_id,
+                'card_title' => $cardDetails->card_title,
+                'assigned_by' => $user->full_name,
+                'priority' => $cardDetails->priority,
+                'due_date' => $cardDetails->due_date,
+                'action_url' => '/member/card/' . $request->card_id
+            ]),
+            'is_read' => false,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
 
         return response()->json([
             'success' => true,
@@ -2577,63 +2640,7 @@ class TeamLeadController extends Controller
                     return $card;
                 });
 
-            // If no real data, return dummy data for testing
-            if ($pendingCards->isEmpty()) {
-                $pendingCards = collect([
-                    [
-                        'card_id' => 4,
-                        'title' => 'Unit Testing Implementation',
-                        'description' => 'Write comprehensive unit tests for authentication module',
-                        'status' => 'review',
-                        'priority' => 'low',
-                        'submitted_by' => 'john_dev',
-                        'submitted_by_name' => 'John Developer',
-                        'board_name' => 'Testing Board',
-                        'project_name' => 'E-Commerce Platform',
-                        'submitted_at' => '2025-11-13 10:30:00',
-                        'comment' => 'Completed all unit tests with 95% coverage'
-                    ],
-                    [
-                        'card_id' => 6,
-                        'title' => 'UI Design Mockup',
-                        'description' => 'Create responsive design mockups for user dashboard',
-                        'status' => 'review',
-                        'priority' => 'high',
-                        'submitted_by' => 'jane_designer',
-                        'submitted_by_name' => 'Jane Designer',
-                        'board_name' => 'Design Board',
-                        'project_name' => 'E-Commerce Platform',
-                        'submitted_at' => '2025-11-13 09:15:00',
-                        'comment' => 'Mockup completed with mobile and desktop versions'
-                    ],
-                    [
-                        'card_id' => 7,
-                        'title' => 'Database Optimization',
-                        'description' => 'Optimize database queries for better performance',
-                        'status' => 'review',
-                        'priority' => 'medium',
-                        'submitted_by' => 'mike_dev',
-                        'submitted_by_name' => 'Mike Developer',
-                        'board_name' => 'Optimization Board',
-                        'project_name' => 'Mobile App Backend',
-                        'submitted_at' => '2025-11-13 08:45:00',
-                        'comment' => 'Reduced query time by 60% using indexing'
-                    ],
-                    [
-                        'card_id' => 8,
-                        'title' => 'API Documentation',
-                        'description' => 'Complete API documentation with examples',
-                        'status' => 'review',
-                        'priority' => 'medium',
-                        'submitted_by' => 'sarah_dev',
-                        'submitted_by_name' => 'Sarah Developer',
-                        'board_name' => 'Documentation Board',
-                        'project_name' => 'Mobile App Backend',
-                        'submitted_at' => '2025-11-12 16:20:00',
-                        'comment' => 'All endpoints documented with Postman collection'
-                    ]
-                ]);
-            }
+
 
             return response()->json([
                 'success' => true,
@@ -2656,9 +2663,17 @@ class TeamLeadController extends Controller
             $user = Auth::user();
             $feedback = $request->input('feedback', '');
 
+            \Log::info("Card approval request", [
+                'card_id' => $cardId,
+                'reviewer_id' => $user->user_id,
+                'feedback_provided' => !empty($feedback),
+                'timestamp' => now()
+            ]);
+
             // Find the card and validate it exists and is in review status
             $card = Card::find($cardId);
             if (!$card) {
+                \Log::warning("Card not found for approval", ['card_id' => $cardId]);
                 return response()->json([
                     'success' => false,
                     'message' => 'Card not found'
@@ -2666,6 +2681,10 @@ class TeamLeadController extends Controller
             }
 
             if ($card->status !== 'review') {
+                \Log::warning("Card not in review status", [
+                    'card_id' => $cardId,
+                    'current_status' => $card->status
+                ]);
                 return response()->json([
                     'success' => false,
                     'message' => 'Card is not in review status'
@@ -2677,37 +2696,105 @@ class TeamLeadController extends Controller
                 ->where('card_id', $cardId)
                 ->first();
 
-            // Create card review record
-            CardReview::create([
-                'card_id' => $cardId,
-                'reviewer_id' => $user->user_id,
-                'submitter_id' => $assignment ? $assignment->user_id : null,
-                'action' => 'approved',
-                'feedback' => $feedback,
-                'status' => 'completed'
-            ]);
+            if (!$assignment) {
+                \Log::warning("No assignment found for card", ['card_id' => $cardId]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No assignment found for this card'
+                ], 404);
+            }
 
-            // Update card status to 'done'
-            $card->update(['status' => 'done']);
+            // Use database transaction
+            \DB::beginTransaction();
 
-            // Create notification for developer
-            $this->createApprovalNotification($cardId, $user, 'approved', $feedback);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Card approved successfully',
-                'data' => [
+            try {
+                // Create card review record
+                $review = CardReview::create([
                     'card_id' => $cardId,
-                    'status' => 'done',
-                    'approved_by' => $user->username,
-                    'feedback' => $feedback
-                ]
-            ]);
+                    'reviewer_id' => $user->user_id,
+                    'submitter_id' => $assignment->user_id,
+                    'action' => 'approve',
+                    'feedback' => $feedback,
+                    'status' => 'completed'
+                ]);
+
+                // Update card status to 'done'
+                $oldStatus = $card->status;
+                $card->update(['status' => 'done', 'completed_at' => now()]);
+
+                // Update assignment status
+                DB::table('card_assignments')
+                    ->where('card_id', $cardId)
+                    ->update([
+                        'completed_at' => now(),
+                        'assignment_status' => 'completed'
+                        // Note: submitted_at column doesn't exist in card_assignments table
+                    ]);
+
+                // Log to card history
+                CardHistory::create([
+                    'card_id' => $cardId,
+                    'user_id' => $user->user_id,
+                    'action' => 'approved',
+                    'old_status' => $oldStatus,
+                    'new_status' => 'done',
+                    'comment' => 'Card approved by Team Lead',
+                    'feedback' => $feedback,
+                    'action_date' => now()
+                ]);
+
+                // Create notification (but don't let it fail the transaction)
+                try {
+                    $this->createApprovalNotification($cardId, $user, 'approve', $feedback);
+                } catch (\Exception $e) {
+                    \Log::error("Failed to create approval notification", [
+                        'card_id' => $cardId,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+
+                \DB::commit();
+
+                \Log::info("Card approved successfully", [
+                    'card_id' => $cardId,
+                    'reviewer_id' => $user->user_id,
+                    'review_id' => $review->id
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Card approved successfully',
+                    'data' => [
+                        'card_id' => $cardId,
+                        'status' => 'done',
+                        'approved_by' => $user->username,
+                        'feedback' => $feedback
+                    ]
+                ]);
+
+            } catch (\Exception $e) {
+                \DB::rollBack();
+                \Log::error("Database error during card approval", [
+                    'card_id' => $cardId,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                throw $e;
+            }
 
         } catch (\Exception $e) {
+            \Log::error("Unexpected error in approveCard", [
+                'card_id' => $cardId,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error approving card: ' . $e->getMessage()
+                'message' => 'An error occurred while approving the card. Please try again.',
+                'debug_info' => config('app.debug') ? $e->getMessage() : null
             ], 500);
         }
     }
@@ -2721,7 +2808,15 @@ class TeamLeadController extends Controller
             $user = Auth::user();
             $feedback = $request->input('feedback', '');
 
+            \Log::info("Card rejection request", [
+                'card_id' => $cardId,
+                'reviewer_id' => $user->user_id,
+                'feedback_provided' => !empty($feedback),
+                'timestamp' => now()
+            ]);
+
             if (empty($feedback)) {
+                \Log::warning("Feedback required for card rejection", ['card_id' => $cardId]);
                 return response()->json([
                     'success' => false,
                     'message' => 'Feedback is required when rejecting a card'
@@ -2731,6 +2826,7 @@ class TeamLeadController extends Controller
             // Find the card and validate it exists and is in review status
             $card = Card::find($cardId);
             if (!$card) {
+                \Log::warning("Card not found for rejection", ['card_id' => $cardId]);
                 return response()->json([
                     'success' => false,
                     'message' => 'Card not found'
@@ -2738,6 +2834,10 @@ class TeamLeadController extends Controller
             }
 
             if ($card->status !== 'review') {
+                \Log::warning("Card not in review status for rejection", [
+                    'card_id' => $cardId,
+                    'current_status' => $card->status
+                ]);
                 return response()->json([
                     'success' => false,
                     'message' => 'Card is not in review status'
@@ -2749,37 +2849,104 @@ class TeamLeadController extends Controller
                 ->where('card_id', $cardId)
                 ->first();
 
-            // Create card review record
-            CardReview::create([
-                'card_id' => $cardId,
-                'reviewer_id' => $user->user_id,
-                'submitter_id' => $assignment ? $assignment->user_id : null,
-                'action' => 'rejected',
-                'feedback' => $feedback,
-                'status' => 'completed'
-            ]);
+            if (!$assignment) {
+                \Log::warning("No assignment found for card rejection", ['card_id' => $cardId]);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No assignment found for this card'
+                ], 404);
+            }
 
-            // Update card status back to 'in_progress'
-            $card->update(['status' => 'in_progress']);
+            // Use database transaction
+            \DB::beginTransaction();
 
-            // Create notification for developer
-            $this->createApprovalNotification($cardId, $user, 'rejected', $feedback);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Card rejected successfully',
-                'data' => [
+            try {
+                // Create card review record
+                $review = CardReview::create([
                     'card_id' => $cardId,
-                    'status' => 'in_progress',
-                    'rejected_by' => $user->username,
-                    'feedback' => $feedback
-                ]
-            ]);
+                    'reviewer_id' => $user->user_id,
+                    'submitter_id' => $assignment->user_id,
+                    'action' => 'reject',
+                    'feedback' => $feedback,
+                    'status' => 'completed'
+                ]);
+
+                // Update card status back to 'in_progress'
+                $oldStatus = $card->status;
+                $card->update(['status' => 'in_progress']);
+
+                // Update assignment status back to in_progress
+                DB::table('card_assignments')
+                    ->where('card_id', $cardId)
+                    ->update([
+                        'assignment_status' => 'in_progress'
+                        // Note: submitted_at column doesn't exist in card_assignments table
+                    ]);
+
+                // Log to card history
+                CardHistory::create([
+                    'card_id' => $cardId,
+                    'user_id' => $user->user_id,
+                    'action' => 'rejected',
+                    'old_status' => $oldStatus,
+                    'new_status' => 'in_progress',
+                    'comment' => 'Card rejected by Team Lead',
+                    'feedback' => $feedback,
+                    'action_date' => now()
+                ]);
+
+                // Create notification (but don't let it fail the transaction)
+                try {
+                    $this->createApprovalNotification($cardId, $user, 'reject', $feedback);
+                } catch (\Exception $e) {
+                    \Log::error("Failed to create rejection notification", [
+                        'card_id' => $cardId,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+
+                \DB::commit();
+
+                \Log::info("Card rejected successfully", [
+                    'card_id' => $cardId,
+                    'reviewer_id' => $user->user_id,
+                    'review_id' => $review->id
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Card rejected successfully',
+                    'data' => [
+                        'card_id' => $cardId,
+                        'status' => 'in_progress',
+                        'rejected_by' => $user->username,
+                        'feedback' => $feedback
+                    ]
+                ]);
+
+            } catch (\Exception $e) {
+                \DB::rollBack();
+                \Log::error("Database error during card rejection", [
+                    'card_id' => $cardId,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                throw $e;
+            }
 
         } catch (\Exception $e) {
+            \Log::error("Unexpected error in rejectCard", [
+                'card_id' => $cardId,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error rejecting card: ' . $e->getMessage()
+                'message' => 'An error occurred while rejecting the card. Please try again.',
+                'debug_info' => config('app.debug') ? $e->getMessage() : null
             ], 500);
         }
     }
@@ -2998,6 +3165,427 @@ created_at
 
         } catch (\Exception $e) {
             Log::error("Error creating assignment notification: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get card details with comments and time logs
+     */
+    public function getCardDetails($cardId)
+    {
+        try {
+            $user = Auth::user();
+
+            // Debug logging
+            Log::info("Getting card details for card ID: $cardId, User ID: " . ($user ? $user->user_id : 'null'));
+
+            if (!$user) {
+                Log::warning("Unauthenticated user trying to access card details for card: $cardId");
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated. Please login first.',
+                    'redirect' => '/login'
+                ], 401);
+            }
+
+            // Validate card ID
+            if (!is_numeric($cardId) || $cardId <= 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid card ID provided'
+                ], 400);
+            }
+
+            // First, try to get just the card to test basic query
+            $basicCard = DB::table('cards')->where('card_id', $cardId)->first();
+            Log::info("Basic card query result: " . json_encode($basicCard));
+
+            if (!$basicCard) {
+                Log::warning("Basic card query failed for card ID: $cardId");
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Card not found (basic query)'
+                ], 404);
+            }
+
+            // Get card with project and board info
+            $card = DB::table('cards as c')
+                ->leftJoin('boards as b', 'c.board_id', '=', 'b.board_id')
+                ->leftJoin('projects as p', 'b.project_id', '=', 'p.project_id')
+                ->leftJoin('users as u', 'c.created_by', '=', 'u.user_id')
+                ->where('c.card_id', $cardId)
+                ->select(
+                    'c.card_id',
+                    'c.card_title',
+                    DB::raw('COALESCE(c.description, "") as description'),
+                    'c.status',
+                    DB::raw('COALESCE(c.priority, "medium") as priority'),
+                    'c.due_date',
+                    'c.created_at',
+                    'c.created_at as updated_at',
+                    'c.estimated_hours',
+                    'c.actual_hours',
+                    DB::raw('COALESCE(c.position, 0) as position'),
+                    'c.created_by',
+                    DB::raw('COALESCE(b.board_name, "No Board") as board_name'),
+                    DB::raw('COALESCE(p.project_name, "No Project") as project_name'),
+                    DB::raw('COALESCE(u.full_name, u.username, "Unknown") as creator_name'),
+                    DB::raw('COALESCE(u.username, "unknown") as creator_username')
+                )
+                ->first();
+
+            if (!$card) {
+                Log::warning("Complex card query failed, falling back to basic card for: $cardId");
+                // Fallback to basic card data
+                $card = (object) [
+                    'card_id' => $basicCard->card_id,
+                    'card_title' => $basicCard->card_title,
+                    'description' => $basicCard->description ?? '',
+                    'status' => $basicCard->status,
+                    'priority' => $basicCard->priority ?? 'medium',
+                    'due_date' => $basicCard->due_date,
+                    'created_at' => $basicCard->created_at,
+                    'updated_at' => $basicCard->created_at,
+                    'estimated_hours' => $basicCard->estimated_hours,
+                    'actual_hours' => $basicCard->actual_hours,
+                    'position' => $basicCard->position ?? 0,
+                    'created_by' => $basicCard->created_by,
+                    'board_name' => 'Unknown Board',
+                    'project_name' => 'Unknown Project',
+                    'creator_name' => 'Unknown User',
+                    'creator_username' => 'unknown'
+                ];
+                Log::info("Using fallback card data");
+            }
+
+            Log::info("Card found: " . json_encode($card));
+
+            // Get comments with user details (with error handling)
+            $comments = collect([]);
+            try {
+                $comments = DB::table('card_comments as cc')
+                    ->leftJoin('users as u', 'cc.user_id', '=', 'u.user_id')
+                    ->where('cc.card_id', $cardId)
+                    ->select(
+                        'cc.comment_id',
+                        DB::raw('COALESCE(cc.comment, "") as comment_text'),
+                        'cc.created_at',
+                        'u.user_id',
+                        DB::raw('COALESCE(u.full_name, u.username, "Unknown") as user_name'),
+                        DB::raw('COALESCE(u.email, "") as user_email'),
+                        DB::raw('COALESCE(u.role, "Member") as user_role')
+                    )
+                    ->orderBy('cc.created_at', 'asc')
+                    ->get();
+                Log::info("Comments loaded: " . count($comments));
+            } catch (\Exception $e) {
+                Log::error("Error loading comments: " . $e->getMessage());
+                Log::error("Comments error details: " . $e->getTraceAsString());
+            }
+
+            // Get time logs (with error handling)
+            $timeLogs = collect([]);
+            try {
+                $timeLogs = DB::table('time_logs as tl')
+                    ->leftJoin('users as u', 'tl.user_id', '=', 'u.user_id')
+                    ->where('tl.card_id', $cardId)
+                    ->select(
+                        'tl.log_id',
+                        'tl.duration_minutes',
+                        DB::raw('ROUND(tl.duration_minutes / 60.0, 2) as hours'),
+                        'tl.description',
+                        'tl.start_time as logged_date',
+                        'tl.start_time as created_at',
+                        DB::raw('COALESCE(u.username, "Unknown") as username'),
+                        DB::raw('COALESCE(u.full_name, "Unknown User") as full_name')
+                    )
+                    ->orderBy('tl.start_time', 'desc')
+                    ->get();
+                Log::info("Time logs loaded: " . count($timeLogs));
+            } catch (\Exception $e) {
+                Log::error("Error loading time logs: " . $e->getMessage());
+            }
+
+            // Get assigned users (with error handling)
+            $assignedUsers = collect([]);
+            try {
+                $assignedUsers = DB::table('card_assignments as ca')
+                    ->leftJoin('users as u', 'ca.user_id', '=', 'u.user_id')
+                    ->where('ca.card_id', $cardId)
+                    ->select(
+                        'u.user_id',
+                        DB::raw('COALESCE(u.username, "Unknown") as username'),
+                        DB::raw('COALESCE(u.full_name, "Unknown User") as full_name'),
+                        DB::raw('COALESCE(u.role, "Unknown") as role'),
+                        'ca.assigned_at'
+                    )
+                    ->get();
+                Log::info("Assigned users loaded: " . count($assignedUsers));
+            } catch (\Exception $e) {
+                Log::error("Error loading assigned users: " . $e->getMessage());
+            }
+
+            Log::info("Successfully retrieved card details for card: $cardId, Comments: " . count($comments) . ", Time logs: " . count($timeLogs) . ", Assigned users: " . count($assignedUsers));
+
+            return response()->json([
+                'success' => true,
+                'card' => $card,
+                'comments' => $comments,
+                'time_logs' => $timeLogs,
+                'assigned_users' => $assignedUsers
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error getting card details for card: ' . $cardId . ' - ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error getting card details: ' . $e->getMessage(),
+                'error_details' => env('APP_DEBUG') ? $e->getTraceAsString() : null
+            ], 500);
+        }
+    }
+
+    /**
+     * Add comment to card
+     */
+    public function addCardComment(Request $request, $cardId)
+    {
+        try {
+            $user = Auth::user();
+
+            // Validate request
+            $request->validate([
+                'comment_text' => 'required|string|max:1000'
+            ]);
+
+            // Check if card exists and user has access
+            $card = DB::table('cards as c')
+                ->leftJoin('boards as b', 'c.board_id', '=', 'b.board_id')
+                ->leftJoin('projects as p', 'b.project_id', '=', 'p.project_id')
+                ->leftJoin('members as m', function($join) use ($user) {
+                    $join->on('p.project_id', '=', 'm.project_id')
+                         ->where('m.user_id', '=', $user->user_id);
+                })
+                ->leftJoin('card_assignments as ca', function($join) use ($user) {
+                    $join->on('c.card_id', '=', 'ca.card_id')
+                         ->where('ca.user_id', '=', $user->user_id);
+                })
+                ->where('c.card_id', $cardId)
+                ->where(function($query) use ($user) {
+                    $query->whereNotNull('m.project_id') // User is project member
+                          ->orWhere('c.created_by', $user->user_id) // User created the card
+                          ->orWhereNotNull('ca.assignment_id'); // User is assigned to card
+                })
+                ->select('c.*')
+                ->first();
+
+            if (!$card) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Card not found or access denied'
+                ], 404);
+            }
+
+            // Insert comment
+            $commentId = DB::table('card_comments')->insertGetId([
+                'card_id' => $cardId,
+                'user_id' => $user->user_id,
+                'comment' => $request->comment_text,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            // Get the inserted comment with user details
+            $comment = DB::table('card_comments as cc')
+                ->join('users as u', 'cc.user_id', '=', 'u.user_id')
+                ->where('cc.comment_id', $commentId)
+                ->select(
+                    'cc.comment_id',
+                    'cc.comment as comment_text',
+                    'cc.created_at',
+                    'u.user_id',
+                    'u.username',
+                    'u.full_name as user_name',
+                    'u.role as user_role'
+                )
+                ->first();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Comment added successfully',
+                'comment' => $comment
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error adding card comment: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error adding comment: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get card comments with universal access
+     * Accessible by Team Lead, Developer, Designer who has access to the card
+     */
+    public function getCardComments($cardId)
+    {
+        try {
+            $user = Auth::user();
+
+            // Check if card exists and user has access
+            $card = DB::table('cards as c')
+                ->leftJoin('boards as b', 'c.board_id', '=', 'b.board_id')
+                ->leftJoin('projects as p', 'b.project_id', '=', 'p.project_id')
+                ->leftJoin('members as m', function($join) use ($user) {
+                    $join->on('p.project_id', '=', 'm.project_id')
+                         ->where('m.user_id', '=', $user->user_id);
+                })
+                ->leftJoin('card_assignments as ca', function($join) use ($user) {
+                    $join->on('c.card_id', '=', 'ca.card_id')
+                         ->where('ca.user_id', '=', $user->user_id);
+                })
+                ->where('c.card_id', $cardId)
+                ->where(function($query) {
+                    $query->whereNotNull('m.member_id')  // User is project member
+                          ->orWhereNotNull('ca.assignment_id'); // User is assigned to card
+                })
+                ->select('c.*')
+                ->first();
+
+            if (!$card) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Card not found or access denied'
+                ], 404);
+            }
+
+            // Get comments with user details
+            $comments = DB::table('card_comments as cc')
+                ->leftJoin('users as u', 'cc.user_id', '=', 'u.user_id')
+                ->where('cc.card_id', $cardId)
+                ->select([
+                    'cc.comment_id',
+                    DB::raw('COALESCE(cc.comment_text, cc.comment, "") as comment_text'),
+                    'cc.created_at',
+                    DB::raw('COALESCE(cc.updated_at, cc.created_at) as updated_at'),
+                    'u.user_id',
+                    DB::raw('COALESCE(u.full_name, u.username, "Unknown") as user_name'),
+                    DB::raw('COALESCE(u.email, "") as user_email'),
+                    DB::raw('COALESCE(u.role, "Member") as user_role')
+                ])
+                ->orderBy('cc.created_at', 'asc')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'comments' => $comments
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error fetching card comments: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching comments: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get assigned history for TeamLead
+     */
+    public function getAssignedHistory()
+    {
+        try {
+            $user = Auth::user();
+
+            // Get all card histories for cards in projects where user is team lead
+            $histories = DB::table('card_history as ch')
+                ->join('cards as c', 'ch.card_id', '=', 'c.card_id')
+                ->join('boards as b', 'c.board_id', '=', 'b.board_id')
+                ->join('projects as p', 'b.project_id', '=', 'p.project_id')
+                ->join('users as u', 'ch.user_id', '=', 'u.user_id')
+                ->join('project_members as pm', function($join) use ($user) {
+                    $join->on('pm.project_id', '=', 'p.project_id')
+                         ->where('pm.user_id', '=', $user->user_id)
+                         ->where('pm.role', '=', 'Team_Lead');
+                })
+                ->select([
+                    'ch.history_id',
+                    'ch.action',
+                    'ch.old_status',
+                    'ch.new_status',
+                    'ch.comment',
+                    'ch.feedback',
+                    'ch.action_date',
+                    'c.card_title as title',
+                    'c.estimated_hours',
+                    'c.priority',
+                    'c.status as current_status',
+                    'p.project_name',
+                    'b.board_name',
+                    'u.full_name as assigned_to',
+                    'u.username as assigned_username',
+                    'u.user_id',
+                    'p.project_id'
+                ])
+                ->orderBy('ch.action_date', 'desc')
+                ->limit(100)
+                ->get();
+
+            // Transform data for UI
+            $assignmentHistory = $histories->map(function($history) {
+                return [
+                    'history_id' => $history->history_id,
+                    'title' => $history->title,
+                    'board_name' => $history->board_name,
+                    'project_name' => $history->project_name,
+                    'project_id' => $history->project_id,
+                    'assigned_to' => $history->assigned_to,
+                    'assigned_username' => $history->assigned_username,
+                    'user_id' => $history->user_id,
+                    'action' => $history->action,
+                    'old_status' => $history->old_status,
+                    'new_status' => $history->new_status,
+                    'assignment_status' => $history->current_status,
+                    'priority' => $history->priority,
+                    'estimated_hours' => $history->estimated_hours,
+                    'assigned_at' => $history->action_date,
+                    'completed_at' => $history->new_status === 'done' ? $history->action_date : null,
+                    'feedback' => $history->feedback
+                ];
+            });
+
+            // Calculate summary statistics
+            $totalCount = $assignmentHistory->count();
+            $submittedCount = $assignmentHistory->where('action', 'submitted')->count();
+            $approvedCount = $assignmentHistory->where('action', 'approved')->count();
+            $rejectedCount = $assignmentHistory->where('action', 'rejected')->count();
+
+            return response()->json([
+                'success' => true,
+                'assignment_history' => $assignmentHistory,
+                'summary' => [
+                    'total_assignments' => $totalCount,
+                    'submitted_count' => $submittedCount,
+                    'approved_count' => $approvedCount,
+                    'rejected_count' => $rejectedCount
+                ],
+                'pagination' => [
+                    'current_page' => 1,
+                    'total_pages' => 1,
+                    'total_items' => $totalCount
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error fetching assigned history: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching assigned history: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

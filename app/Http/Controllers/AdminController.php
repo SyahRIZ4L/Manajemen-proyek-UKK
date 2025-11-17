@@ -421,4 +421,68 @@ class AdminController extends Controller
             'data' => $teamLeads
         ]);
     }
+
+    /**
+     * Update admin profile
+     */
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
+
+        // Simple admin check
+        $adminEmails = [
+            'admin@test.com',
+            'admin@example.com',
+            'syahrizal@admin.com'
+        ];
+
+        $isAdmin = in_array($user->email, $adminEmails) || $user->role === 'Project_Admin';
+
+        if (!$isAdmin) {
+            return response()->json(['success' => false, 'message' => 'Access denied - Admin only'], 403);
+        }
+
+        $request->validate([
+            'full_name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->user_id . ',user_id',
+            'username' => 'required|string|max:255|unique:users,username,' . $user->user_id . ',user_id',
+            'bio' => 'nullable|string|max:500',
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:500',
+            'birth_date' => 'nullable|date',
+            'gender' => 'nullable|in:male,female,other',
+            'website' => 'nullable|url|max:255',
+            'skills' => 'nullable|string',
+            'password' => 'nullable|string|min:8|confirmed',
+        ]);
+
+        $updateData = [
+            'full_name' => $request->full_name,
+            'email' => $request->email,
+            'username' => $request->username,
+            'bio' => $request->bio,
+            'phone' => $request->phone,
+            'address' => $request->address,
+            'birth_date' => $request->birth_date,
+            'gender' => $request->gender,
+            'website' => $request->website,
+            'skills' => $request->skills ? explode(',', $request->skills) : null,
+        ];
+
+        // Only update password if provided
+        if ($request->filled('password')) {
+            $updateData['password'] = bcrypt($request->password);
+        }
+
+        DB::table('users')->where('user_id', $user->user_id)->update($updateData);
+
+        // Get updated user data
+        $updatedUser = DB::table('users')->where('user_id', $user->user_id)->first();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Profil berhasil diperbarui!',
+            'user' => $updatedUser
+        ]);
+    }
 }

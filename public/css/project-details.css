@@ -1,0 +1,157 @@
+/* Project Detail Styles */
+.project-detail-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    margin: -1rem -1rem 0 -1rem;
+}
+
+.project-status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.project-status-badge.planning {
+    background: rgba(108, 117, 125, 0.1);
+    color: #6c757d;
+    border: 2px solid rgba(108, 117, 125, 0.3);
+}
+
+.project-status-badge.in-progress {
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+    border: 2px solid rgba(255, 193, 7, 0.3);
+}
+
+.project-status-badge.on-hold {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border: 2px solid rgba(220, 53, 69, 0.3);
+}
+
+.project-status-badge.completed {
+    background: rgba(25, 135, 84, 0.1);
+    color: #198754;
+    border: 2px solid rgba(25, 135, 84, 0.3);
+}
+
+.project-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.project-actions .btn {
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.project-actions .btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-1px);
+}
+
+.project-actions .btn-success:hover {
+    background: #198754;
+    border-color: #198754;
+}
+
+.project-actions .btn-warning:hover {
+    background: #fd7e14;
+    border-color: #fd7e14;
+}
+
+.project-info-card {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    border: 1px solid #e9ecef;
+    height: 100%;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f8f9fa;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.info-value {
+    color: #6c757d;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+}
+
+.detail-label {
+    font-weight: 600;
+    margin-left: 8px;
+    margin-right: 8px;
+    color: #495057;
+}
+
+.detail-value {
+    color: #6c757d;
+}
+
+/* Info Items in Sidebar */
+.info-item label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #6c757d;
+    margin-bottom: 0.25rem;
+}
+
+.info-item .fw-semibold {
+    color: #2c3e50;
+    font-size: 0.95rem;
+}
+
+/* Dark theme for project details */
+body.dark-theme .project-info-card {
+    background: #333333;
+    border-color: #444444;
+    color: #e0e0e0;
+}
+
+body.dark-theme .info-label,
+body.dark-theme .detail-label {
+    color: #e0e0e0;
+}
+
+body.dark-theme .info-value,
+body.dark-theme .detail-value {
+    color: #a0a0a0;
+}
+
+body.dark-theme .info-item {
+    border-bottom-color: #444444;
+}
+
+body.dark-theme .info-item label {
+    color: #a0a0a0;
+}
+
+body.dark-theme .info-item .fw-semibold {
+    color: #e0e0e0;
+}

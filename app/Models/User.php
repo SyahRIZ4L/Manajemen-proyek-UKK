@@ -19,7 +19,6 @@ class User extends Authenticatable
         'email',
         'role',
         'current_task_status',
-        'profile_photo',
         'bio',
         'phone',
         'address',
@@ -99,13 +98,6 @@ class User extends Authenticatable
     }
 
     // Profile methods
-    public function getProfilePhotoUrlAttribute()
-    {
-        if ($this->profile_photo) {
-            return asset('uploads/profiles/' . $this->profile_photo);
-        }
-        return asset('uploads/profiles/default-avatar.png');
-    }
 
     public function getDisplayNameAttribute()
     {

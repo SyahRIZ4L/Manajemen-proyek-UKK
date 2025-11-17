@@ -16,22 +16,20 @@ class Card extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'board_id',
         'card_title',
-        'description',
-        'position',
+        'card_description',
+        'board_id',
         'created_by',
-        'due_date',
-        'deadline',
-        'started_at',
-        'completed_at',
-        'is_timer_active',
-        'timer_started_at',
-        'deadline_status',
         'status',
         'priority',
-        'estimated_hours',
-        'actual_hours'
+        'due_date',
+        'started_at',
+        'completed_at'
+    ];
+
+    // Properties that should not be saved to database
+    protected $guarded = [
+        'handlingStatusChange' // Runtime-only flag to prevent recursion
     ];
 
     protected $casts = [
@@ -65,6 +63,16 @@ class Card extends Model
     public function subtasks(): HasMany
     {
         return $this->hasMany(Subtask::class, 'card_id', 'card_id');
+    }
+
+    public function assignments(): HasMany
+    {
+        return $this->hasMany(CardAssignment::class, 'card_id', 'card_id');
+    }
+
+    public function histories(): HasMany
+    {
+        return $this->hasMany(CardHistory::class, 'card_id', 'card_id');
     }
 
     // Scopes
@@ -265,7 +273,8 @@ class Card extends Model
             'description' => 'Auto-started: ' . $this->getAutoTimerDescription()
         ]);
 
-        $this->update([
+        // Use updateQuietly to prevent triggering observers
+        $this->updateQuietly([
             'is_timer_active' => true,
             'timer_started_at' => now()
         ]);
@@ -284,7 +293,8 @@ class Card extends Model
             $activeTimer->stop();
         }
 
-        $this->update([
+        // Use updateQuietly to prevent triggering observers
+        $this->updateQuietly([
             'is_timer_active' => false,
             'timer_started_at' => null
         ]);
@@ -327,6 +337,9 @@ class Card extends Model
     }
 
     // Status change handlers
+    // Static property to prevent recursion across all card instances
+    private static $handlingStatusChanges = [];
+
     public function handleStatusChange($oldStatus, $newStatus)
     {
         Log::info('Card handleStatusChange called', [
@@ -335,25 +348,41 @@ class Card extends Model
             'new_status' => $newStatus
         ]);
 
-        // Update timestamps based on status
-        $this->updateStatusTimestamps($newStatus);
-
-        // Auto start timer when card moves to work states
-        if ($this->shouldStartAutoTimer($oldStatus, $newStatus)) {
-            Log::info('Starting auto timer for card', ['card_id' => $this->card_id]);
-            $this->autoStartTimer();
+        // Prevent infinite recursion by checking static flag for this card
+        if (isset(self::$handlingStatusChanges[$this->card_id])) {
+            Log::info('Already handling status change, skipping recursion', [
+                'card_id' => $this->card_id
+            ]);
+            return;
         }
 
-        // Stop timer when card is completed
-        if ($this->shouldStopAutoTimer($oldStatus, $newStatus)) {
-            Log::info('Stopping auto timer for card', ['card_id' => $this->card_id]);
-            $this->stopAutoTimer();
-        }
+        // Mark this card as being processed
+        self::$handlingStatusChanges[$this->card_id] = true;
 
-        // Handle rejected cards (continue timer)
-        if ($this->isRejected($oldStatus, $newStatus)) {
-            Log::info('Handling rejection for card', ['card_id' => $this->card_id]);
-            $this->handleRejection();
+        try {
+            // Update timestamps based on status
+            $this->updateStatusTimestamps($newStatus);
+
+            // Auto start timer when card moves to work states
+            if ($this->shouldStartAutoTimer($oldStatus, $newStatus)) {
+                Log::info('Starting auto timer for card', ['card_id' => $this->card_id]);
+                $this->autoStartTimer();
+            }
+
+            // Stop timer when card is completed
+            if ($this->shouldStopAutoTimer($oldStatus, $newStatus)) {
+                Log::info('Stopping auto timer for card', ['card_id' => $this->card_id]);
+                $this->stopAutoTimer();
+            }
+
+            // Handle rejected cards (continue timer)
+            if ($this->isRejected($oldStatus, $newStatus)) {
+                Log::info('Handling rejection for card', ['card_id' => $this->card_id]);
+                $this->handleRejection();
+            }
+        } finally {
+            // Remove the flag for this card
+            unset(self::$handlingStatusChanges[$this->card_id]);
         }
     }
 
@@ -396,22 +425,30 @@ class Card extends Model
 
     private function updateStatusTimestamps($newStatus)
     {
+        $needsSave = false;
+
         // Update started_at when task starts
         if ($newStatus === 'in_progress' && !$this->started_at) {
             $this->started_at = now();
+            $needsSave = true;
         }
 
         // Update completed_at when task is done
         if ($newStatus === 'done' && !$this->completed_at) {
             $this->completed_at = now();
+            $needsSave = true;
         }
 
         // Clear completed_at if task is reopened
         if ($newStatus !== 'done' && $this->completed_at) {
             $this->completed_at = null;
+            $needsSave = true;
         }
 
-        $this->save();
+        // Use saveQuietly to prevent triggering observers
+        if ($needsSave) {
+            $this->saveQuietly();
+        }
     }
 
     // Get current auto timer status

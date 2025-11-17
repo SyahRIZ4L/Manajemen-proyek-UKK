@@ -1,0 +1,216 @@
+/* Project and Task Styles */
+.project-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.recent-project-item {
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 15px;
+}
+
+.recent-project-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.upcoming-task-item {
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 15px;
+}
+
+.upcoming-task-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.task-priority {
+    width: 4px;
+    height: 40px;
+    border-radius: 2px;
+    margin-top: 2px;
+}
+
+.task-priority.high {
+    background-color: #dc3545;
+}
+
+.task-priority.medium {
+    background-color: #ffc107;
+}
+
+.task-priority.low {
+    background-color: #28a745;
+}
+
+.task-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.task-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border-color: #667eea;
+}
+
+.projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 25px;
+}
+
+.project-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.project-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+    border-color: #667eea;
+}
+
+.board-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.board-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border-color: #667eea;
+}
+
+.project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 20px 0 20px;
+}
+
+.project-status {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-todo {
+    background: #f8f9fa;
+    color: #6c757d;
+}
+
+.status-progress {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-review {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.status-done {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-cancelled {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.project-body {
+    padding: 20px;
+}
+
+.project-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.project-description {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+    line-height: 1.4;
+}
+
+.project-overview-card {
+    border-radius: 15px;
+    transition: all 0.3s ease;
+}
+
+.project-overview-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.progress-custom {
+    height: 10px;
+    border-radius: 10px;
+    background-color: #e9ecef;
+}
+
+.progress-custom .progress-bar {
+    border-radius: 10px;
+    transition: width 0.6s ease;
+}
+
+/* Quick Actions Card */
+.quick-actions-card {
+    border-radius: 15px;
+}
+
+/* Card Item Animation */
+.card-item {
+    transition: all 0.3s ease;
+}
+
+/* Card hover effects */
+.card {
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+/* Dark theme for project elements */
+body.dark-theme .project-card,
+body.dark-theme .board-card,
+body.dark-theme .task-card,
+body.dark-theme .project-overview-card,
+body.dark-theme .quick-actions-card {
+    background: #333333;
+    border-color: #444444;
+    color: #e0e0e0;
+}
+
+body.dark-theme .project-title {
+    color: #e0e0e0;
+}
+
+body.dark-theme .project-description {
+    color: #a0a0a0;
+}

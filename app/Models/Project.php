@@ -70,6 +70,12 @@ class Project extends Model
         return $this->hasMany(Board::class, 'project_id');
     }
 
+    // Relasi dengan Cards melalui Boards
+    public function cards()
+    {
+        return $this->hasManyThrough(Card::class, Board::class, 'project_id', 'board_id');
+    }
+
     // Scope untuk project yang dibuat oleh user tertentu
     public function scopeCreatedBy($query, $userId)
     {

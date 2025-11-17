@@ -1,0 +1,99 @@
+/* Form Controls Styles */
+
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    padding: 12px 16px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background-color: white;
+}
+
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    outline: none;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.form-select {
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    padding: 12px 16px;
+    font-size: 14px;
+    background-color: white;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px 12px;
+    transition: all 0.3s ease;
+}
+
+.form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    outline: none;
+}
+
+.input-group {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+}
+
+.input-group .form-control {
+    border-radius: 0;
+    border-right: none;
+}
+
+.input-group .form-control:first-child {
+    border-radius: 8px 0 0 8px;
+}
+
+.input-group .form-control:last-child {
+    border-radius: 0 8px 8px 0;
+    border-right: 1px solid #e2e8f0;
+}
+
+.input-group-text {
+    background-color: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-left: none;
+    padding: 12px 16px;
+    color: #718096;
+    font-size: 14px;
+}
+
+/* Dark theme form controls */
+body.dark-theme .form-control {
+    background-color: #2d3748;
+    border-color: #4a5568;
+    color: #e2e8f0;
+}
+
+body.dark-theme .form-control:focus {
+    border-color: #667eea;
+    background-color: #2d3748;
+}
+
+body.dark-theme .form-select {
+    background-color: #2d3748;
+    border-color: #4a5568;
+    color: #e2e8f0;
+}
+
+body.dark-theme .form-label {
+    color: #e2e8f0;
+}
+
+body.dark-theme .input-group-text {
+    background-color: #4a5568;
+    border-color: #4a5568;
+    color: #e2e8f0;
+}

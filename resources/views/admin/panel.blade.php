@@ -1191,7 +1191,7 @@
                     <div class="col-md-3">
                         <div class="stat-card">
                             <i class="bi bi-folder-check stat-icon text-primary"></i>
-                            <h3 class="stat-number text-primary">12</h3>
+                            <h3 class="stat-number text-primary">0</h3>
                             <p class="stat-label">Active Projects</p>
                             <small class="text-muted">+3 this month</small>
                         </div>
@@ -1199,7 +1199,7 @@
                     <div class="col-md-3">
                         <div class="stat-card">
                             <i class="bi bi-clock-history stat-icon text-warning"></i>
-                            <h3 class="stat-number text-warning">23</h3>
+                            <h3 class="stat-number text-warning">0</h3>
                             <p class="stat-label">Pending Tasks</p>
                             <small class="text-muted">Due this week</small>
                         </div>
@@ -1207,7 +1207,7 @@
                     <div class="col-md-3">
                         <div class="stat-card">
                             <i class="bi bi-check-circle-fill stat-icon text-success"></i>
-                            <h3 class="stat-number text-success">89</h3>
+                            <h3 class="stat-number text-success">0</h3>
                             <p class="stat-label">Completed</p>
                             <small class="text-muted">Tasks this month</small>
                         </div>
@@ -1215,7 +1215,7 @@
                     <div class="col-md-3">
                         <div class="stat-card">
                             <i class="bi bi-people-fill stat-icon text-info"></i>
-                            <h3 class="stat-number text-info">24</h3>
+                            <h3 class="stat-number text-info">0</h3>
                             <p class="stat-label">Team Members</p>
                             <small class="text-muted">Active users</small>
                         </div>
@@ -1240,10 +1240,10 @@
                                             <i class="bi bi-kanban"></i>
                                         </div>
                                         <div class="flex-grow-1">
-                                            <h6 class="mb-1">Website Redesign</h6>
-                                            <small class="text-muted">Updated 2 hours ago</small>
+                                            <h6 class="mb-1">-</h6>
+                                            <small class="text-muted">-</small>
                                         </div>
-                                        <span class="badge bg-primary rounded-pill">Active</span>
+                                        <span class="badge bg-primary rounded-pill">-</span>
                                     </div>
                                 </div>
 
@@ -1253,10 +1253,10 @@
                                             <i class="bi bi-code-square"></i>
                                         </div>
                                         <div class="flex-grow-1">
-                                            <h6 class="mb-1">Mobile App Development</h6>
-                                            <small class="text-muted">Updated 5 hours ago</small>
+                                            <h6 class="mb-1">-</h6>
+                                            <small class="text-muted">-</small>
                                         </div>
-                                        <span class="badge bg-success rounded-pill">Active</span>
+                                        <span class="badge bg-success rounded-pill">-</span>
                                     </div>
                                 </div>
 
@@ -1266,10 +1266,10 @@
                                             <i class="bi bi-graph-up"></i>
                                         </div>
                                         <div class="flex-grow-1">
-                                            <h6 class="mb-1">Analytics Dashboard</h6>
-                                            <small class="text-muted">Updated 1 day ago</small>
+                                            <h6 class="mb-1">-</h6>
+                                            <small class="text-muted">-</small>
                                         </div>
-                                        <span class="badge bg-warning rounded-pill">In Progress</span>
+                                        <span class="badge bg-warning rounded-pill">-</span>
                                     </div>
                                 </div>
 
@@ -1279,10 +1279,10 @@
                                             <i class="bi bi-shield-check"></i>
                                         </div>
                                         <div class="flex-grow-1">
-                                            <h6 class="mb-1">Security Audit</h6>
-                                            <small class="text-muted">Updated 2 days ago</small>
+                                            <h6 class="mb-1">-</h6>
+                                            <small class="text-muted">-</small>
                                         </div>
-                                        <span class="badge bg-info rounded-pill">Review</span>
+                                        <span class="badge bg-info rounded-pill">-</span>
                                     </div>
                                 </div>
                             </div>
@@ -1303,15 +1303,15 @@
                                     <div class="d-flex align-items-start mb-3">
                                         <div class="task-priority high me-3"></div>
                                         <div class="flex-grow-1">
-                                            <h6 class="mb-1">Database Migration</h6>
-                                            <small class="text-muted">Due: Tomorrow</small>
+                                            <h6 class="mb-1">-</h6>
+                                            <small class="text-muted">-</small>
                                             <div class="mt-1">
                                                 <small class="text-danger">
-                                                    <i class="bi bi-exclamation-circle me-1"></i>High Priority
+                                                    <i class="bi bi-exclamation-circle me-1"></i>-
                                                 </small>
                                             </div>
                                         </div>
-                                        <small class="text-muted">2h</small>
+                                        <small class="text-muted">-</small>
                                     </div>
                                 </div>
 
@@ -1319,15 +1319,15 @@
                                     <div class="d-flex align-items-start mb-3">
                                         <div class="task-priority medium me-3"></div>
                                         <div class="flex-grow-1">
-                                            <h6 class="mb-1">User Testing Session</h6>
-                                            <small class="text-muted">Due: Oct 31</small>
+                                            <h6 class="mb-1">-</h6>
+                                            <small class="text-muted">-</small>
                                             <div class="mt-1">
                                                 <small class="text-warning">
-                                                    <i class="bi bi-dash-circle me-1"></i>Medium Priority
+                                                    <i class="bi bi-dash-circle me-1"></i>-
                                                 </small>
                                             </div>
                                         </div>
-                                        <small class="text-muted">4h</small>
+                                        <small class="text-muted">-</small>
                                     </div>
                                 </div>
 
@@ -1336,14 +1336,14 @@
                                         <div class="task-priority low me-3"></div>
                                         <div class="flex-grow-1">
                                             <h6 class="mb-1">Documentation Update</h6>
-                                            <small class="text-muted">Due: Nov 5</small>
+                                            <small class="text-muted">-</small>
                                             <div class="mt-1">
                                                 <small class="text-success">
-                                                    <i class="bi bi-circle me-1"></i>Low Priority
+                                                    <i class="bi bi-circle me-1"></i>-
                                                 </small>
                                             </div>
                                         </div>
-                                        <small class="text-muted">1h</small>
+                                        <small class="text-muted">-</small>
                                     </div>
                                 </div>
 
@@ -1351,15 +1351,15 @@
                                     <div class="d-flex align-items-start mb-0">
                                         <div class="task-priority medium me-3"></div>
                                         <div class="flex-grow-1">
-                                            <h6 class="mb-1">Code Review Meeting</h6>
-                                            <small class="text-muted">Due: Nov 8</small>
+                                            <h6 class="mb-1">-</h6>
+                                            <small class="text-muted">-</small>
                                             <div class="mt-1">
                                                 <small class="text-warning">
-                                                    <i class="bi bi-dash-circle me-1"></i>Medium Priority
+                                                    <i class="bi bi-dash-circle me-1"></i>-
                                                 </small>
                                             </div>
                                         </div>
-                                        <small class="text-muted">3h</small>
+                                        <small class="text-muted">-</small>
                                     </div>
                                 </div>
                             </div>
@@ -2028,24 +2028,45 @@
                     <div class="col-md-8">
                         <div class="card border-0 shadow-sm">
                             <div class="card-body">
-                                <h5 class="card-title">
-                                    <i class="bi bi-person-circle me-2 text-primary"></i>
-                                    Account Information
-                                </h5>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="card-title mb-0">
+                                        <i class="bi bi-person-circle me-2 text-primary"></i>
+                                        Account Information
+                                    </h5>
+                                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                                        <i class="bi bi-pencil me-1"></i>Edit Profile
+                                    </button>
+                                </div>
                                 <div class="row mb-3">
                                     <div class="col-sm-3">
                                         <strong>Name:</strong>
                                     </div>
+                                    <div class="col-sm-9 user-name">
+                                        {{ $user->full_name ?? $user->name }}
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <strong>Username:</strong>
+                                    </div>
                                     <div class="col-sm-9">
-                                        {{ $user->name }}
+                                        {{ $user->username }}
                                     </div>
                                 </div>
                                 <div class="row mb-3">
                                     <div class="col-sm-3">
                                         <strong>Email:</strong>
                                     </div>
-                                    <div class="col-sm-9">
+                                    <div class="col-sm-9 user-email">
                                         {{ $user->email }}
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <strong>Phone:</strong>
+                                    </div>
+                                    <div class="col-sm-9 user-phone">
+                                        {{ $user->phone ?? 'Belum diisi' }}
                                     </div>
                                 </div>
                                 <div class="row mb-3">
@@ -2054,6 +2075,14 @@
                                     </div>
                                     <div class="col-sm-9">
                                         <span class="badge bg-danger">Administrator</span>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-sm-3">
+                                        <strong>Bio:</strong>
+                                    </div>
+                                    <div class="col-sm-9 user-bio">
+                                        {{ $user->bio ?? 'Belum ada bio' }}
                                     </div>
                                 </div>
                                 <div class="row mb-3">
@@ -2073,15 +2102,137 @@
                                 <div class="profile-avatar-large mb-3">
                                     <i class="bi bi-person-circle" style="font-size: 4rem; color: #667eea;"></i>
                                 </div>
-                                <h5>{{ $user->name }}</h5>
+                                <h5 class="user-name">{{ $user->full_name ?? $user->name }}</h5>
                                 <p class="text-muted">System Administrator</p>
-                                <button class="btn btn-outline-primary btn-sm">
+                                <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editProfileModal">
                                     <i class="bi bi-pencil me-1"></i>Edit Profile
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editProfileModalLabel">
+                        <i class="bi bi-person-gear me-2"></i>
+                        Edit Profil Admin
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="editProfileForm">
+                    <div class="modal-body">
+                        <div class="row">
+                            <!-- Basic Information -->
+                            <div class="col-12">
+                                <h6 class="text-primary mb-3">
+                                    <i class="bi bi-person me-2"></i>Informasi Dasar
+                                </h6>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit_full_name" class="form-label">Nama Lengkap</label>
+                                <input type="text" class="form-control" id="edit_full_name" name="full_name"
+                                       value="{{ $user->full_name ?? $user->name }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit_username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="edit_username" name="username"
+                                       value="{{ $user->username }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit_email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="edit_email" name="email"
+                                       value="{{ $user->email }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit_phone" class="form-label">Nomor Telepon</label>
+                                <input type="text" class="form-control" id="edit_phone" name="phone"
+                                       value="{{ $user->phone }}" placeholder="08xxxxxxxxxx">
+                            </div>
+
+                            <!-- Personal Information -->
+                            <div class="col-12 mt-3">
+                                <h6 class="text-primary mb-3">
+                                    <i class="bi bi-person-badge me-2"></i>Informasi Personal
+                                </h6>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit_birth_date" class="form-label">Tanggal Lahir</label>
+                                <input type="date" class="form-control" id="edit_birth_date" name="birth_date"
+                                       value="{{ $user->birth_date ? $user->birth_date->format('Y-m-d') : '' }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit_gender" class="form-label">Jenis Kelamin</label>
+                                <select class="form-select" id="edit_gender" name="gender">
+                                    <option value="">Pilih Jenis Kelamin</option>
+                                    <option value="male" {{ $user->gender == 'male' ? 'selected' : '' }}>Laki-laki</option>
+                                    <option value="female" {{ $user->gender == 'female' ? 'selected' : '' }}>Perempuan</option>
+                                    <option value="other" {{ $user->gender == 'other' ? 'selected' : '' }}>Lainnya</option>
+                                </select>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label for="edit_address" class="form-label">Alamat</label>
+                                <textarea class="form-control" id="edit_address" name="address" rows="2"
+                                          placeholder="Masukkan alamat lengkap">{{ $user->address }}</textarea>
+                            </div>
+
+                            <!-- Professional Information -->
+                            <div class="col-12 mt-3">
+                                <h6 class="text-primary mb-3">
+                                    <i class="bi bi-briefcase me-2"></i>Informasi Profesional
+                                </h6>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label for="edit_bio" class="form-label">Bio/Deskripsi</label>
+                                <textarea class="form-control" id="edit_bio" name="bio" rows="3"
+                                          placeholder="Ceritakan tentang diri Anda sebagai administrator">{{ $user->bio }}</textarea>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit_website" class="form-label">Website/Portfolio</label>
+                                <input type="url" class="form-control" id="edit_website" name="website"
+                                       value="{{ $user->website }}" placeholder="https://example.com">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit_skills" class="form-label">Keahlian</label>
+                                <input type="text" class="form-control" id="edit_skills" name="skills"
+                                       value="{{ is_array($user->skills) ? implode(',', $user->skills) : $user->skills }}"
+                                       placeholder="PHP, Laravel, Management (pisahkan dengan koma)">
+                            </div>
+
+                            <!-- Password Change -->
+                            <div class="col-12 mt-3">
+                                <h6 class="text-primary mb-3">
+                                    <i class="bi bi-lock me-2"></i>Ubah Password (Opsional)
+                                </h6>
+                                <small class="text-muted">Kosongkan jika tidak ingin mengubah password</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit_password" class="form-label">Password Baru</label>
+                                <input type="password" class="form-control" id="edit_password" name="password"
+                                       placeholder="Masukkan password baru">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit_password_confirmation" class="form-label">Konfirmasi Password</label>
+                                <input type="password" class="form-control" id="edit_password_confirmation" name="password_confirmation"
+                                       placeholder="Ulangi password baru">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-lg me-1"></i>Batal
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>Simpan Perubahan
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -6070,6 +6221,93 @@
                 console.error('Error completing project:', error);
                 showNotification('error', 'Error', 'An error occurred while completing project');
             });
+        }
+
+        // Edit Profile Form Handler
+        document.getElementById('editProfileForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+
+            // Show loading state
+            submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Menyimpan...';
+            submitBtn.disabled = true;
+
+            fetch('{{ route("admin.profile.update") }}', {
+                method: 'PUT',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(Object.fromEntries(formData))
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Close modal
+                    bootstrap.Modal.getInstance(document.getElementById('editProfileModal')).hide();
+
+                    // Show success notification
+                    showNotification('success', 'Berhasil!', data.message);
+
+                    // Update profile display
+                    updateProfileDisplay(data.user);
+
+                    // Reset form
+                    this.reset();
+                } else {
+                    showNotification('error', 'Error!', data.message || 'Gagal memperbarui profil');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('error', 'Error!', 'Terjadi kesalahan saat memperbarui profil');
+            })
+            .finally(() => {
+                // Reset button state
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+            });
+        });
+
+        // Function to update profile display after successful edit
+        function updateProfileDisplay(user) {
+            // Update profile section
+            const profileContent = document.getElementById('profile-content');
+            if (profileContent) {
+                // Update name displays
+                const nameElements = profileContent.querySelectorAll('.user-name');
+                nameElements.forEach(el => {
+                    el.textContent = user.full_name || user.name;
+                });
+
+                // Update email
+                const emailElement = profileContent.querySelector('.user-email');
+                if (emailElement) {
+                    emailElement.textContent = user.email;
+                }
+
+                // Update phone
+                const phoneElement = profileContent.querySelector('.user-phone');
+                if (phoneElement) {
+                    phoneElement.textContent = user.phone || 'Belum diisi';
+                }
+
+                // Update bio
+                const bioElement = profileContent.querySelector('.user-bio');
+                if (bioElement) {
+                    bioElement.textContent = user.bio || 'Belum ada bio';
+                }
+            }
+
+            // Update sidebar profile
+            const sidebarName = document.querySelector('.sidebar-header h5');
+            if (sidebarName) {
+                sidebarName.textContent = user.full_name || user.name;
+            }
         }
     </script>
 </body>

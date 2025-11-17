@@ -28,15 +28,21 @@ class AppServiceProvider extends ServiceProvider
 
         // Define Gates for authorization
         Gate::define('manage-projects', function ($user) {
-            return in_array($user->role, ['Project_Admin', 'Team_Lead']);
+            // Admin emails or Project_Admin/Team_Lead roles
+            $adminEmails = ['admin@test.com', 'admin@example.com', 'syahrizal@admin.com'];
+            return in_array($user->email, $adminEmails) || in_array($user->role, ['Project_Admin', 'Team_Lead']);
         });
 
         Gate::define('manage-users', function ($user) {
-            return $user->role === 'Project_Admin';
+            // Admin emails or Project_Admin role
+            $adminEmails = ['admin@test.com', 'admin@example.com', 'syahrizal@admin.com'];
+            return in_array($user->email, $adminEmails) || $user->role === 'Project_Admin';
         });
 
         Gate::define('admin-only', function ($user) {
-            return $user->role === 'Project_Admin';
+            // Admin emails or Project_Admin role
+            $adminEmails = ['admin@test.com', 'admin@example.com', 'syahrizal@admin.com'];
+            return in_array($user->email, $adminEmails) || $user->role === 'Project_Admin';
         });
 
         Gate::define('team-lead-or-admin', function ($user) {
