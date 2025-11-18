@@ -222,10 +222,10 @@
                                             <i class="bi bi-kanban"></i>
                                         </div>
                                         <div class="flex-grow-1">
-                                            <h6 class="mb-1">Website Redesign</h6>
-                                            <small class="text-muted">Updated 2 hours ago</small>
+                                            <h6 class="mb-1">-</h6>
+                                            <small class="text-muted">-</small>
                                         </div>
-                                        <span class="badge bg-primary rounded-pill">Active</span>
+                                        <span class="badge bg-primary rounded-pill">-</span>
                                     </div>
                                 </div>
 
@@ -235,10 +235,10 @@
                                             <i class="bi bi-code-square"></i>
                                         </div>
                                         <div class="flex-grow-1">
-                                            <h6 class="mb-1">Mobile App Development</h6>
-                                            <small class="text-muted">Updated 5 hours ago</small>
+                                            <h6 class="mb-1">-</h6>
+                                            <small class="text-muted">-</small>
                                         </div>
-                                        <span class="badge bg-success rounded-pill">Active</span>
+                                        <span class="badge bg-success rounded-pill">-</span>
                                     </div>
                                 </div>
 
@@ -248,10 +248,10 @@
                                             <i class="bi bi-graph-up"></i>
                                         </div>
                                         <div class="flex-grow-1">
-                                            <h6 class="mb-1">Analytics Dashboard</h6>
-                                            <small class="text-muted">Updated 1 day ago</small>
+                                            <h6 class="mb-1">-</h6>
+                                            <small class="text-muted">-</small>
                                         </div>
-                                        <span class="badge bg-warning rounded-pill">In Progress</span>
+                                        <span class="badge bg-warning rounded-pill">-</span>
                                     </div>
                                 </div>
 
@@ -261,10 +261,10 @@
                                             <i class="bi bi-shield-check"></i>
                                         </div>
                                         <div class="flex-grow-1">
-                                            <h6 class="mb-1">Security Audit</h6>
-                                            <small class="text-muted">Updated 2 days ago</small>
+                                            <h6 class="mb-1">-</h6>
+                                            <small class="text-muted">-</small>
                                         </div>
-                                        <span class="badge bg-info rounded-pill">Review</span>
+                                        <span class="badge bg-info rounded-pill">-</span>
                                     </div>
                                 </div>
                             </div>
@@ -285,15 +285,15 @@
                                     <div class="d-flex align-items-start mb-3">
                                         <div class="task-priority high me-3"></div>
                                         <div class="flex-grow-1">
-                                            <h6 class="mb-1">Database Migration</h6>
-                                            <small class="text-muted">Due: Tomorrow</small>
+                                            <h6 class="mb-1">-</h6>
+                                            <small class="text-muted">-</small>
                                             <div class="mt-1">
                                                 <small class="text-danger">
-                                                    <i class="bi bi-exclamation-circle me-1"></i>High Priority
+                                                    <i class="bi bi-exclamation-circle me-1"></i>-
                                                 </small>
                                             </div>
                                         </div>
-                                        <small class="text-muted">2h</small>
+                                        <small class="text-muted">-</small>
                                     </div>
                                 </div>
 
@@ -301,15 +301,15 @@
                                     <div class="d-flex align-items-start mb-3">
                                         <div class="task-priority medium me-3"></div>
                                         <div class="flex-grow-1">
-                                            <h6 class="mb-1">User Testing Session</h6>
-                                            <small class="text-muted">Due: Oct 31</small>
+                                            <h6 class="mb-1">-</h6>
+                                            <small class="text-muted">-</small>
                                             <div class="mt-1">
                                                 <small class="text-warning">
-                                                    <i class="bi bi-dash-circle me-1"></i>Medium Priority
+                                                    <i class="bi bi-dash-circle me-1"></i>-
                                                 </small>
                                             </div>
                                         </div>
-                                        <small class="text-muted">4h</small>
+                                        <small class="text-muted">-</small>
                                     </div>
                                 </div>
 
@@ -317,15 +317,15 @@
                                     <div class="d-flex align-items-start mb-3">
                                         <div class="task-priority low me-3"></div>
                                         <div class="flex-grow-1">
-                                            <h6 class="mb-1">Documentation Update</h6>
-                                            <small class="text-muted">Due: Nov 5</small>
+                                            <h6 class="mb-1">-</h6>
+                                            <small class="text-muted">-</small>
                                             <div class="mt-1">
                                                 <small class="text-success">
-                                                    <i class="bi bi-circle me-1"></i>Low Priority
+                                                    <i class="bi bi-circle me-1"></i>-
                                                 </small>
                                             </div>
                                         </div>
-                                        <small class="text-muted">1h</small>
+                                        <small class="text-muted">-</small>
                                     </div>
                                 </div>
 
@@ -333,15 +333,15 @@
                                     <div class="d-flex align-items-start mb-0">
                                         <div class="task-priority medium me-3"></div>
                                         <div class="flex-grow-1">
-                                            <h6 class="mb-1">Code Review Meeting</h6>
-                                            <small class="text-muted">Due: Nov 8</small>
+                                            <h6 class="mb-1">-</h6>
+                                            <small class="text-muted">-</small>
                                             <div class="mt-1">
                                                 <small class="text-warning">
-                                                    <i class="bi bi-dash-circle me-1"></i>Medium Priority
+                                                    <i class="bi bi-dash-circle me-1"></i>-
                                                 </small>
                                             </div>
                                         </div>
-                                        <small class="text-muted">3h</small>
+                                        <small class="text-muted">-</small>
                                     </div>
                                 </div>
                             </div>
@@ -4237,6 +4237,35 @@
                     setTimeout(() => {
                         this.style.transform = 'scale(1)';
                     }, 100);
+                });
+            }
+
+            // Character counter for edit title
+            const editCardTitle = document.getElementById('editCardTitle');
+            const editTitleCharCount = document.getElementById('editTitleCharCount');
+            if (editCardTitle && editTitleCharCount) {
+                editCardTitle.addEventListener('input', function() {
+                    updateEditTitleCharCount();
+                });
+            }
+
+            // Edit card from detail modal
+            const editCardFromDetailBtn = document.getElementById('editCardFromDetail');
+            if (editCardFromDetailBtn) {
+                editCardFromDetailBtn.addEventListener('click', function() {
+                    const cardId = this.dataset.cardId;
+                    if (cardId) {
+                        // Close the detail modal first
+                        const detailModal = bootstrap.Modal.getInstance(document.getElementById('cardDetailModal'));
+                        if (detailModal) {
+                            detailModal.hide();
+                        }
+
+                        // Open edit modal after a short delay
+                        setTimeout(() => {
+                            editCard(cardId);
+                        }, 300);
+                    }
                 });
             }
 
@@ -9947,6 +9976,119 @@
         </div>
     </div>
 
+    <!-- Edit Card Modal -->
+    <div class="modal fade" id="editCardModal" tabindex="-1" aria-labelledby="editCardModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-gradient text-white" style="background: linear-gradient(135deg, #fd7e14 0%, #e63946 100%);">
+                    <h5 class="modal-title d-flex align-items-center" id="editCardModalLabel">
+                        <span class="badge bg-white text-warning me-2 p-2 rounded-circle">
+                            <i class="bi bi-pencil-square fs-5"></i>
+                        </span>
+                        <div>
+                            <div class="fw-bold">Edit Card</div>
+                            <small class="opacity-75" style="font-size: 0.85rem;">Update task details</small>
+                        </div>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="editCardForm" onsubmit="return false;">
+                    <input type="hidden" id="editCardId" name="card_id">
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <!-- Priority -->
+                            <div class="col-12">
+                                <label for="editCardPriority" class="form-label">
+                                    <i class="bi bi-flag me-1"></i>
+                                    Priority <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="editCardPriority" name="priority" required>
+                                    <option value="">Select Priority</option>
+                                    <option value="low">🟢 Low</option>
+                                    <option value="medium">🟡 Medium</option>
+                                    <option value="high">🔴 High</option>
+                                </select>
+                            </div>
+
+                            <!-- Card Title -->
+                            <div class="col-12">
+                                <label for="editCardTitle" class="form-label">
+                                    <i class="bi bi-card-text me-1"></i>
+                                    Card Title <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="editCardTitle" name="card_title"
+                                       placeholder="Enter card title" maxlength="100" required>
+                                <div class="form-text d-flex justify-content-between">
+                                    <span>Brief, descriptive title for the task</span>
+                                    <span id="editTitleCharCount" class="text-muted">0/100</span>
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="col-12">
+                                <label for="editCardDescription" class="form-label">
+                                    <i class="bi bi-text-paragraph me-1"></i>
+                                    Description
+                                </label>
+                                <textarea class="form-control" id="editCardDescription" name="description"
+                                          rows="4" placeholder="Describe the task in detail..."></textarea>
+                                <div class="form-text">Detailed description of what needs to be done</div>
+                            </div>
+
+                            <!-- Due Date -->
+                            <div class="col-12">
+                                <label for="editCardDueDate" class="form-label">
+                                    <i class="bi bi-calendar-event me-1"></i>
+                                    Due Date
+                                </label>
+                                <input type="date" class="form-control" id="editCardDueDate" name="due_date"
+                                       min="<?php echo date('Y-m-d', strtotime('tomorrow')); ?>">
+                                <div class="form-text">Optional deadline for completion</div>
+                            </div>
+
+                            <!-- Card Info -->
+                            <div class="col-12">
+                                <div class="alert alert-light border">
+                                    <h6 class="alert-heading">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        Card Information
+                                    </h6>
+                                    <div class="row text-sm">
+                                        <div class="col-md-4">
+                                            <strong>Card ID:</strong> <span id="editCardIdDisplay">#-</span>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <strong>Board:</strong> <span id="editCardBoardDisplay">-</span>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <strong>Status:</strong> <span id="editCardStatusDisplay">-</span>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <strong>Created:</strong> <span id="editCardCreatedDate">-</span>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <strong>Last Updated:</strong> <span id="editCardUpdatedDate">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-lg me-2"></i>
+                            Cancel
+                        </button>
+                        <button type="button" class="btn btn-warning" id="updateCardBtn" onclick="submitUpdateCard(event)">
+                            <i class="bi bi-check-lg me-2"></i>
+                            Update Card
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Board Detail Modal -->
     <div class="modal fade" id="boardDetailModal" tabindex="-1" aria-labelledby="boardDetailModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-scrollable">
@@ -10613,9 +10755,211 @@
 
 
         function editCard(cardId) {
-            // Implementation for editing card
             console.log('Editing card with ID:', cardId);
-            // This would open an edit modal or form
+
+            // Show loading modal first
+            const modal = new bootstrap.Modal(document.getElementById('editCardModal'));
+            const form = document.getElementById('editCardForm');
+
+            // Reset form
+            form.reset();
+            document.getElementById('editCardId').value = cardId;
+            document.getElementById('editCardIdDisplay').textContent = `#${cardId}`;
+
+            // Show loading state
+            const updateBtn = document.getElementById('updateCardBtn');
+            updateBtn.disabled = true;
+            updateBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Loading...';
+
+            modal.show();
+
+            // Load card data
+            loadCardDataForEdit(cardId);
+        }
+
+        async function loadCardDataForEdit(cardId) {
+            try {
+                const response = await fetch(`/api/teamlead/cards/${cardId}/detail`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+
+                if (result.success && result.card) {
+                    populateEditForm(result.card);
+                } else {
+                    throw new Error(result.message || 'Failed to load card data');
+                }
+
+            } catch (error) {
+                console.error('Error loading card data:', error);
+                showNotification('error', 'Load Error', 'Failed to load card data: ' + error.message);
+
+                // Close modal on error
+                const modal = bootstrap.Modal.getInstance(document.getElementById('editCardModal'));
+                modal.hide();
+            }
+        }
+
+        function populateEditForm(card) {
+            // Populate form fields
+            document.getElementById('editCardTitle').value = card.card_title || '';
+            document.getElementById('editCardDescription').value = card.description || '';
+            document.getElementById('editCardPriority').value = card.priority || '';
+            document.getElementById('editCardDueDate').value = card.due_date || '';
+
+            // Update character count
+            updateEditTitleCharCount();
+
+            // Update card info (read-only)
+            document.getElementById('editCardCreatedDate').textContent = formatDate(card.created_at);
+            document.getElementById('editCardUpdatedDate').textContent = formatDate(card.updated_at || card.created_at);
+            document.getElementById('editCardBoardDisplay').textContent = card.board_name || 'Unknown';
+            document.getElementById('editCardStatusDisplay').innerHTML = getStatusBadge(card.status || 'To Do');
+
+            // Enable update button
+            const updateBtn = document.getElementById('updateCardBtn');
+            updateBtn.disabled = false;
+            updateBtn.innerHTML = '<i class="bi bi-check-lg me-2"></i>Update Card';
+        }
+
+        function getStatusBadge(status) {
+            const statusConfig = {
+                'To Do': { icon: '📋', class: 'bg-secondary' },
+                'In Progress': { icon: '⚡', class: 'bg-primary' },
+                'Review': { icon: '👀', class: 'bg-warning' },
+                'Done': { icon: '✅', class: 'bg-success' }
+            };
+
+            const config = statusConfig[status] || statusConfig['To Do'];
+            return `<span class="badge ${config.class}">${config.icon} ${status}</span>`;
+        }
+
+
+
+        function updateEditTitleCharCount() {
+            const titleInput = document.getElementById('editCardTitle');
+            const charCountElement = document.getElementById('editTitleCharCount');
+
+            if (titleInput && charCountElement) {
+                const currentLength = titleInput.value.length;
+                charCountElement.textContent = `${currentLength}/100`;
+
+                // Change color based on length
+                if (currentLength > 90) {
+                    charCountElement.className = 'text-danger';
+                } else if (currentLength > 75) {
+                    charCountElement.className = 'text-warning';
+                } else {
+                    charCountElement.className = 'text-muted';
+                }
+            }
+        }
+
+        async function submitUpdateCard(event) {
+            event.preventDefault();
+
+            const form = document.getElementById('editCardForm');
+            const updateBtn = document.getElementById('updateCardBtn');
+            const cardId = document.getElementById('editCardId').value;
+
+            // Disable button and show loading
+            updateBtn.disabled = true;
+            updateBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Updating...';
+
+            // Get form data
+            const formData = new FormData(form);
+            const data = {
+                card_title: formData.get('card_title'),
+                description: formData.get('description'),
+                priority: formData.get('priority'),
+                due_date: formData.get('due_date')
+            };
+
+            // Validate required fields
+            if (!data.card_title || data.card_title.trim().length < 3) {
+                showNotification('error', 'Validation Error', 'Card title must be at least 3 characters long');
+                updateBtn.disabled = false;
+                updateBtn.innerHTML = '<i class="bi bi-check-lg me-2"></i>Update Card';
+                return;
+            }
+
+            if (!data.priority) {
+                showNotification('error', 'Validation Error', 'Please select a priority');
+                updateBtn.disabled = false;
+                updateBtn.innerHTML = '<i class="bi bi-check-lg me-2"></i>Update Card';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/teamlead/cards/${cardId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showNotification('success', 'Success', 'Card updated successfully');
+
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('editCardModal'));
+                    modal.hide();
+
+                    // Refresh current view
+                    refreshCurrentCardView();
+
+                } else {
+                    throw new Error(result.message || 'Failed to update card');
+                }
+
+            } catch (error) {
+                console.error('Error updating card:', error);
+                showNotification('error', 'Update Error', 'Failed to update card: ' + error.message);
+            } finally {
+                // Restore button state
+                updateBtn.disabled = false;
+                updateBtn.innerHTML = '<i class="bi bi-check-lg me-2"></i>Update Card';
+            }
+        }
+
+        function refreshCurrentCardView() {
+            // Refresh the current active view
+            const activeTab = document.querySelector('.nav-link.active[onclick*="showContent"]');
+            if (activeTab) {
+                const contentId = activeTab.getAttribute('onclick').match(/'([^']+)'/)[1];
+
+                switch(contentId) {
+                    case 'my-cards':
+                        refreshMyCards();
+                        break;
+                    case 'cards':
+                        loadCards();
+                        break;
+                    case 'assigned-cards':
+                        loadPendingReviews();
+                        break;
+                    default:
+                        console.log('No specific refresh needed for:', contentId);
+                }
+            }
         }
 
         // Initialize forms and event listeners when DOM is ready

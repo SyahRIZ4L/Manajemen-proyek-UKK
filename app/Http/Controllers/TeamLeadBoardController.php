@@ -49,9 +49,10 @@ class TeamLeadBoardController extends Controller
                 'boards.created_at',
                 'projects.project_name',
                 DB::raw('COUNT(cards.card_id) as total_cards'),
-                DB::raw('COUNT(CASE WHEN cards.status = "To Do" THEN 1 END) as todo_cards'),
-                DB::raw('COUNT(CASE WHEN cards.status = "In Progress" THEN 1 END) as in_progress_cards'),
-                DB::raw('COUNT(CASE WHEN cards.status = "Done" THEN 1 END) as done_cards')
+                DB::raw('COUNT(CASE WHEN cards.status = "todo" THEN 1 END) as todo_cards'),
+                DB::raw('COUNT(CASE WHEN cards.status = "in_progress" THEN 1 END) as in_progress_cards'),
+                DB::raw('COUNT(CASE WHEN cards.status = "review" THEN 1 END) as review_cards'),
+                DB::raw('COUNT(CASE WHEN cards.status = "done" THEN 1 END) as done_cards')
             )
             ->groupBy('boards.board_id', 'boards.board_name', 'boards.description', 'boards.created_at', 'projects.project_name')
             ->orderBy('boards.created_at', 'desc')
@@ -194,17 +195,19 @@ class TeamLeadBoardController extends Controller
 
             // Group cards by status for kanban view
             $cardsByStatus = [
-                'To Do' => $cards->where('status', 'To Do')->values(),
-                'In Progress' => $cards->where('status', 'In Progress')->values(),
-                'Done' => $cards->where('status', 'Done')->values()
+                'todo' => $cards->where('status', 'todo')->values(),
+                'in_progress' => $cards->where('status', 'in_progress')->values(),
+                'review' => $cards->where('status', 'review')->values(),
+                'done' => $cards->where('status', 'done')->values()
             ];
 
             // Calculate board statistics
             $statistics = [
                 'total_cards' => $cards->count(),
-                'todo_cards' => $cards->where('status', 'To Do')->count(),
-                'in_progress_cards' => $cards->where('status', 'In Progress')->count(),
-                'done_cards' => $cards->where('status', 'Done')->count(),
+                'todo_cards' => $cards->where('status', 'todo')->count(),
+                'in_progress_cards' => $cards->where('status', 'in_progress')->count(),
+                'review_cards' => $cards->where('status', 'review')->count(),
+                'done_cards' => $cards->where('status', 'done')->count(),
                 'assigned_cards' => $cards->whereNotNull('assignment_id')->count(),
                 'unassigned_cards' => $cards->whereNull('assignment_id')->count()
             ];
@@ -222,6 +225,251 @@ class TeamLeadBoardController extends Controller
                 'success' => false,
                 'message' => 'Error loading board detail: ' . $e->getMessage()
             ]);
+        }
+    }
+
+    /**
+     * API: Create new card
+     */
+    public function createCard(Request $request)
+    {
+        try {
+            $user = Auth::user();
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
+            $request->validate([
+                'board_id' => 'required|integer',
+                'card_title' => 'required|string|max:100',
+                'description' => 'nullable|string',
+                'priority' => 'nullable|in:low,medium,high',
+                'due_date' => 'nullable|date|after:today',
+                'position' => 'nullable|integer'
+            ]);
+
+            // Verify the board belongs to Team Lead's project
+            $board = DB::table('boards')
+                ->join('projects', 'boards.project_id', '=', 'projects.project_id')
+                ->join('members', 'projects.project_id', '=', 'members.project_id')
+                ->where('boards.board_id', $request->board_id)
+                ->where('members.user_id', $user->user_id)
+                ->where('members.role', 'Team_Lead')
+                ->select('boards.*', 'projects.project_name')
+                ->first();
+
+            if (!$board) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Board not found or access denied'
+                ], 403);
+            }
+
+            // Create the card
+            $cardId = DB::table('cards')->insertGetId([
+                'board_id' => $request->board_id,
+                'card_title' => $request->card_title,
+                'description' => $request->description,
+                'status' => 'todo', // Default status
+                'priority' => $request->priority ?? 'medium',
+                'due_date' => $request->due_date,
+                'position' => $request->position ?? 0,
+                'created_by' => $user->user_id,
+                'created_at' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Card created successfully',
+                'card_id' => $cardId,
+                'card' => [
+                    'card_id' => $cardId,
+                    'card_title' => $request->card_title,
+                    'description' => $request->description,
+                    'status' => 'todo',
+                    'priority' => $request->priority ?? 'medium',
+                    'due_date' => $request->due_date,
+                    'position' => $request->position ?? 0,
+                    'board_name' => $board->board_name
+                ]
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Error creating card: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error creating card: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * API: Update card
+     */
+    public function updateCard(Request $request, $cardId)
+    {
+        try {
+            $user = Auth::user();
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
+            $request->validate([
+                'card_title' => 'sometimes|required|string|max:100',
+                'description' => 'nullable|string',
+                'status' => 'sometimes|in:todo,in_progress,review,done',
+                'priority' => 'sometimes|in:low,medium,high',
+                'due_date' => 'nullable|date',
+                'position' => 'sometimes|integer'
+            ]);
+
+            // Verify the card belongs to Team Lead's project
+            $card = DB::table('cards')
+                ->join('boards', 'cards.board_id', '=', 'boards.board_id')
+                ->join('projects', 'boards.project_id', '=', 'projects.project_id')
+                ->join('members', 'projects.project_id', '=', 'members.project_id')
+                ->where('cards.card_id', $cardId)
+                ->where('members.user_id', $user->user_id)
+                ->where('members.role', 'Team_Lead')
+                ->select('cards.*', 'boards.board_name', 'projects.project_name')
+                ->first();
+
+            if (!$card) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Card not found or access denied'
+                ], 403);
+            }
+
+            // Prepare update data (no updated_at column in cards table)
+            $updateData = [];
+
+            if ($request->has('card_title')) {
+                $updateData['card_title'] = $request->card_title;
+            }
+            if ($request->has('description')) {
+                $updateData['description'] = $request->description;
+            }
+            if ($request->has('status')) {
+                $updateData['status'] = $request->status;
+            }
+            if ($request->has('priority')) {
+                $updateData['priority'] = $request->priority;
+            }
+            if ($request->has('due_date')) {
+                $updateData['due_date'] = $request->due_date;
+            }
+            if ($request->has('position')) {
+                $updateData['position'] = $request->position;
+            }
+
+            // Only update if there's data to update
+            if (empty($updateData)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No data provided for update'
+                ], 400);
+            }
+
+            // Update the card
+            DB::table('cards')
+                ->where('card_id', $cardId)
+                ->update($updateData);
+
+            // Get updated card data
+            $updatedCard = DB::table('cards')
+                ->join('boards', 'cards.board_id', '=', 'boards.board_id')
+                ->where('cards.card_id', $cardId)
+                ->select('cards.*', 'boards.board_name')
+                ->first();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Card updated successfully',
+                'card' => $updatedCard
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Error updating card: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating card: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * API: Delete card
+     */
+    public function deleteCard($cardId)
+    {
+        try {
+            $user = Auth::user();
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
+            // Verify the card belongs to Team Lead's project
+            $card = DB::table('cards')
+                ->join('boards', 'cards.board_id', '=', 'boards.board_id')
+                ->join('projects', 'boards.project_id', '=', 'projects.project_id')
+                ->join('members', 'projects.project_id', '=', 'members.project_id')
+                ->where('cards.card_id', $cardId)
+                ->where('members.user_id', $user->user_id)
+                ->where('members.role', 'Team_Lead')
+                ->select('cards.*')
+                ->first();
+
+            if (!$card) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Card not found or access denied'
+                ], 403);
+            }
+
+            // Delete related records first (if any)
+            DB::table('card_assignments')->where('card_id', $cardId)->delete();
+            DB::table('subtasks')->where('card_id', $cardId)->delete();
+            DB::table('card_comments')->where('card_id', $cardId)->delete();
+
+            // Delete the card
+            DB::table('cards')->where('card_id', $cardId)->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Card deleted successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error deleting card: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error deleting card: ' . $e->getMessage()
+            ], 500);
         }
     }
 

@@ -307,8 +307,7 @@ class TeamLeadController extends Controller
             DB::table('cards')
                 ->where('id', $id)
                 ->update([
-                    'status' => $request->status,
-                    'updated_at' => now()
+                    'status' => $request->status
                 ]);
 
             return response()->json(['success' => 'Status task berhasil diupdate.']);
@@ -346,8 +345,7 @@ class TeamLeadController extends Controller
             DB::table('cards')
                 ->where('id', $id)
                 ->update([
-                    'priority' => $request->priority,
-                    'updated_at' => now()
+                    'priority' => $request->priority
                 ]);
 
             return response()->json(['success' => 'Prioritas task berhasil diupdate.']);
@@ -829,8 +827,7 @@ class TeamLeadController extends Controller
                 ->where('id', $id)
                 ->update([
                     'status' => 'Done',
-                    'completed_at' => now(),
-                    'updated_at' => now()
+                    'completed_at' => now()
                 ]);
 
             // Add approval comment
@@ -876,8 +873,7 @@ class TeamLeadController extends Controller
             DB::table('cards')
                 ->where('id', $id)
                 ->update([
-                    'status' => 'In Progress',
-                    'updated_at' => now()
+                    'status' => 'In Progress'
                 ]);
 
             // Add revision comment
@@ -1380,6 +1376,112 @@ class TeamLeadController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred while fetching cards: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * API: Update card (Team Lead only)
+     */
+    public function updateCard(Request $request, $cardId)
+    {
+        try {
+            $user = Auth::user();
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
+            Log::info('Update card request', [
+                'user_id' => $user->user_id,
+                'card_id' => $cardId,
+                'request_data' => $request->all()
+            ]);
+
+            $request->validate([
+                'card_title' => 'required|string|max:100|min:3',
+                'description' => 'nullable|string|max:1000',
+                'priority' => 'required|in:low,medium,high',
+                'due_date' => 'nullable|date|after:today'
+            ]);
+
+            // Verify the card exists and belongs to Team Lead's project
+            $card = DB::table('cards')
+                ->join('boards', 'cards.board_id', '=', 'boards.board_id')
+                ->join('projects', 'boards.project_id', '=', 'projects.project_id')
+                ->join('members as team_lead', 'projects.project_id', '=', 'team_lead.project_id')
+                ->where('cards.card_id', $cardId)
+                ->where('team_lead.user_id', $user->user_id)
+                ->where('team_lead.role', 'Team_Lead')
+                ->select('cards.*', 'projects.project_id')
+                ->first();
+
+            if (!$card) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Card not found or access denied'
+                ], 404);
+            }
+
+
+
+            DB::beginTransaction();
+
+            // Update card (no updated_at column in cards table)
+            $updated = DB::table('cards')
+                ->where('card_id', $cardId)
+                ->update([
+                    'card_title' => $request->card_title,
+                    'description' => $request->description,
+                    'priority' => $request->priority,
+                    'due_date' => $request->due_date
+                ]);
+
+            if (!$updated) {
+                DB::rollback();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to update card'
+                ], 500);
+            }
+
+            // Log card history
+            DB::table('card_histories')->insert([
+                'card_id' => $cardId,
+                'user_id' => $user->user_id,
+                'action' => 'updated',
+                'description' => 'Card details updated by Team Lead',
+                'created_at' => now()
+            ]);
+
+            DB::commit();
+
+            Log::info('Card updated successfully', [
+                'card_id' => $cardId,
+                'updated_by' => $user->user_id
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Card updated successfully',
+                'card_id' => $cardId
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('Error updating card', [
+                'card_id' => $cardId,
+                'user_id' => $user->user_id ?? null,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while updating the card. Please try again.'
             ], 500);
         }
     }
@@ -2663,7 +2765,7 @@ class TeamLeadController extends Controller
             $user = Auth::user();
             $feedback = $request->input('feedback', '');
 
-            \Log::info("Card approval request", [
+            Log::info("Card approval request", [
                 'card_id' => $cardId,
                 'reviewer_id' => $user->user_id,
                 'feedback_provided' => !empty($feedback),
@@ -2673,7 +2775,7 @@ class TeamLeadController extends Controller
             // Find the card and validate it exists and is in review status
             $card = Card::find($cardId);
             if (!$card) {
-                \Log::warning("Card not found for approval", ['card_id' => $cardId]);
+                Log::warning("Card not found for approval", ['card_id' => $cardId]);
                 return response()->json([
                     'success' => false,
                     'message' => 'Card not found'
@@ -2681,7 +2783,7 @@ class TeamLeadController extends Controller
             }
 
             if ($card->status !== 'review') {
-                \Log::warning("Card not in review status", [
+                Log::warning("Card not in review status", [
                     'card_id' => $cardId,
                     'current_status' => $card->status
                 ]);
@@ -2697,7 +2799,7 @@ class TeamLeadController extends Controller
                 ->first();
 
             if (!$assignment) {
-                \Log::warning("No assignment found for card", ['card_id' => $cardId]);
+                Log::warning("No assignment found for card", ['card_id' => $cardId]);
                 return response()->json([
                     'success' => false,
                     'message' => 'No assignment found for this card'
@@ -2705,7 +2807,7 @@ class TeamLeadController extends Controller
             }
 
             // Use database transaction
-            \DB::beginTransaction();
+            DB::beginTransaction();
 
             try {
                 // Create card review record
@@ -2747,15 +2849,15 @@ class TeamLeadController extends Controller
                 try {
                     $this->createApprovalNotification($cardId, $user, 'approve', $feedback);
                 } catch (\Exception $e) {
-                    \Log::error("Failed to create approval notification", [
+                    Log::error("Failed to create approval notification", [
                         'card_id' => $cardId,
                         'error' => $e->getMessage()
                     ]);
                 }
 
-                \DB::commit();
+                DB::commit();
 
-                \Log::info("Card approved successfully", [
+                Log::info("Card approved successfully", [
                     'card_id' => $cardId,
                     'reviewer_id' => $user->user_id,
                     'review_id' => $review->id
@@ -2773,8 +2875,8 @@ class TeamLeadController extends Controller
                 ]);
 
             } catch (\Exception $e) {
-                \DB::rollBack();
-                \Log::error("Database error during card approval", [
+                DB::rollBack();
+                Log::error("Database error during card approval", [
                     'card_id' => $cardId,
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString()
@@ -2783,7 +2885,7 @@ class TeamLeadController extends Controller
             }
 
         } catch (\Exception $e) {
-            \Log::error("Unexpected error in approveCard", [
+            Log::error("Unexpected error in approveCard", [
                 'card_id' => $cardId,
                 'error' => $e->getMessage(),
                 'file' => $e->getFile(),
@@ -2808,7 +2910,7 @@ class TeamLeadController extends Controller
             $user = Auth::user();
             $feedback = $request->input('feedback', '');
 
-            \Log::info("Card rejection request", [
+            Log::info("Card rejection request", [
                 'card_id' => $cardId,
                 'reviewer_id' => $user->user_id,
                 'feedback_provided' => !empty($feedback),
@@ -2816,7 +2918,7 @@ class TeamLeadController extends Controller
             ]);
 
             if (empty($feedback)) {
-                \Log::warning("Feedback required for card rejection", ['card_id' => $cardId]);
+                Log::warning("Feedback required for card rejection", ['card_id' => $cardId]);
                 return response()->json([
                     'success' => false,
                     'message' => 'Feedback is required when rejecting a card'
@@ -2826,7 +2928,7 @@ class TeamLeadController extends Controller
             // Find the card and validate it exists and is in review status
             $card = Card::find($cardId);
             if (!$card) {
-                \Log::warning("Card not found for rejection", ['card_id' => $cardId]);
+                Log::warning("Card not found for rejection", ['card_id' => $cardId]);
                 return response()->json([
                     'success' => false,
                     'message' => 'Card not found'
@@ -2834,7 +2936,7 @@ class TeamLeadController extends Controller
             }
 
             if ($card->status !== 'review') {
-                \Log::warning("Card not in review status for rejection", [
+                Log::warning("Card not in review status for rejection", [
                     'card_id' => $cardId,
                     'current_status' => $card->status
                 ]);
@@ -2850,7 +2952,7 @@ class TeamLeadController extends Controller
                 ->first();
 
             if (!$assignment) {
-                \Log::warning("No assignment found for card rejection", ['card_id' => $cardId]);
+                Log::warning("No assignment found for card rejection", ['card_id' => $cardId]);
                 return response()->json([
                     'success' => false,
                     'message' => 'No assignment found for this card'
@@ -2858,7 +2960,7 @@ class TeamLeadController extends Controller
             }
 
             // Use database transaction
-            \DB::beginTransaction();
+            DB::beginTransaction();
 
             try {
                 // Create card review record
@@ -2899,15 +3001,15 @@ class TeamLeadController extends Controller
                 try {
                     $this->createApprovalNotification($cardId, $user, 'reject', $feedback);
                 } catch (\Exception $e) {
-                    \Log::error("Failed to create rejection notification", [
+                    Log::error("Failed to create rejection notification", [
                         'card_id' => $cardId,
                         'error' => $e->getMessage()
                     ]);
                 }
 
-                \DB::commit();
+                DB::commit();
 
-                \Log::info("Card rejected successfully", [
+                Log::info("Card rejected successfully", [
                     'card_id' => $cardId,
                     'reviewer_id' => $user->user_id,
                     'review_id' => $review->id
@@ -2925,8 +3027,8 @@ class TeamLeadController extends Controller
                 ]);
 
             } catch (\Exception $e) {
-                \DB::rollBack();
-                \Log::error("Database error during card rejection", [
+                DB::rollBack();
+                Log::error("Database error during card rejection", [
                     'card_id' => $cardId,
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString()
@@ -2935,7 +3037,7 @@ class TeamLeadController extends Controller
             }
 
         } catch (\Exception $e) {
-            \Log::error("Unexpected error in rejectCard", [
+            Log::error("Unexpected error in rejectCard", [
                 'card_id' => $cardId,
                 'error' => $e->getMessage(),
                 'file' => $e->getFile(),
@@ -3387,13 +3489,12 @@ created_at
                 ], 404);
             }
 
-            // Insert comment
+            // Insert comment (no updated_at column in card_comments table)
             $commentId = DB::table('card_comments')->insertGetId([
                 'card_id' => $cardId,
                 'user_id' => $user->user_id,
                 'comment' => $request->comment_text,
-                'created_at' => now(),
-                'updated_at' => now()
+                'created_at' => now()
             ]);
 
             // Get the inserted comment with user details

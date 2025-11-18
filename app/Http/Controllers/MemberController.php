@@ -654,8 +654,7 @@ class MemberController extends Controller
             'user_id' => $user->user_id,
             'comment' => $request->comment,
             'parent_id' => $request->parent_id,
-            'created_at' => now(),
-            'updated_at' => now()
+            'created_at' => now()
         ]);
 
         $comment = DB::table('card_comments')

@@ -218,7 +218,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/teamlead/project-members', [TeamLeadController::class, 'getProjectMembers'])->name('teamlead.project-members');
     Route::post('/api/teamlead/assignments/{assignmentId}/approve', [TeamLeadController::class, 'approveAssignment'])->name('teamlead.approve-assignment');
     Route::post('/api/teamlead/assignments/{assignmentId}/reject', [TeamLeadController::class, 'rejectAssignment'])->name('teamlead.reject-assignment');
-    Route::post('/api/teamlead/cards', [TeamLeadController::class, 'createCard'])->name('teamlead.create-card');
+    Route::post('/api/teamlead/cards', [\App\Http\Controllers\TeamLeadBoardController::class, 'createCard'])->name('teamlead.create-card');
+    Route::put('/api/teamlead/cards/{cardId}', [\App\Http\Controllers\TeamLeadBoardController::class, 'updateCard'])->name('teamlead.update-card');
+    Route::delete('/api/teamlead/cards/{cardId}', [\App\Http\Controllers\TeamLeadBoardController::class, 'deleteCard'])->name('teamlead.delete-card');
     Route::post('/api/teamlead/cards/assign', [TeamLeadController::class, 'assignCardToMember'])->name('teamlead.assign-card');
     Route::get('/api/teamlead/assignable-members', [TeamLeadController::class, 'getAssignableMembers'])->name('teamlead.assignable-members');
     Route::get('/api/teamlead/cards/{cardId}/assignments', [TeamLeadController::class, 'getCardAssignments'])->name('teamlead.card-assignments');

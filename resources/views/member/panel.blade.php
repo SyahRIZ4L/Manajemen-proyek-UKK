@@ -429,7 +429,7 @@
         <div class="content-header">
             <div class="d-flex justify-content-between align-items-center">
                 <!-- Mobile Menu Toggle -->
-                
+
 
                 <div>
                     <h2 id="content-title" class="mb-0">Member Dashboard</h2>
@@ -1436,7 +1436,7 @@
 
         // Mobile Menu Script
         document.addEventListener('DOMContentLoaded', function() {
-            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            
             const sidebar = document.getElementById('sidebar');
             const sidebarOverlay = document.getElementById('sidebar-overlay');
 

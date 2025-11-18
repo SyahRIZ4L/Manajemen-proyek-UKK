@@ -1035,26 +1035,161 @@
             color: #707070;
         }
 
+        /* Mobile Sidebar Overlay */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Mobile Menu Toggle Button */
+        #admin-mobile-toggle {
+            border: 2px solid #667eea !important;
+            background: #ffffff !important;
+            color: #667eea !important;
+            border-radius: 12px;
+            padding: 12px;
+            width: 48px;
+            height: 48px;
+            font-size: 1.4rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1001;
+            cursor: pointer;
+            /* Touch optimizations */
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        #admin-mobile-toggle:hover,
+        #admin-mobile-toggle:focus {
+            background: #667eea !important;
+            color: white !important;
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3);
+            outline: none;
+        }
+
+        #admin-mobile-toggle:active {
+            transform: scale(0.95);
+        }
+
+        #admin-mobile-toggle i {
+            transition: transform 0.3s ease;
+        }
+
+        /* Enhanced sidebar for mobile */
+        .sidebar {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Mobile Responsive Styles */
         @media (max-width: 768px) {
             .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
+                transform: translateX(-100%);
+                box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+                visibility: hidden;
+                opacity: 0;
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                           opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                           visibility 0s linear 0.3s;
             }
+
+            .sidebar.show {
+                transform: translateX(0);
+                visibility: visible;
+                opacity: 1;
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                           opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                           visibility 0s linear 0s;
+            }
+
             .main-content {
                 margin-left: 0;
-                padding: 20px;
+                padding: 15px;
+            }
+
+            /* Show mobile toggle button */
+            #admin-mobile-toggle {
+                display: flex !important;
+                min-width: 48px;
+                min-height: 48px;
+            }
+
+            /* Touch-friendly immediate feedback */
+            #admin-mobile-toggle:active {
+                transform: scale(0.95);
+                background: #667eea !important;
+                color: white !important;
+                transition: all 0.1s ease;
+            }
+
+            /* Prevent body scroll when menu is open */
+            body.admin-menu-open {
+                overflow: hidden;
+                position: fixed;
+                width: 100%;
+                height: 100%;
+            }
+
+            /* Sidebar profile adjustments for mobile */
+            .sidebar-profile {
+                position: relative;
+                bottom: auto;
+                margin-top: 20px;
+            }
+
+            /* Ensure proper content spacing */
+            .content-header {
+                margin-top: 10px;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .main-content {
+                margin-left: 280px;
+            }
+
+            #admin-mobile-toggle {
+                display: none !important;
+            }
+
+            .sidebar {
+                transform: translateX(0);
+                visibility: visible;
+                opacity: 1;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="admin-sidebar-overlay"></div>
 
-    </style>
-</head>
-<body>
     <!-- Sidebar -->
-    <div class="sidebar">
+    <div class="sidebar" id="admin-sidebar">
         <!-- Sidebar Header -->
         <div class="sidebar-header">
             <i class="bi bi-gear-wide-connected mb-2" style="font-size: 2.5rem;"></i>
@@ -1147,9 +1282,22 @@
         <!-- Content Header -->
         <div class="content-header">
             <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2 id="content-title" class="mb-0">Admin Dashboard</h2>
-                    <p class="text-muted mb-0" id="content-subtitle">Welcome to the administrative control center</p>
+                <div class="d-flex align-items-center">
+                    <!-- Mobile Menu Toggle -->
+                    <button class="me-3"
+                            id="admin-mobile-toggle"
+                            type="button"
+                            aria-label="Toggle admin menu"
+                            aria-expanded="false"
+                            aria-controls="sidebar"
+                            title="Toggle Menu">
+                        <i class="bi bi-list" id="admin-toggle-icon"></i>
+                    </button>
+
+                    <div>
+                        <h2 id="content-title" class="mb-0">Admin Dashboard</h2>
+                        <p class="text-muted mb-0" id="content-subtitle">Welcome to the administrative control center</p>
+                    </div>
                 </div>
                 <div class="header-actions">
                     <!-- Notification Bell -->
@@ -1395,7 +1543,7 @@
                     <div class="col-md-3">
                         <div class="project-stat-card">
                             <i class="bi bi-calendar-x stat-icon text-danger"></i>
-                            <h3 class="stat-number text-danger">3</h3>
+                            <h3 class="stat-number text-danger">0</h3>
                             <p class="stat-label">Near Deadline</p>
                             <small class="text-muted">Within 7 days</small>
                         </div>
@@ -1403,7 +1551,7 @@
                     <div class="col-md-3">
                         <div class="project-stat-card">
                             <i class="bi bi-clock-history stat-icon text-warning"></i>
-                            <h3 class="stat-number text-warning">5</h3>
+                            <h3 class="stat-number text-warning">0</h3>
                             <p class="stat-label">Recent</p>
                             <small class="text-muted">Last updated</small>
                         </div>
@@ -1411,7 +1559,7 @@
                     <div class="col-md-3">
                         <div class="project-stat-card">
                             <i class="bi bi-people-fill stat-icon text-info"></i>
-                            <h3 class="stat-number text-info">24</h3>
+                            <h3 class="stat-number text-info">0</h3>
                             <p class="stat-label">Team Members</p>
                             <small class="text-muted">Active members</small>
                         </div>
@@ -1453,7 +1601,7 @@
                     <!-- Project Card 1 -->
                     <div class="project-card" data-status="progress" data-name="Website Redesign">
                         <div class="project-header">
-                            <div class="project-status status-progress">In Progress</div>
+                            <div class="project-status status-progress">-</div>
                             <div class="project-menu">
                                 <button class="btn btn-sm btn-outline-secondary">
                                     <i class="bi bi-three-dots"></i>
@@ -1461,13 +1609,13 @@
                             </div>
                         </div>
                         <div class="project-body">
-                            <h5 class="project-title">Website Redesign</h5>
-                            <p class="project-description">Complete overhaul of company website with modern UI/UX design</p>
+                            <h5 class="project-title">-</h5>
+                            <p class="project-description">-n</p>
 
                             <div class="project-progress">
                                 <div class="d-flex justify-content-between mb-1">
-                                    <small class="text-muted">Progress</small>
-                                    <small class="text-muted">65%</small>
+                                    <small class="text-muted">-</small>
+                                    <small class="text-muted">-</small>
                                 </div>
                                 <div class="progress">
                                     <div class="progress-bar bg-warning" style="width: 65%"></div>
@@ -1478,15 +1626,15 @@
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="project-team">
                                         <div class="avatar-group">
-                                            <div class="avatar">JD</div>
-                                            <div class="avatar">AS</div>
-                                            <div class="avatar">+3</div>
+                                            <div class="avatar">-</div>
+                                            <div class="avatar">-</div>
+                                            <div class="avatar">-</div>
                                         </div>
                                     </div>
                                     <div class="project-deadline">
                                         <small class="text-danger">
                                             <i class="bi bi-calendar-event me-1"></i>
-                                            Nov 15
+                                            -
                                         </small>
                                     </div>
                                 </div>
@@ -6309,6 +6457,177 @@
                 sidebarName.textContent = user.full_name || user.name;
             }
         }
+
+        // Initialize Admin Mobile Menu
+        function initializeAdminMobileMenu() {
+            console.log('=== ADMIN MOBILE MENU INITIALIZATION START ===');
+
+            const mobileMenuToggle = document.getElementById('admin-mobile-toggle');
+            const sidebar = document.getElementById('admin-sidebar');
+            const sidebarOverlay = document.getElementById('admin-sidebar-overlay');
+
+            console.log('Admin mobile menu elements:', {
+                toggle: !!mobileMenuToggle,
+                sidebar: !!sidebar,
+                overlay: !!sidebarOverlay,
+                toggleDisplay: mobileMenuToggle ? window.getComputedStyle(mobileMenuToggle).display : 'not found',
+                screenWidth: window.innerWidth
+            });
+
+            // Check if all required elements exist
+            if (!mobileMenuToggle || !sidebar || !sidebarOverlay) {
+                console.error('Admin mobile menu elements not found:', {
+                    mobileMenuToggle: !!mobileMenuToggle,
+                    sidebar: !!sidebar,
+                    sidebarOverlay: !!sidebarOverlay
+                });
+                return;
+            }
+
+            // Function to toggle mobile menu
+            function toggleAdminMobileMenu(e) {
+                console.log('=== TOGGLE ADMIN MOBILE MENU FUNCTION CALLED ===');
+
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+
+                const isOpen = sidebar.classList.contains('show');
+                console.log('Current admin menu state:', isOpen ? 'OPEN' : 'CLOSED');
+
+                if (isOpen) {
+                    closeAdminMobileMenu();
+                } else {
+                    openAdminMobileMenu();
+                }
+            }
+
+            // Function to open mobile menu
+            function openAdminMobileMenu() {
+                console.log('=== OPENING ADMIN MOBILE MENU ===');
+
+                sidebar.classList.add('show');
+                sidebarOverlay.classList.add('show');
+                document.body.classList.add('admin-menu-open');
+
+                // Update toggle button icon
+                const toggleIcon = mobileMenuToggle.querySelector('i');
+                if (toggleIcon) {
+                    toggleIcon.className = 'bi bi-x';
+                }
+
+                // Accessibility
+                sidebar.setAttribute('aria-hidden', 'false');
+                mobileMenuToggle.setAttribute('aria-expanded', 'true');
+
+                console.log('Admin mobile menu opened successfully');
+            }
+
+            // Function to close mobile menu
+            function closeAdminMobileMenu() {
+                console.log('=== CLOSING ADMIN MOBILE MENU ===');
+
+                sidebar.classList.remove('show');
+                sidebarOverlay.classList.remove('show');
+                document.body.classList.remove('admin-menu-open');
+
+                // Update toggle button icon
+                const toggleIcon = mobileMenuToggle.querySelector('i');
+                if (toggleIcon) {
+                    toggleIcon.className = 'bi bi-list';
+                }
+
+                // Accessibility
+                sidebar.setAttribute('aria-hidden', 'true');
+                mobileMenuToggle.setAttribute('aria-expanded', 'false');
+
+                console.log('Admin mobile menu closed successfully');
+            }
+
+            // Event listeners
+            if (mobileMenuToggle) {
+                console.log('Adding admin mobile toggle event listeners...');
+
+                // Touch and click handling
+                mobileMenuToggle.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleAdminMobileMenu(e);
+                }, { passive: false });
+
+                mobileMenuToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleAdminMobileMenu(e);
+                });
+
+                console.log('Admin mobile toggle events added successfully');
+            }
+
+            // Overlay event listeners
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    closeAdminMobileMenu();
+                });
+
+                sidebarOverlay.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    closeAdminMobileMenu();
+                }, { passive: false });
+            }
+
+            // Close menu when clicking on nav links (mobile only)
+            const navLinks = sidebar.querySelectorAll('.nav-link');
+            navLinks.forEach(function(link) {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 768) {
+                        setTimeout(closeAdminMobileMenu, 150);
+                    }
+                });
+            });
+
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) {
+                    closeAdminMobileMenu();
+                }
+            });
+
+            // Handle escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && sidebar.classList.contains('show')) {
+                    closeAdminMobileMenu();
+                }
+            });
+
+            // Initialize proper state
+            if (window.innerWidth <= 768) {
+                closeAdminMobileMenu();
+            }
+
+            // Debug functions
+            window.testAdminMobileMenu = function() {
+                toggleAdminMobileMenu();
+            };
+
+            console.log('=== ADMIN MOBILE MENU INITIALIZATION COMPLETE ===');
+        }
+
+        // Initialize admin mobile menu when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing admin mobile menu...');
+
+            setTimeout(function() {
+                try {
+                    initializeAdminMobileMenu();
+                } catch (error) {
+                    console.error('Error initializing admin mobile menu:', error);
+                }
+            }, 100);
+        });
+
     </script>
 </body>
 </html>
