@@ -193,6 +193,13 @@ Route::middleware('auth')->group(function () {
         Route::get('/api/admin/team-leads/available', [AdminController::class, 'getAvailableTeamLeads'])->name('admin.team-leads.available');
         Route::get('/api/teamlead/status/{teamLeadId?}', [TeamLeadController::class, 'getTeamLeadStatus'])->name('teamlead.status');
         Route::post('/api/teamlead/status-update/project-complete', [TeamLeadController::class, 'updateStatusOnProjectCompleteAPI'])->name('teamlead.status-update.project-complete');
+
+        // Admin Board Management Routes
+        Route::get('/api/projects/{projectId}/boards', [AdminController::class, 'getProjectBoards'])->name('admin.project.boards');
+        Route::post('/api/boards', [AdminController::class, 'createBoard'])->name('admin.create-board');
+        Route::get('/api/boards/{boardId}', [AdminController::class, 'getBoardDetail'])->name('admin.board-detail');
+        Route::put('/api/boards/{boardId}', [AdminController::class, 'updateBoard'])->name('admin.update-board');
+        Route::delete('/api/boards/{boardId}', [AdminController::class, 'deleteBoard'])->name('admin.delete-board');
     });
 
     // Team Lead Panel Route - Only accessible by team leads
@@ -562,12 +569,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/subtasks/{subtask}/comments', [App\Http\Controllers\SubtaskController::class, 'addComment'])->name('subtasks.comments.store');
     Route::delete('/api/subtasks/comments/{comment}', [App\Http\Controllers\SubtaskController::class, 'deleteComment'])->name('subtasks.comments.destroy');
 
-    // Todo List API Routes - Personal todos for each user
-    Route::get('/api/todos', [App\Http\Controllers\TodoController::class, 'index'])->name('todos.index');
-    Route::post('/api/todos', [App\Http\Controllers\TodoController::class, 'store'])->name('todos.store');
-    Route::put('/api/todos/{todo}', [App\Http\Controllers\TodoController::class, 'update'])->name('todos.update');
-    Route::delete('/api/todos/{todo}', [App\Http\Controllers\TodoController::class, 'destroy'])->name('todos.destroy');
-    Route::put('/api/todos/{todo}/toggle', [App\Http\Controllers\TodoController::class, 'toggle'])->name('todos.toggle');
+    // Card Todo List API Routes - Todos for specific cards
+    Route::get('/api/card-todos', [App\Http\Controllers\TodoController::class, 'index'])->name('card-todos.index');
+    Route::post('/api/card-todos', [App\Http\Controllers\TodoController::class, 'store'])->name('card-todos.store');
+    Route::put('/api/card-todos/{todo}', [App\Http\Controllers\TodoController::class, 'update'])->name('card-todos.update');
+    Route::delete('/api/card-todos/{todo}', [App\Http\Controllers\TodoController::class, 'destroy'])->name('card-todos.destroy');
+    Route::put('/api/card-todos/{todo}/toggle', [App\Http\Controllers\TodoController::class, 'toggle'])->name('card-todos.toggle');
 
     // Time Log API Routes - Time tracking for cards and tasks
     Route::get('/api/time-logs', [App\Http\Controllers\TimeLogController::class, 'index'])->name('time-logs.index');
@@ -685,6 +692,64 @@ Route::middleware('auth')->group(function () {
                 'error' => $e->getMessage(),
                 'file' => basename($e->getFile()),
                 'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ], 500);
+        }
+    });
+
+    // Debug route for testing todo access
+    Route::get('/debug/todo-access/{cardId}', function($cardId) {
+        try {
+            $user = Auth::user();
+            $card = \App\Models\Card::with(['board.project', 'assignments'])->find($cardId);
+
+            if (!$card) {
+                return response()->json(['error' => 'Card not found'], 404);
+            }
+
+            $debugInfo = [
+                'user' => [
+                    'id' => $user->user_id,
+                    'name' => $user->full_name,
+                    'role' => $user->role
+                ],
+                'card' => [
+                    'id' => $card->card_id,
+                    'title' => $card->card_title,
+                    'board_id' => $card->board_id,
+                    'has_board' => $card->board ? true : false,
+                    'board_name' => $card->board ? $card->board->board_name : null,
+                    'has_project' => ($card->board && $card->board->project) ? true : false,
+                    'project_id' => ($card->board && $card->board->project) ? $card->board->project->project_id : null,
+                    'project_name' => ($card->board && $card->board->project) ? $card->board->project->project_name : null,
+                ],
+                'assignments' => $card->assignments->map(function($a) {
+                    return [
+                        'user_id' => $a->user_id,
+                        'user_name' => $a->user ? $a->user->full_name : null
+                    ];
+                }),
+                'is_assigned' => $card->assignments()->where('user_id', $user->user_id)->exists()
+            ];
+
+            // Check Team Lead membership
+            if ($user->role === 'Team Lead' && $card->board && $card->board->project) {
+                $isTeamLead = \App\Models\ProjectMember::where('project_id', $card->board->project->project_id)
+                    ->where('user_id', $user->user_id)
+                    ->where('role', 'Team Lead')
+                    ->exists();
+
+                $debugInfo['team_lead_check'] = [
+                    'is_team_lead' => $isTeamLead,
+                    'project_id' => $card->board->project->project_id
+                ];
+            }
+
+            return response()->json($debugInfo);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ], 500);
         }

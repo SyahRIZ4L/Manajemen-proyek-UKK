@@ -61,7 +61,7 @@
                                         <div class="row text-center">
                                             <div class="col-4">
                                                 <div class="text-info fw-bold">{{ $project->total_cards ?? 0 }}</div>
-                                                <small class="text-muted">Cards</small>
+                                                <small class="text-muted">Tasks</small>
                                             </div>
                                             <div class="col-4">
                                                 <div class="text-success fw-bold">{{ $project->completed_cards ?? 0 }}</div>
@@ -228,6 +228,54 @@
                                                 </small>
                                             @endif
                                         </div>
+
+                                        <!-- Timer Status -->
+                                        @if($card->is_timer_active && $card->timer_started_at)
+                                            <div class="alert alert-info mt-3 mb-0 py-2 px-3 d-flex align-items-center" style="font-size: 0.875rem;">
+                                                <i class="bi bi-stopwatch me-2"></i>
+                                                <span class="fw-semibold">Timer Active:</span>
+                                                <span class="ms-2" id="timer-{{ $card->card_id }}">
+                                                    Calculating...
+                                                </span>
+                                                <script>
+                                                    (function() {
+                                                        const startTime = new Date('{{ $card->timer_started_at }}').getTime();
+                                                        const timerElement = document.getElementById('timer-{{ $card->card_id }}');
+
+                                                        function updateTimer() {
+                                                            const now = new Date().getTime();
+                                                            const elapsed = Math.floor((now - startTime) / 1000);
+
+                                                            const hours = Math.floor(elapsed / 3600);
+                                                            const minutes = Math.floor((elapsed % 3600) / 60);
+                                                            const seconds = elapsed % 60;
+
+                                                            timerElement.textContent =
+                                                                String(hours).padStart(2, '0') + ':' +
+                                                                String(minutes).padStart(2, '0') + ':' +
+                                                                String(seconds).padStart(2, '0');
+                                                        }
+
+                                                        updateTimer();
+                                                        setInterval(updateTimer, 1000);
+                                                    })();
+                                                </script>
+                                            </div>
+                                        @elseif($card->status === 'review')
+                                            <div class="alert alert-warning mt-3 mb-0 py-2 px-3" style="font-size: 0.875rem;">
+                                                <i class="bi bi-pause-circle me-2"></i>
+                                                <span class="fw-semibold">Timer Paused</span>
+                                                @if($card->actual_hours)
+                                                    <span class="ms-2">({{ $card->actual_hours }}h worked)</span>
+                                                @endif
+                                            </div>
+                                        @elseif($card->status === 'done' && $card->actual_hours)
+                                            <div class="alert alert-success mt-3 mb-0 py-2 px-3" style="font-size: 0.875rem;">
+                                                <i class="bi bi-check-circle me-2"></i>
+                                                <span class="fw-semibold">Completed</span>
+                                                <span class="ms-2">(Total: {{ $card->actual_hours }}h)</span>
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -311,7 +359,7 @@
             <div class="modal-body">
                 <form id="startTimerForm">
                     <div class="mb-3">
-                        <label class="form-label">Card:</label>
+                        <label class="form-label">Tasks:</label>
                         <p class="fw-bold" id="timerCardTitle"></p>
                     </div>
                     <div class="mb-3">

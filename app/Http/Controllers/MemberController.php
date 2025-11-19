@@ -65,7 +65,7 @@ class MemberController extends Controller
         $query = CardAssignment::select("card_assignments.*")
             ->with([
                 "card" => function($q) {
-                    $q->select('card_id', 'card_title', 'description', 'status', 'priority', 'due_date', 'created_at', 'created_by', 'board_id');
+                    $q->select('card_id', 'card_title', 'description', 'status', 'priority', 'due_date', 'created_at', 'created_by', 'board_id', 'is_timer_active', 'timer_started_at', 'actual_hours', 'estimated_hours');
                 },
                 "card.board" => function($q) {
                     $q->select('board_id', 'board_name', 'project_id');
@@ -75,6 +75,9 @@ class MemberController extends Controller
                 },
                 "card.creator" => function($q) {
                     $q->select('user_id', 'full_name');
+                },
+                "card.timeLogs" => function($q) use ($user) {
+                    $q->where('user_id', $user->user_id)->whereNull('end_time');
                 }
             ])
             ->where("user_id", $user->user_id);
@@ -231,30 +234,43 @@ class MemberController extends Controller
             try {
                 $card->status = $newStatus;
                 $timerStarted = false;
+                $timerPaused = false;
+                $timerResumed = false;
+                $timerStopped = false;
 
                 // Update assignment status based on card status
                 // Note: assignment_status ENUM values: ['assigned', 'in_progress', 'completed']
                 if ($newStatus === 'in_progress' && $oldStatus !== 'in_progress') {
-                    $assignment->started_at = now();
                     $assignment->assignment_status = 'in_progress';
-                    $card->started_at = now();
 
-                    $this->autoStartTimer($cardId, $user->user_id);
-                    $timerStarted = true;
+                    if ($oldStatus === 'todo') {
+                        // First time starting work - START timer
+                        $assignment->started_at = now();
+                        $card->started_at = now();
+                        $this->autoStartTimer($cardId, $user->user_id);
+                        $timerStarted = true;
+                    } elseif ($oldStatus === 'review') {
+                        // Coming back from review (rejected) - RESUME timer
+                        $this->autoStartTimer($cardId, $user->user_id);
+                        $timerResumed = true;
+                    }
+                } elseif ($newStatus === 'review') {
+                    // Submitting for review - PAUSE timer
+                    $assignment->assignment_status = 'in_progress';
+                    $this->autoStopTimer($cardId, $user->user_id);
+                    $timerPaused = true;
                 } elseif ($newStatus === 'done') {
+                    // Card completed - STOP timer PERMANENTLY
                     $assignment->completed_at = now();
                     $assignment->assignment_status = 'completed';
                     $card->completed_at = now();
-
                     $this->autoStopTimer($cardId, $user->user_id);
-                } elseif ($newStatus === 'review') {
-                    // For review status, keep assignment as in_progress since 'review' is not in ENUM
-                    // The card status will be 'review' but assignment stays 'in_progress'
-                    $assignment->assignment_status = 'in_progress';
+                    $timerStopped = true;
                 } elseif ($newStatus === 'todo') {
-                    // For todo status, set assignment back to assigned
+                    // Back to todo - stop timer and reset
                     $assignment->assignment_status = 'assigned';
                     $assignment->started_at = null;
+                    $this->autoStopTimer($cardId, $user->user_id);
                 }
 
                 $card->save();
@@ -266,14 +282,20 @@ class MemberController extends Controller
                     'card_id' => $cardId,
                     'old_status' => $oldStatus,
                     'new_status' => $newStatus,
-                    'timer_started' => $timerStarted
+                    'timer_started' => $timerStarted,
+                    'timer_paused' => $timerPaused,
+                    'timer_resumed' => $timerResumed,
+                    'timer_stopped' => $timerStopped
                 ]);
 
                 return response()->json([
                     'success' => true,
                     'message' => 'Card status updated successfully.',
                     'status' => $newStatus,
-                    'timer_started' => $timerStarted
+                    'timer_started' => $timerStarted,
+                    'timer_paused' => $timerPaused,
+                    'timer_resumed' => $timerResumed,
+                    'timer_stopped' => $timerStopped
                 ]);
 
             } catch (\Exception $e) {

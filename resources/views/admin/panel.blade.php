@@ -2928,6 +2928,97 @@
         </div>
     </div>
 
+    <!-- Admin Create Board Modal -->
+    <div class="modal fade" id="adminCreateBoardModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-plus-circle me-2"></i>Create New Board
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="adminCreateBoardForm">
+                    @csrf
+                    <input type="hidden" id="adminBoardProjectId" name="project_id">
+                    <div class="modal-body">
+                        <div id="adminCreateBoardAlert" class="alert d-none"></div>
+
+                        <div class="mb-3">
+                            <label for="adminBoardName" class="form-label">Board Name *</label>
+                            <input type="text" class="form-control" id="adminBoardName" name="board_name" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="adminBoardDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="adminBoardDescription" name="description" rows="3"
+                                      placeholder="Enter board description (optional)"></textarea>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="adminCreateBoardBtn">
+                            <span class="btn-text">
+                                <i class="bi bi-check-circle me-1"></i>Create Board
+                            </span>
+                            <span class="btn-loading d-none">
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                Creating...
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Edit Board Modal -->
+    <div class="modal fade" id="adminEditBoardModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil me-2"></i>Edit Board
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="adminEditBoardForm">
+                    @csrf
+                    <input type="hidden" id="adminEditBoardId" name="board_id">
+                    <div class="modal-body">
+                        <div id="adminEditBoardAlert" class="alert d-none"></div>
+
+                        <div class="mb-3">
+                            <label for="adminEditBoardName" class="form-label">Board Name *</label>
+                            <input type="text" class="form-control" id="adminEditBoardName" name="board_name" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="adminEditBoardDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="adminEditBoardDescription" name="description" rows="3"></textarea>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-warning" id="adminEditBoardBtn">
+                            <span class="btn-text">
+                                <i class="bi bi-check-circle me-1"></i>Update Board
+                            </span>
+                            <span class="btn-loading d-none">
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                Updating...
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -3758,41 +3849,64 @@
                         </div>
                     </div>
 
-                    <!-- Project Board Section -->
+                    <!-- Project Boards Section -->
                     <div class="row">
                         <div class="col-12">
                             <div class="project-info-card">
-                                <h5 class="mb-4">
-                                    <i class="bi bi-kanban me-2"></i>Project Board
-                                </h5>
-                                <div class="row g-4" id="projectBoardStats">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h5 class="mb-0">
+                                        <i class="bi bi-kanban me-2"></i>Project Boards
+                                    </h5>
+                                    <button class="btn btn-sm btn-primary" onclick="openAdminCreateBoardModal(${project.project_id})">
+                                        <i class="bi bi-plus-lg me-1"></i>Create Board
+                                    </button>
+                                </div>
+
+                                <!-- Board Statistics -->
+                                <div class="row g-3 mb-4" id="projectBoardStats">
                                     <div class="col-md-3">
-                                        <div class="board-stat-card">
-                                            <i class="bi bi-circle board-stat-icon text-secondary"></i>
-                                            <div class="board-stat-number text-secondary" id="todoCount">-</div>
-                                            <div class="board-stat-label">To Do</div>
+                                        <div class="card border-0 bg-light">
+                                            <div class="card-body text-center py-3">
+                                                <i class="bi bi-circle fs-3 text-secondary"></i>
+                                                <h4 class="mb-0 mt-2 text-secondary" id="todoCount">-</h4>
+                                                <small class="text-muted">To Do</small>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="col-md-3">
-                                        <div class="board-stat-card">
-                                            <i class="bi bi-arrow-clockwise board-stat-icon text-warning"></i>
-                                            <div class="board-stat-number text-warning" id="inProgressCount">-</div>
-                                            <div class="board-stat-label">In Progress</div>
+                                        <div class="card border-0 bg-light">
+                                            <div class="card-body text-center py-3">
+                                                <i class="bi bi-arrow-clockwise fs-3 text-warning"></i>
+                                                <h4 class="mb-0 mt-2 text-warning" id="inProgressCount">-</h4>
+                                                <small class="text-muted">In Progress</small>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="col-md-3">
-                                        <div class="board-stat-card">
-                                            <i class="bi bi-eye board-stat-icon text-info"></i>
-                                            <div class="board-stat-number text-info" id="reviewCount">-</div>
-                                            <div class="board-stat-label">Review</div>
+                                        <div class="card border-0 bg-light">
+                                            <div class="card-body text-center py-3">
+                                                <i class="bi bi-eye fs-3 text-info"></i>
+                                                <h4 class="mb-0 mt-2 text-info" id="reviewCount">-</h4>
+                                                <small class="text-muted">Review</small>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="col-md-3">
-                                        <div class="board-stat-card">
-                                            <i class="bi bi-check-circle board-stat-icon text-success"></i>
-                                            <div class="board-stat-number text-success" id="doneCount">-</div>
-                                            <div class="board-stat-label">Done</div>
+                                        <div class="card border-0 bg-light">
+                                            <div class="card-body text-center py-3">
+                                                <i class="bi bi-check-circle fs-3 text-success"></i>
+                                                <h4 class="mb-0 mt-2 text-success" id="doneCount">-</h4>
+                                                <small class="text-muted">Done</small>
+                                            </div>
                                         </div>
+                                    </div>
+                                </div>
+
+                                <!-- Boards List -->
+                                <div id="projectBoardsList">
+                                    <div class="text-center py-4">
+                                        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                                        <p class="mt-2 text-muted small">Loading boards...</p>
                                     </div>
                                 </div>
                             </div>
@@ -3867,7 +3981,304 @@
                     document.getElementById('reviewCount').textContent = '0';
                     document.getElementById('doneCount').textContent = '0';
                 });
+
+            // Load boards list
+            loadProjectBoardsList(projectId);
         }
+
+        function loadProjectBoardsList(projectId) {
+            const boardsList = document.getElementById('projectBoardsList');
+
+            fetch(`/api/projects/${projectId}/boards`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.boards && data.boards.length > 0) {
+                        displayProjectBoards(data.boards, projectId);
+                    } else {
+                        boardsList.innerHTML = `
+                            <div class="text-center py-5">
+                                <i class="bi bi-kanban text-muted mb-3" style="font-size: 3rem;"></i>
+                                <h6 class="text-muted">No Boards Yet</h6>
+                                <p class="text-muted small">Create your first board to organize project tasks</p>
+                                <button class="btn btn-primary mt-2" onclick="openAdminCreateBoardModal(${projectId})">
+                                    <i class="bi bi-plus-lg me-1"></i>Create Board
+                                </button>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading boards:', error);
+                    boardsList.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            Error loading boards
+                        </div>
+                    `;
+                });
+        }
+
+        function displayProjectBoards(boards, projectId) {
+            const boardsList = document.getElementById('projectBoardsList');
+            let html = '<div class="row g-3">';
+
+            boards.forEach(board => {
+                const totalCards = parseInt(board.total_cards) || 0;
+                const doneCards = parseInt(board.done_cards) || 0;
+                const completionRate = totalCards > 0 ? Math.round((doneCards / totalCards) * 100) : 0;
+
+                html += `
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-primary text-white">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <h6 class="mb-0">
+                                        <i class="bi bi-kanban me-2"></i>${board.board_name || board.name}
+                                    </h6>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            <i class="bi bi-three-dots-vertical"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="#" onclick="editAdminBoard(${board.board_id || board.id})">
+                                                <i class="bi bi-pencil me-2"></i>Edit
+                                            </a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-danger" href="#" onclick="deleteAdminBoard(${board.board_id || board.id}, ${projectId})">
+                                                <i class="bi bi-trash me-2"></i>Delete
+                                            </a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted small mb-3">${board.description || 'No description'}</p>
+
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <small class="text-muted fw-semibold">Progress</small>
+                                        <span class="badge bg-primary">${completionRate}%</span>
+                                    </div>
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar bg-success" style="width: ${completionRate}%"></div>
+                                    </div>
+                                </div>
+
+                                <div class="row text-center g-2">
+                                    <div class="col-3">
+                                        <div class="small">
+                                            <div class="fw-bold text-primary">${totalCards}</div>
+                                            <small class="text-muted" style="font-size: 0.7rem;">Total</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="small">
+                                            <div class="fw-bold text-warning">${board.in_progress_cards || 0}</div>
+                                            <small class="text-muted" style="font-size: 0.7rem;">Progress</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="small">
+                                            <div class="fw-bold text-info">${board.review_cards || 0}</div>
+                                            <small class="text-muted" style="font-size: 0.7rem;">Review</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="small">
+                                            <div class="fw-bold text-success">${doneCards}</div>
+                                            <small class="text-muted" style="font-size: 0.7rem;">Done</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-light border-0">
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar me-1"></i>Created ${formatDate(board.created_at)}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            boardsList.innerHTML = html;
+        }
+
+        // Board Management Functions
+        function openAdminCreateBoardModal(projectId) {
+            document.getElementById('adminBoardProjectId').value = projectId;
+            document.getElementById('adminCreateBoardForm').reset();
+            document.getElementById('adminCreateBoardAlert').classList.add('d-none');
+
+            const modal = new bootstrap.Modal(document.getElementById('adminCreateBoardModal'));
+            modal.show();
+        }
+
+        function editAdminBoard(boardId) {
+            fetch(`/api/boards/${boardId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const board = data.board;
+                        document.getElementById('adminEditBoardId').value = board.board_id;
+                        document.getElementById('adminEditBoardName').value = board.board_name;
+                        document.getElementById('adminEditBoardDescription').value = board.description || '';
+
+                        const modal = new bootstrap.Modal(document.getElementById('adminEditBoardModal'));
+                        modal.show();
+                    } else {
+                        alert('Error loading board details');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error loading board details');
+                });
+        }
+
+        function deleteAdminBoard(boardId, projectId) {
+            if (confirm('Are you sure you want to delete this board? All cards in this board will also be deleted. This action cannot be undone.')) {
+                fetch(`/api/boards/${boardId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification('success', 'Board deleted successfully');
+                        loadProjectBoardsList(projectId);
+                        loadProjectBoardData(projectId);
+                    } else {
+                        alert(data.message || 'Error deleting board');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error deleting board');
+                });
+            }
+        }
+
+        // Handle Create Board Form
+        document.getElementById('adminCreateBoardForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const btn = document.getElementById('adminCreateBoardBtn');
+            const btnText = btn.querySelector('.btn-text');
+            const btnLoading = btn.querySelector('.btn-loading');
+            const alert = document.getElementById('adminCreateBoardAlert');
+
+            btnText.classList.add('d-none');
+            btnLoading.classList.remove('d-none');
+            btn.disabled = true;
+
+            const formData = new FormData(this);
+
+            fetch('/api/boards', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert.textContent = 'Board created successfully!';
+                    alert.className = 'alert alert-success';
+                    alert.classList.remove('d-none');
+
+                    setTimeout(() => {
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('adminCreateBoardModal'));
+                        modal.hide();
+                        const projectId = document.getElementById('adminBoardProjectId').value;
+                        loadProjectBoardsList(projectId);
+                        loadProjectBoardData(projectId);
+                    }, 1000);
+                } else {
+                    alert.textContent = data.message || 'Error creating board';
+                    alert.className = 'alert alert-danger';
+                    alert.classList.remove('d-none');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert.textContent = 'Error creating board';
+                alert.className = 'alert alert-danger';
+                alert.classList.remove('d-none');
+            })
+            .finally(() => {
+                btnText.classList.remove('d-none');
+                btnLoading.classList.add('d-none');
+                btn.disabled = false;
+            });
+        });
+
+        // Handle Edit Board Form
+        document.getElementById('adminEditBoardForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const btn = document.getElementById('adminEditBoardBtn');
+            const btnText = btn.querySelector('.btn-text');
+            const btnLoading = btn.querySelector('.btn-loading');
+            const alert = document.getElementById('adminEditBoardAlert');
+            const boardId = document.getElementById('adminEditBoardId').value;
+
+            btnText.classList.add('d-none');
+            btnLoading.classList.remove('d-none');
+            btn.disabled = true;
+
+            const formData = new FormData(this);
+
+            fetch(`/api/boards/${boardId}`, {
+                method: 'PUT',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    board_name: formData.get('board_name'),
+                    description: formData.get('description')
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert.textContent = 'Board updated successfully!';
+                    alert.className = 'alert alert-success';
+                    alert.classList.remove('d-none');
+
+                    setTimeout(() => {
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('adminEditBoardModal'));
+                        modal.hide();
+                        if (currentProjectId) {
+                            loadProjectBoardsList(currentProjectId);
+                        }
+                    }, 1000);
+                } else {
+                    alert.textContent = data.message || 'Error updating board';
+                    alert.className = 'alert alert-danger';
+                    alert.classList.remove('d-none');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert.textContent = 'Error updating board';
+                alert.className = 'alert alert-danger';
+                alert.classList.remove('d-none');
+            })
+            .finally(() => {
+                btnText.classList.remove('d-none');
+                btnLoading.classList.add('d-none');
+                btn.disabled = false;
+            });
+        });
 
         function displayTeamOverview(members) {
             const teamOverview = document.getElementById('teamOverview');

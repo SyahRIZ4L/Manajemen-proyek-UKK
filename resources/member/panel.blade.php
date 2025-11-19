@@ -22,7 +22,7 @@
                     </div>
                     <div class="col-md-4 mb-3">
                         <a href="{{ route('member.my-cards') }}" class="btn btn-success btn-lg w-100">
-                            <i class="bi bi-kanban me-2"></i>My Cards
+                            <i class="bi bi-kanban me-2"></i>My Tasks
                         </a>
                     </div>
                     <div class="col-md-4 mb-3">

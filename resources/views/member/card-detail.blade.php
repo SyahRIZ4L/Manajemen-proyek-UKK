@@ -82,6 +82,54 @@
                     </div>
                 </div>
 
+                <!-- Timer Status Display -->
+                @if($card->is_timer_active && $card->timer_started_at)
+                    <div class="alert alert-info mt-3 d-flex align-items-center">
+                        <i class="bi bi-stopwatch fs-4 me-3"></i>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">Timer Active -7 Time</h6>
+                            <p class="mb-0">Working time: <strong id="timer-display">Calculating...</strong></p>
+                            <small class="text-muted">Started at {{ \Carbon\Carbon::parse($card->timer_started_at)->format('H:i:s') }}</small>
+                        </div>
+                    </div>
+                    <script>
+                        (function() {
+                            const startTime = new Date('{{ $card->timer_started_at }}').getTime();
+                            const timerElement = document.getElementById('timer-display');
+
+                            function updateTimer() {
+                                const now = new Date().getTime();
+                                const elapsed = Math.floor((now - startTime) / 1000);
+
+                                const hours = Math.floor(elapsed / 3600);
+                                const minutes = Math.floor((elapsed % 3600) / 60);
+                                const seconds = elapsed % 60;
+
+                                timerElement.textContent =
+                                    String(hours).padStart(2, '0') + ':' +
+                                    String(minutes).padStart(2, '0') + ':' +
+                                    String(seconds).padStart(2, '0');
+                            }
+
+                            updateTimer();
+                            setInterval(updateTimer, 1000);
+                        })();
+                    </script>
+                @elseif($card->status === 'review')
+                    <div class="alert alert-warning mt-3">
+                        <i class="bi bi-pause-circle me-2"></i>
+                        <strong>Timer Paused</strong> - Card is in review
+                        @if($card->actual_hours)
+                            <br><small>Total working time: {{ $card->actual_hours }} hours</small>
+                        @endif
+                    </div>
+                @elseif($card->status === 'done' && $card->actual_hours)
+                    <div class="alert alert-success mt-3">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <strong>Completed</strong> - Total working time: {{ $card->actual_hours }} hours
+                    </div>
+                @endif
+
                 <!-- Action Buttons -->
                 <div class="mt-4">
                     @if($card->status === 'todo')
@@ -94,11 +142,7 @@
                         </button>
                     @endif
 
-                    @if(in_array($card->status, ['todo', 'in_progress']))
-                        <button class="btn btn-info me-2" data-bs-toggle="modal" data-bs-target="#startTimerModal">
-                            <i class="bi bi-play-circle"></i> Start Timer
-                        </button>
-                    @endif
+
 
                     <a href="{{ route('member.my-cards') }}" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left"></i> Back to My Cards
@@ -137,6 +181,37 @@
                 </div>
             </div>
         @endif
+
+        <!-- Todo List -->
+        <div class="card mt-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-check2-square"></i> Todo List</h5>
+                <button class="btn btn-sm btn-primary" onclick="showAddTodoForm()">
+                    <i class="bi bi-plus-circle"></i> Add Todo
+                </button>
+            </div>
+            <div class="card-body">
+                <!-- Add Todo Form (Hidden by default) -->
+                <div id="addTodoForm" style="display: none;" class="mb-3">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="newTodoText"
+                               placeholder="Enter todo item..." maxlength="500">
+                        <button class="btn btn-success" onclick="addTodo()">
+                            <i class="bi bi-check"></i> Add
+                        </button>
+                        <button class="btn btn-secondary" onclick="hideAddTodoForm()">
+                            <i class="bi bi-x"></i> Cancel
+                        </button>
+                    </div>
+                    <small class="text-muted">Max 500 characters</small>
+                </div>
+
+                <!-- Todo List -->
+                <div id="todoList">
+                    <p class="text-muted text-center py-3"><i class="bi bi-inbox"></i> No todos yet. Click "Add Todo" to get started!</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Time Logs Sidebar -->
@@ -237,31 +312,7 @@
         </div>
 
         <!-- Comments Section -->
-        <div class="card mt-4">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-comments me-2"></i>Comments
-                </h5>
-            </div>
-            <div class="card-body">
-                <!-- Add Comment Form -->
-                <div class="mb-4">
-                    <form id="commentForm">
-                        <div class="mb-3">
-                            <textarea class="form-control" id="commentText" rows="3" placeholder="Add a comment..." required></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-paper-plane me-1"></i>Add Comment
-                        </button>
-                    </form>
-                </div>
 
-                <!-- Comments List -->
-                <div id="commentsList">
-                    <!-- Comments will be loaded here -->
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 
@@ -301,6 +352,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     checkActiveTimer();
     loadComments();
+    loadTodos();
 
     // Comment form submission
     document.getElementById('commentForm').addEventListener('submit', function(e) {
@@ -583,6 +635,196 @@ function addReply(parentId) {
         console.error('Error:', error);
         showAlert('An error occurred', 'danger');
     });
+}
+
+// Todo List Functions
+function loadTodos() {
+    fetch(`/api/card-todos?card_id={{ $card->card_id }}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            displayTodos(data.todos);
+        } else {
+            showAlert('Failed to load todos', 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error loading todos:', error);
+        document.getElementById('todoList').innerHTML = '<p class="text-muted text-center">Failed to load todos</p>';
+    });
+}
+
+function displayTodos(todos) {
+    const todoList = document.getElementById('todoList');
+
+    if (todos.length === 0) {
+        todoList.innerHTML = '<p class="text-muted text-center py-3"><i class="bi bi-inbox"></i> No todos yet. Click "Add Todo" to get started!</p>';
+        return;
+    }
+
+    let html = '<div class="list-group">';
+    todos.forEach(todo => {
+        const checked = todo.completed ? 'checked' : '';
+        const strikethrough = todo.completed ? 'text-decoration-line-through text-muted' : '';
+        const createdAt = new Date(todo.created_at).toLocaleString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        html += `
+            <div class="list-group-item d-flex align-items-center ${todo.completed ? 'bg-light' : ''}">
+                <input type="checkbox" class="form-check-input me-3" ${checked}
+                       onchange="toggleTodo(${todo.todo_id})" style="cursor: pointer;">
+                <div class="flex-grow-1 ${strikethrough}" id="todoText_${todo.todo_id}">
+                    ${escapeHtml(todo.text)}
+                    <br><small class="text-muted">by ${todo.user.full_name || todo.user.username} - ${createdAt}</small>
+                </div>
+                <div class="btn-group btn-group-sm" role="group">
+                    <button class="btn btn-outline-primary" onclick="editTodo(${todo.todo_id}, '${escapeHtml(todo.text).replace(/'/g, "\\'")}')">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-outline-danger" onclick="deleteTodo(${todo.todo_id})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    html += '</div>';
+
+    todoList.innerHTML = html;
+}
+
+function showAddTodoForm() {
+    document.getElementById('addTodoForm').style.display = 'block';
+    document.getElementById('newTodoText').focus();
+}
+
+function hideAddTodoForm() {
+    document.getElementById('addTodoForm').style.display = 'none';
+    document.getElementById('newTodoText').value = '';
+}
+
+function addTodo() {
+    const text = document.getElementById('newTodoText').value.trim();
+    if (!text) {
+        showAlert('Please enter todo text', 'warning');
+        return;
+    }
+
+    fetch('/api/card-todos', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            card_id: {{ $card->card_id }},
+            text: text
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            hideAddTodoForm();
+            loadTodos();
+            showAlert('Todo added successfully!', 'success');
+        } else {
+            showAlert(data.message || 'Failed to add todo', 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('An error occurred while adding todo', 'danger');
+    });
+}
+
+function toggleTodo(todoId) {
+    fetch(`/api/card-todos/${todoId}/toggle`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            loadTodos();
+        } else {
+            showAlert(data.message || 'Failed to toggle todo', 'danger');
+            loadTodos(); // Reload to revert UI
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('An error occurred', 'danger');
+        loadTodos(); // Reload to revert UI
+    });
+}
+
+function editTodo(todoId, currentText) {
+    const newText = prompt('Edit todo:', currentText);
+    if (newText === null || newText.trim() === '') return;
+
+    if (newText.trim() === currentText) {
+        return; // No changes
+    }
+
+    fetch(`/api/card-todos/${todoId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({ text: newText.trim() })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            loadTodos();
+            showAlert('Todo updated successfully!', 'success');
+        } else {
+            showAlert(data.message || 'Failed to update todo', 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('An error occurred while updating todo', 'danger');
+    });
+}
+
+function deleteTodo(todoId) {
+    if (!confirm('Are you sure you want to delete this todo?')) return;
+
+    fetch(`/api/card-todos/${todoId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            loadTodos();
+            showAlert('Todo deleted successfully!', 'success');
+        } else {
+            showAlert(data.message || 'Failed to delete todo', 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('An error occurred while deleting todo', 'danger');
+    });
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 </script>
 @endpush

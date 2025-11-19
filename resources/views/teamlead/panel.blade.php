@@ -23,6 +23,86 @@
 
     <link href="{{ asset('css/performance-animations.css') }}" rel="stylesheet">
 
+    <style>
+        .board-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+
+        .board-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+        }
+
+        .card-hover {
+            transition: transform 0.1s;
+            cursor: pointer;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .progress {
+            border-radius: 10px;
+        }
+
+        .progress-bar {
+            border-radius: 10px;
+        }
+
+        .dropdown-toggle::after {
+            display: none;
+        }
+
+        /* Hover effects */
+        .hover-lift {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        .hover-shadow {
+            transition: box-shadow 0.2s ease;
+        }
+
+        .hover-shadow:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        .transition-all {
+            transition: all 0.3s ease;
+        }
+
+        /* Gradient backgrounds */
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .bg-gradient-success {
+            background: linear-gradient(135deg, #119945 0%, #38ef7d 100%);
+        }
+
+        /* Badge sizing */
+        .badge-sm {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+        }
+
+        /* Card hover effect for kanban cards */
+        .card-hover {
+            transition: all 0.2s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+    </style>
 
 </head>
 <body>
@@ -470,9 +550,9 @@
                                 </button>
                             </div>
                             <div class="col-md-2">
-                                <button class="btn btn-outline-primary w-100" onclick="openBoardListModal()" id="btn-manage-boards">
+                                <button class="btn btn-outline-primary w-100" onclick="-()" id="btn-manage-boards">
                                     <i class="bi bi-kanban me-2"></i>
-                                    Manage Boards
+                                    -
                                 </button>
                             </div>
                             <div class="col-md-2">
@@ -703,101 +783,90 @@
                 <div class="d-flex justify-content-between align-items-center mb-4">
 
                     <div class="d-flex gap-2">
-                        <button class="btn btn-primary" onclick="openCreateCardModal()">
+
+                         <button class="btn btn-primary" onclick="openCreateCardModal()">
                             <i class="bi bi-plus-lg me-2"></i>
-                            Create New Card
+                            Create Card
                         </button>
-                        <button class="btn btn-outline-primary" onclick="refreshMyCards()">
+                        <button class="btn btn-outline-primary" onclick="refreshMyCardsBoards()">
                             <i class="bi bi-arrow-clockwise me-1"></i>Refresh
                         </button>
                     </div>
                 </div>
 
-                <!-- My Cards Statistics -->
+                <!-- Overall Statistics -->
                 <div class="row mb-4" id="my-cards-statistics">
-                    <div class="col-md-3">
-                        <div class="card bg-info text-white">
+                    <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                        <div class="card border-0 shadow-sm h-100">
                             <div class="card-body text-center">
-                                <i class="bi bi-list-ul display-6"></i>
-                                <h4 class="mt-2 mb-0" id="myCardsTodoCount">0</h4>
-                                <small>To Do</small>
+                                <div class="text-primary mb-2">
+                                    <i class="bi bi-collection fs-2"></i>
+                                </div>
+                                <h5 class="mb-0" id="totalBoardsCount">0</h5>
+                                <small class="text-muted">Boards</small>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="card bg-warning text-white">
+                    <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                        <div class="card border-0 shadow-sm h-100">
                             <div class="card-body text-center">
-                                <i class="bi bi-play-circle display-6"></i>
-                                <h4 class="mt-2 mb-0" id="myCardsInProgressCount">0</h4>
-                                <small>In Progress</small>
+                                <div class="text-info mb-2">
+                                    <i class="bi bi-card-text fs-2"></i>
+                                </div>
+                                <h5 class="mb-0" id="totalCardsCount">0</h5>
+                                <small class="text-muted">Total Cards</small>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="card bg-primary text-white">
+                    <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                        <div class="card border-0 shadow-sm h-100">
                             <div class="card-body text-center">
-                                <i class="bi bi-eye display-6"></i>
-                                <h4 class="mt-2 mb-0" id="myCardsReviewCount">0</h4>
-                                <small>In Review</small>
+                                <div class="text-warning mb-2">
+                                    <i class="bi bi-clock fs-2"></i>
+                                </div>
+                                <h5 class="mb-0" id="inProgressCardsCount">0</h5>
+                                <small class="text-muted">In Progress</small>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="card bg-success text-white">
+                    <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                        <div class="card border-0 shadow-sm h-100">
                             <div class="card-body text-center">
-                                <i class="bi bi-check-circle display-6"></i>
-                                <h4 class="mt-2 mb-0" id="myCardsDoneCount">0</h4>
-                                <small>Done</small>
+                                <div class="text-danger mb-2">
+                                    <i class="bi bi-eye fs-2"></i>
+                                </div>
+                                <h5 class="mb-0" id="reviewCardsCount">0</h5>
+                                <small class="text-muted">Review</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body text-center">
+                                <div class="text-success mb-2">
+                                    <i class="bi bi-check-circle fs-2"></i>
+                                </div>
+                                <h5 class="mb-0" id="doneCardsCount">0</h5>
+                                <small class="text-muted">Completed</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body text-center">
+                                <div class="text-secondary mb-2">
+                                    <i class="bi bi-percent fs-2"></i>
+                                </div>
+                                <h5 class="mb-0" id="completionRateCount">0%</h5>
+                                <small class="text-muted">Completion</small>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Filter Section -->
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <div class="row g-3">
-                            <div class="col-md-3">
-                                <label class="form-label">Status Filter</label>
-                                <select id="myCardsStatusFilter" class="form-select">
-                                    <option value="">All Status</option>
-                                    <option value="todo">To Do</option>
-                                    <option value="in_progress">In Progress</option>
-                                    <option value="review">Review</option>
-                                    <option value="done">Done</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label">Project Filter</label>
-                                <select id="myCardsProjectFilter" class="form-select">
-                                    <option value="">All Projects</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label">Priority Filter</label>
-                                <select id="myCardsPriorityFilter" class="form-select">
-                                    <option value="">All Priorities</option>
-                                    <option value="low">Low</option>
-                                    <option value="medium">Medium</option>
-                                    <option value="high">High</option>
-                                    <option value="urgent">Urgent</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3 d-flex align-items-end">
-                                <button class="btn btn-primary me-2" onclick="applyMyCardsFilters()">
-                                    <i class="bi bi-funnel me-1"></i>Apply
-                                </button>
-                                <button class="btn btn-outline-secondary" onclick="clearMyCardsFilters()">
-                                    <i class="bi bi-x-circle me-1"></i>Clear
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- My Cards Grid -->
-                <div id="my-cards-grid" class="row">
-                    <!-- My cards will be loaded here dynamically -->
+                <!-- Boards Grid -->
+                <div id="my-cards-boards-grid" class="row">
+                    <!-- Boards will be loaded here dynamically -->
                 </div>
 
                 <!-- Loading State -->
@@ -805,16 +874,16 @@
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
-                    <p class="mt-3 text-muted">Loading your cards...</p>
+                    <p class="mt-3 text-muted">Loading your boards...</p>
                 </div>
 
                 <!-- Empty State -->
                 <div id="my-cards-empty" class="text-center py-5" style="display: none;">
-                    <i class="bi bi-card-checklist text-muted mb-3" style="font-size: 4rem;"></i>
-                    <h4 class="text-muted">No Cards Found</h4>
-                    <p class="text-muted">You haven't created any cards yet. Start by creating your first card!</p>
-                    <button class="btn btn-primary mt-3" onclick="openCreateCardModal()">
-                        <i class="bi bi-plus-lg me-2"></i>Create Your First Card
+                    <i class="bi bi-collection text-muted mb-3" style="font-size: 4rem;"></i>
+                    <h4 class="text-muted">No Boards Found</h4>
+                    <p class="text-muted">You don't have any boards yet. Create your first board to start organizing your cards.</p>
+                    <button class="btn btn-primary mt-3" onclick="openCreateBoardModal()">
+                        <i class="bi bi-plus-lg me-2"></i>Create Your First Board
                     </button>
                 </div>
             </div>
@@ -2320,6 +2389,62 @@
                         </span>
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards Modal - Fullscreen -->
+    <div class="modal fade" id="cardsModal" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <div>
+                        <h5 class="modal-title mb-0" id="boardModalTitle">
+                            <i class="bi bi-kanban me-2"></i>Board Cards
+                        </h5>
+                        <small class="opacity-90" id="boardModalProject"></small>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                    <div id="cardsContent">
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2 text-muted">Loading cards...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Board Modal -->
+    <div class="modal fade" id="createBoardModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Board</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="createBoardForm">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="boardName" class="form-label">Board Name</label>
+                            <input type="text" class="form-control" id="boardName" name="board_name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="boardDescription" class="form-label">Description (Optional)</label>
+                            <textarea class="form-control" id="boardDescription" name="description" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create Board</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -4894,6 +5019,10 @@
             viewCard(cardId);
         }
 
+        function viewCardDetail(cardId) {
+            viewCard(cardId);
+        }
+
         function showCardDetailModal(cardId) {
             const modal = new bootstrap.Modal(document.getElementById('cardDetailModal'));
             const content = document.getElementById('cardDetailContent');
@@ -4966,6 +5095,129 @@
                         </div>
                     `;
                 });
+        }
+
+        // Global object to store active timer intervals
+        window.activeTimerIntervals = window.activeTimerIntervals || {};
+
+        // Timer Display Function for Team Lead Card Detail Modal
+        function displayTimerInfo(card) {
+            // Debug log to check card data
+            console.log('Timer Info - Card ID:', card.card_id);
+            console.log('Timer Info - Card Status:', card.status);
+            console.log('Timer Info - Is Timer Active:', card.is_timer_active);
+            console.log('Timer Info - Timer Started At:', card.timer_started_at);
+
+            let timerHtml = '';
+
+            // Status: TODO - Belum di start
+            if (card.status === 'todo') {
+                timerHtml = `
+                    <div class="alert alert-secondary mb-3">
+                        <i class="bi bi-clock-history me-2"></i>
+                        <strong>Belum di start</strong> - Tugas belum dikerjakan
+                    </div>
+                `;
+            }
+            // Status: IN_PROGRESS - Timer Active (Real-time)
+            else if (card.status === 'in_progress' && card.is_timer_active && card.timer_started_at) {
+                const timerId = 'cardTimerDisplay-' + card.card_id;
+                const cardId = card.card_id;
+
+                timerHtml = `
+                    <div class="alert alert-info mb-3 d-flex align-items-center">
+                        <i class="bi bi-stopwatch fs-4 me-3"></i>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">Timer Active</h6>
+                            <p class="mb-0">Working time: <strong id="${timerId}">Calculating...</strong></p>
+                            <small class="text-muted">Started at ${new Date(card.timer_started_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</small>
+                        </div>
+                    </div>
+                `;
+
+                // Clear any existing interval for this card
+                if (window.activeTimerIntervals[cardId]) {
+                    clearInterval(window.activeTimerIntervals[cardId]);
+                    delete window.activeTimerIntervals[cardId];
+                }
+
+                // Start timer update after DOM is ready
+                setTimeout(() => {
+                    const startTime = new Date(card.timer_started_at).getTime();
+                    const timerElement = document.getElementById(timerId);
+
+                    if (!timerElement) {
+                        console.error('Timer element not found:', timerId);
+                        return;
+                    }
+
+                    function updateTimer() {
+                        const element = document.getElementById(timerId);
+                        if (!element) {
+                            // Element removed from DOM, clear interval
+                            if (window.activeTimerIntervals[cardId]) {
+                                clearInterval(window.activeTimerIntervals[cardId]);
+                                delete window.activeTimerIntervals[cardId];
+                            }
+                            return;
+                        }
+
+                        const now = new Date().getTime();
+                        const elapsed = Math.floor((now - startTime) / 1000);
+
+                        const hours = Math.floor(elapsed / 3600);
+                        const minutes = Math.floor((elapsed % 3600) / 60);
+                        const seconds = elapsed % 60;
+
+                        element.textContent =
+                            String(hours).padStart(2, '0') + ':' +
+                            String(minutes).padStart(2, '0') + ':' +
+                            String(seconds).padStart(2, '0');
+                    }
+
+                    // Initial update
+                    updateTimer();
+
+                    // Store interval reference with card ID
+                    window.activeTimerIntervals[cardId] = setInterval(updateTimer, 1000);
+
+                    console.log('Timer started for card:', cardId, 'Interval ID:', window.activeTimerIntervals[cardId]);
+
+                    // Cleanup when modal is closed
+                    const modalElement = document.getElementById('cardDetailModal');
+                    if (modalElement) {
+                        modalElement.addEventListener('hidden.bs.modal', function clearTimerOnClose() {
+                            if (window.activeTimerIntervals[cardId]) {
+                                clearInterval(window.activeTimerIntervals[cardId]);
+                                delete window.activeTimerIntervals[cardId];
+                                console.log('Timer cleared for card:', cardId);
+                            }
+                            modalElement.removeEventListener('hidden.bs.modal', clearTimerOnClose);
+                        });
+                    }
+                }, 100);
+            }
+            // Status: REVIEW - Timer Paused
+            else if (card.status === 'review') {
+                timerHtml = `
+                    <div class="alert alert-warning mb-3">
+                        <i class="bi bi-pause-circle me-2"></i>
+                        <strong>Timer Paused</strong> - Card is in review
+                        ${card.actual_hours ? `<br><small>Total working time: ${card.actual_hours} hours</small>` : ''}
+                    </div>
+                `;
+            }
+            // Status: DONE - Timer Stopped
+            else if (card.status === 'done' && card.actual_hours) {
+                timerHtml = `
+                    <div class="alert alert-success mb-3">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <strong>Completed</strong> - Total working time: ${card.actual_hours} hours
+                    </div>
+                `;
+            }
+
+            return timerHtml;
         }
 
         function displayCardDetail(card, comments) {
@@ -5073,10 +5325,9 @@
                         <div class="col-lg-4">
                             <!-- Actions -->
                             <div class="card border-0 shadow-sm mb-4">
-                                <div class="card-header bg-light">
-                                    <h6 class="mb-0"><i class="bi bi-gear me-2"></i>Actions</h6>
-                                </div>
+
                                 <div class="card-body">
+                                    ${displayTimerInfo(card)}
                                     <div class="d-grid gap-2">
                                         ${card.status === 'review' ? `
                                             <button class="btn btn-success btn-sm" onclick="approveCard(${card.card_id}, '${card.card_title.replace(/'/g, '\\\'')}')">
@@ -5086,18 +5337,14 @@
                                                 <i class="bi bi-x-circle me-1"></i>Reject Card
                                             </button>
                                         ` : ''}
-                                        <button class="btn btn-outline-primary btn-sm" onclick="viewCardHistory(${card.card_id})">
-                                            <i class="bi bi-clock-history me-1"></i>View History
-                                        </button>
-                                        <button class="btn btn-outline-secondary btn-sm" onclick="exportCardDetails(${card.card_id})">
-                                            <i class="bi bi-download me-1"></i>Export Details
-                                        </button>
+
+
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Card Information -->
-                            <div class="card border-0 shadow-sm">
+                            <div class="card border-0 shadow-sm mb-4">
                                 <div class="card-header bg-light">
                                     <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Card Information</h6>
                                 </div>
@@ -5130,10 +5377,46 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Todo List -->
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0"><i class="bi bi-check2-square me-2"></i>Todo List</h6>
+                                    <button class="btn btn-sm btn-primary" onclick="showAddTodoForm()">
+                                        <i class="bi bi-plus"></i> Add
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Add Todo Form (hidden by default) -->
+                                    <div id="teamleadAddTodoForm" style="display: none;" class="mb-3">
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" id="teamleadNewTodoText" class="form-control" placeholder="Enter todo item..." onkeypress="if(event.key==='Enter') addTeamLeadTodo()">
+                                            <button class="btn btn-success" onclick="addTeamLeadTodo()">
+                                                <i class="bi bi-check"></i>
+                                            </button>
+                                            <button class="btn btn-secondary" onclick="hideAddTodoForm()">
+                                                <i class="bi bi-x"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div id="teamleadTodoList" style="max-height: 300px; overflow-y: auto;">
+                                        <div class="text-center py-3">
+                                            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             `;
+
+            // Store current card ID and load todos for this card
+            currentCardIdForTodos = card.card_id;
+            loadCardTodos(card.card_id);
         }
 
         function displayCardComments(comments) {
@@ -5284,18 +5567,423 @@
             window.open(url, '_blank');
         }
 
-        // My Cards Functions
+        // Todo List Functions for Team Lead
+        function loadCardTodos(cardId) {
+            const todoList = document.getElementById('teamleadTodoList');
+            if (!todoList) {
+                console.error('Todo list element not found');
+                return;
+            }
+
+            console.log('Loading todos for card:', cardId);
+
+            fetch(`/api/card-todos?card_id=${cardId}`)
+            .then(response => {
+                console.log('Todo API response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Todo API response data:', data);
+                if (data.success) {
+                    displayTeamLeadTodos(data.todos);
+                } else {
+                    console.error('Failed to load todos:', data.message);
+                    if (data.debug) {
+                        console.error('Debug info:', data.debug);
+                    }
+                    let errorMsg = data.message || 'Unknown error';
+                    if (data.debug) {
+                        errorMsg += ' (Check console for debug info)';
+                    }
+                    todoList.innerHTML = `<p class="text-muted text-center small">Failed to load todos: ${errorMsg}</p>`;
+                }
+            })
+            .catch(error => {
+                console.error('Error loading todos:', error);
+                todoList.innerHTML = '<p class="text-muted text-center small">Error loading todos</p>';
+            });
+        }
+
+        // Store current card ID for todo operations
+        let currentCardIdForTodos = null;
+
+        function displayTeamLeadTodos(todos) {
+            const todoList = document.getElementById('teamleadTodoList');
+            if (!todoList) return;
+
+            if (todos.length === 0) {
+                todoList.innerHTML = '<p class="text-muted text-center small py-2"><i class="bi bi-inbox"></i> No todos yet. Click "Add" to create one.</p>';
+                return;
+            }
+
+            let html = '<div class="list-group list-group-flush">';
+            todos.forEach(todo => {
+                const checked = todo.completed ? 'checked' : '';
+                const strikethrough = todo.completed ? 'text-decoration-line-through text-muted' : '';
+                const createdAt = new Date(todo.created_at).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric'
+                });
+
+                html += `
+                    <div class="list-group-item px-2 py-2 ${todo.completed ? 'bg-light' : ''}" id="teamleadTodo-${todo.todo_id}">
+                        <div class="d-flex align-items-start">
+                            <input type="checkbox" class="form-check-input me-2 mt-1" ${checked}
+                                   onchange="toggleTeamLeadTodo(${todo.todo_id})" style="cursor: pointer;">
+                            <div class="flex-grow-1 ${strikethrough}" id="teamleadTodoText-${todo.todo_id}">
+                                <small>${escapeHtml(todo.text)}</small>
+                                <br><small class="text-muted" style="font-size: 0.75rem;">by ${todo.user.full_name || todo.user.username} - ${createdAt}</small>
+                            </div>
+                            <div class="btn-group btn-group-sm ms-2" role="group">
+                                <button class="btn btn-outline-primary btn-sm" onclick="editTeamLeadTodo(${todo.todo_id}, '${escapeHtml(todo.text).replace(/'/g, "\\'")}')">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="deleteTeamLeadTodo(${todo.todo_id})">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+
+            todoList.innerHTML = html;
+        }
+
+        function showAddTodoForm() {
+            const form = document.getElementById('teamleadAddTodoForm');
+            const input = document.getElementById('teamleadNewTodoText');
+            if (form && input) {
+                form.style.display = 'block';
+                input.value = '';
+                input.focus();
+            }
+        }
+
+        function hideAddTodoForm() {
+            const form = document.getElementById('teamleadAddTodoForm');
+            if (form) {
+                form.style.display = 'none';
+            }
+        }
+
+        function addTeamLeadTodo() {
+            const input = document.getElementById('teamleadNewTodoText');
+            const text = input.value.trim();
+
+            if (!text) {
+                alert('Please enter todo text');
+                return;
+            }
+
+            if (!currentCardIdForTodos) {
+                alert('No card selected');
+                return;
+            }
+
+            fetch('/api/card-todos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    card_id: currentCardIdForTodos,
+                    text: text
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    hideAddTodoForm();
+                    loadCardTodos(currentCardIdForTodos);
+                    showNotification('Todo added successfully', 'success');
+                } else {
+                    alert('Failed to add todo: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error adding todo:', error);
+                alert('Error adding todo');
+            });
+        }
+
+        function toggleTeamLeadTodo(todoId) {
+            fetch(`/api/card-todos/${todoId}/toggle`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadCardTodos(currentCardIdForTodos);
+                } else {
+                    alert('Failed to toggle todo: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error toggling todo:', error);
+                alert('Error toggling todo');
+            });
+        }
+
+        function editTeamLeadTodo(todoId, currentText) {
+            const newText = prompt('Edit todo:', currentText);
+            if (newText === null || newText.trim() === '') return;
+
+            fetch(`/api/card-todos/${todoId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    text: newText.trim()
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadCardTodos(currentCardIdForTodos);
+                    showNotification('Todo updated successfully', 'success');
+                } else {
+                    alert('Failed to update todo: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error updating todo:', error);
+                alert('Error updating todo');
+            });
+        }
+
+        function deleteTeamLeadTodo(todoId) {
+            if (!confirm('Are you sure you want to delete this todo?')) return;
+
+            fetch(`/api/card-todos/${todoId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadCardTodos(currentCardIdForTodos);
+                    showNotification('Todo deleted successfully', 'success');
+                } else {
+                    alert('Failed to delete todo: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting todo:', error);
+                alert('Error deleting todo');
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // My Cards Functions (Board-based)
         function loadMyCards() {
-            const myCardsGrid = document.getElementById('my-cards-grid');
+            const boardsGrid = document.getElementById('my-cards-boards-grid');
             const loadingElement = document.getElementById('my-cards-loading');
             const emptyElement = document.getElementById('my-cards-empty');
 
             // Show loading state
             loadingElement.style.display = 'block';
             emptyElement.style.display = 'none';
-            myCardsGrid.innerHTML = '';
+            if (boardsGrid) boardsGrid.innerHTML = '';
 
-            fetch('/api/teamlead/my-cards')
+            fetch('/api/teamlead/boards')
+                .then(response => {
+                    console.log('API Response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('API Response data:', data);
+                    loadingElement.style.display = 'none';
+
+                    if (data.success && data.boards) {
+                        console.log('Boards found:', data.boards.length);
+                        // Update statistics
+                        updateMyCardsStatistics(data.boards);
+
+                        // Display boards
+                        displayMyCardsBoards(data.boards);
+                    } else {
+                        console.log('No boards or unsuccessful response');
+                        emptyElement.style.display = 'block';
+                        updateMyCardsStatistics([]);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading my boards:', error);
+                    loadingElement.style.display = 'none';
+                    emptyElement.style.display = 'block';
+                    if (boardsGrid) {
+                        boardsGrid.innerHTML = `
+                            <div class="col-12 text-center py-5">
+                                <div class="alert alert-danger">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                    Failed to load your boards: ${error.message}
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+        }
+
+        function updateMyCardsStatistics(boards) {
+            let totalBoards = boards.length;
+            let totalCards = 0;
+            let inProgressCards = 0;
+            let reviewCards = 0;
+            let doneCards = 0;
+
+            boards.forEach(board => {
+                totalCards += parseInt(board.total_cards) || 0;
+                inProgressCards += parseInt(board.in_progress_cards) || 0;
+                reviewCards += parseInt(board.review_cards) || 0;
+                doneCards += parseInt(board.done_cards) || 0;
+            });
+
+            let completionRate = totalCards > 0 ? Math.round((doneCards / totalCards) * 100) : 0;
+
+            document.getElementById('totalBoardsCount').textContent = totalBoards;
+            document.getElementById('totalCardsCount').textContent = totalCards;
+            document.getElementById('inProgressCardsCount').textContent = inProgressCards;
+            document.getElementById('reviewCardsCount').textContent = reviewCards;
+            document.getElementById('doneCardsCount').textContent = doneCards;
+            document.getElementById('completionRateCount').textContent = completionRate + '%';
+        }
+
+        function displayMyCardsBoards(boards) {
+            const boardsGrid = document.getElementById('my-cards-boards-grid');
+            let html = '';
+
+            boards.forEach(board => {
+                const completionRate = board.total_cards > 0 ?
+                    Math.round((board.done_cards / board.total_cards) * 100) : 0;
+
+                html += `
+                    <div class="col-xl-4 col-md-6 mb-4">
+                        <div class="card border-0 shadow-sm h-100 hover-lift transition-all">
+                            <div class="card-header bg-gradient-primary text-white border-0 pb-2">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <h5 class="mb-1 fw-bold">
+                                            <i class="bi bi-kanban me-2"></i>${board.name}
+                                        </h5>
+                                        <small class="opacity-90">
+                                            <i class="bi bi-folder me-1"></i>${board.project_name}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body pt-3">
+                                ${board.description ? `<p class="text-muted small mb-3">${board.description.substring(0, 100)}${board.description.length > 100 ? '...' : ''}</p>` : '<p class="text-muted small mb-3 fst-italic">No description</p>'}
+
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <small class="text-muted fw-semibold">Completion Rate</small>
+                                        <span class="badge bg-primary">${completionRate}%</span>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar bg-gradient-success" role="progressbar" style="width: ${completionRate}%" aria-valuenow="${completionRate}" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+
+                                <div class="row text-center g-2 mb-3">
+                                    <div class="col-3">
+                                        <div class="card bg-light border-0 shadow-sm">
+                                            <div class="card-body p-2">
+                                                <div class="fs-5 fw-bold text-primary">${board.total_cards}</div>
+                                                <small class="text-muted d-block" style="font-size: 0.7rem;">Total</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="card bg-light border-0 shadow-sm">
+                                            <div class="card-body p-2">
+                                                <div class="fs-5 fw-bold text-warning">${board.in_progress_cards}</div>
+                                                <small class="text-muted d-block" style="font-size: 0.7rem;">Progress</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="card bg-light border-0 shadow-sm">
+                                            <div class="card-body p-2">
+                                                <div class="fs-5 fw-bold text-info">${board.review_cards}</div>
+                                                <small class="text-muted d-block" style="font-size: 0.7rem;">Review</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="card bg-light border-0 shadow-sm">
+                                            <div class="card-body p-2">
+                                                <div class="fs-5 fw-bold text-success">${board.done_cards}</div>
+                                                <small class="text-muted d-block" style="font-size: 0.7rem;">Done</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-primary w-100 view-board shadow-sm" data-board-id="${board.id}">
+                                    <i class="bi bi-eye me-2"></i>View Cards
+                                </button>
+                            </div>
+                            <div class="card-footer bg-light border-0 pt-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar3 me-1"></i>
+                                    Created ${formatDate(board.created_at)}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            if (html === '') {
+                document.getElementById('my-cards-empty').style.display = 'block';
+            } else {
+                boardsGrid.innerHTML = html;
+
+                // Add event listeners ONLY for view board buttons
+                document.querySelectorAll('.view-board').forEach(button => {
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const boardId = this.getAttribute('data-board-id');
+                        if (boardId) {
+                            loadBoardCards(boardId);
+                        }
+                    });
+                });
+            }
+        }        function loadBoardCards(boardId) {
+            const modal = new bootstrap.Modal(document.getElementById('cardsModal'));
+            modal.show();
+
+            document.getElementById('cardsContent').innerHTML = `
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading cards...</p>
+                </div>
+            `;
+
+            fetch(`/api/teamlead/boards/${boardId}/detail`)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
@@ -5303,86 +5991,185 @@
                     return response.json();
                 })
                 .then(data => {
-                    loadingElement.style.display = 'none';
-
-                    if (data.success && data.data) {
-                        // Update statistics
-                        updateMyCardsStatistics(data.data);
-
-                        // Display cards by status
-                        displayMyCards(data.data);
-
-                        // Populate project filter
-                        populateMyCardsProjectFilter(data.data);
+                    if (data.success) {
+                        displayBoardCards(data);
                     } else {
-                        emptyElement.style.display = 'block';
-                        updateMyCardsStatistics({
-                            todo: [],
-                            in_progress: [],
-                            review: [],
-                            done: []
-                        });
+                        throw new Error(data.message || 'Failed to load cards');
                     }
                 })
                 .catch(error => {
-                    console.error('Error loading my cards:', error);
-                    loadingElement.style.display = 'none';
-                    myCardsGrid.innerHTML = `
-                        <div class="col-12 text-center py-5">
-                            <div class="alert alert-danger">
-                                <i class="bi bi-exclamation-triangle me-2"></i>
-                                Failed to load your cards: ${error.message}
-                            </div>
+                    console.error('Error loading board cards:', error);
+                    document.getElementById('cardsContent').innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            Failed to load cards: ${error.message}
                         </div>
                     `;
                 });
         }
 
-        function updateMyCardsStatistics(cardsByStatus) {
-            document.getElementById('myCardsTodoCount').textContent = cardsByStatus.todo ? cardsByStatus.todo.length : 0;
-            document.getElementById('myCardsInProgressCount').textContent = cardsByStatus.in_progress ? cardsByStatus.in_progress.length : 0;
-            document.getElementById('myCardsReviewCount').textContent = cardsByStatus.review ? cardsByStatus.review.length : 0;
-            document.getElementById('myCardsDoneCount').textContent = cardsByStatus.done ? cardsByStatus.done.length : 0;
-        }
+        function displayBoardCards(data) {
+            const board = data.board;
+            const cardsByStatus = data.cards_by_status;
+            const statistics = data.statistics;
 
-        function displayMyCards(cardsByStatus) {
-            const myCardsGrid = document.getElementById('my-cards-grid');
-            let html = '';
+            document.getElementById('boardModalTitle').innerHTML = `<i class="bi bi-kanban me-2"></i>${board.board_name}`;
+            document.getElementById('boardModalProject').innerHTML = `<i class="bi bi-folder me-1"></i>${board.project_name}`;
 
-            // Group cards by status and display them
-            const statusOrder = ['todo', 'in_progress', 'review', 'done'];
-            const statusLabels = {
-                'todo': 'To Do',
-                'in_progress': 'In Progress',
-                'review': 'Review',
-                'done': 'Done'
-            };
-
-            statusOrder.forEach(status => {
-                const cards = cardsByStatus[status] || [];
-                if (cards.length > 0) {
-                    html += `
-                        <div class="col-12 mb-4">
-                            <h5 class="mb-3"><i class="bi bi-circle-fill text-${getStatusColor(status)} me-2"></i>${statusLabels[status]} (${cards.length})</h5>
-                            <div class="row">
-                    `;
-
-                    cards.forEach(card => {
-                        html += createMyCardHTML(card);
-                    });
-
-                    html += `
+            let html = `
+                <!-- Statistics Summary -->
+                <div class="row g-3 mb-4">
+                    <div class="col-3">
+                        <div class="card border-0 shadow-sm bg-light">
+                            <div class="card-body text-center py-3">
+                                <div class="fs-4 fw-bold text-primary">${statistics.total_cards}</div>
+                                <small class="text-muted">Total</small>
                             </div>
                         </div>
-                    `;
+                    </div>
+                    <div class="col-3">
+                        <div class="card border-0 shadow-sm bg-warning bg-opacity-10">
+                            <div class="card-body text-center py-3">
+                                <div class="fs-4 fw-bold text-warning">${statistics.in_progress_cards}</div>
+                                <small class="text-muted">In Progress</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="card border-0 shadow-sm bg-info bg-opacity-10">
+                            <div class="card-body text-center py-3">
+                                <div class="fs-4 fw-bold text-info">${statistics.review_cards}</div>
+                                <small class="text-muted">Review</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="card border-0 shadow-sm bg-success bg-opacity-10">
+                            <div class="card-body text-center py-3">
+                                <div class="fs-4 fw-bold text-success">${statistics.done_cards}</div>
+                                <small class="text-muted">Done</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cards List by Status -->
+                <div class="row g-3">
+            `;
+
+            const statuses = [
+                { key: 'todo', title: 'To Do', icon: 'list-task', color: 'secondary' },
+                { key: 'in_progress', title: 'In Progress', icon: 'hourglass-split', color: 'warning' },
+                { key: 'review', title: 'Review', icon: 'eye', color: 'info' },
+                { key: 'done', title: 'Done', icon: 'check-circle', color: 'success' }
+            ];
+
+            statuses.forEach(status => {
+                const cards = cardsByStatus[status.key] || [];
+                html += `
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-${status.color} text-white border-0">
+                                <h6 class="mb-0">
+                                    <i class="bi bi-${status.icon} me-2"></i>${status.title}
+                                    <span class="badge bg-white text-${status.color} float-end">${cards.length}</span>
+                                </h6>
+                            </div>
+                            <div class="card-body p-2" style="max-height: 400px; overflow-y: auto;">
+                `;
+
+                if (cards.length > 0) {
+                    cards.forEach(card => {
+                        const priorityColor = getPriorityColor(card.priority);
+                        const assignedUser = card.assigned_user_name || 'Unassigned';
+                        html += `
+                            <div class="card mb-2 border-0 shadow-sm hover-shadow transition-all">
+                                <div class="card-body p-2">
+                                    <div class="d-flex justify-content-between align-items-start mb-1">
+                                        <h6 class="card-title mb-0 small fw-bold">${card.card_title}</h6>
+                                        <span class="badge bg-${priorityColor} badge-sm">${card.priority || 'Medium'}</span>
+                                    </div>
+                                    ${card.description ? `<p class="card-text small text-muted mb-2" style="font-size: 0.75rem;">${card.description.substring(0, 60)}${card.description.length > 60 ? '...' : ''}</p>` : ''}
+                                    ${card.due_date ? `<small class="text-muted d-block mb-2" style="font-size: 0.7rem;"><i class="bi bi-calendar-event me-1"></i>${formatDate(card.due_date)}</small>` : ''}
+
+                                    <div class="btn-group w-100" role="group">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="viewCardDetail(${card.card_id})" title="View Details">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="editCard(${card.card_id})" title="Edit Card">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="confirmDeleteCard(${card.card_id})" title="Delete Card">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    html += `<div class="text-center text-muted py-4">
+                        <i class="bi bi-inbox fs-4 d-block mb-2 opacity-50"></i>
+                        <small>No cards</small>
+                    </div>`;
                 }
+
+                html += `
+                            </div>
+                        </div>
+                    </div>
+                `;
             });
 
-            if (html === '') {
-                document.getElementById('my-cards-empty').style.display = 'block';
-            } else {
-                myCardsGrid.innerHTML = html;
+            html += `</div>`;
+            document.getElementById('cardsContent').innerHTML = html;
+        }
+
+        function confirmDeleteCard(cardId) {
+            if (confirm('Are you sure you want to delete this card? This action cannot be undone.')) {
+                deleteCardById(cardId);
             }
+        }
+
+        function deleteCardById(cardId) {
+            fetch(`/api/teamlead/cards/${cardId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('success', 'Card deleted successfully');
+                    // Close modal and refresh
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('cardsModal'));
+                    if (modal) modal.hide();
+                    loadMyCards();
+                } else {
+                    showNotification('error', data.message || 'Failed to delete card');
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting card:', error);
+                showNotification('error', 'Error deleting card');
+            });
+        }
+
+        function refreshMyCardsBoards() {
+            loadMyCards();
+        }
+
+        function openCreateBoardModal() {
+            const modal = new bootstrap.Modal(document.getElementById('createBoardModal'));
+            modal.show();
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
         }
 
         function createMyCardHTML(card) {
@@ -11123,6 +11910,67 @@
                 }
             });
         });
+
+        // Create Board Form Handler
+        document.getElementById('createBoardForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+
+            fetch('/api/teamlead/boards', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('createBoardModal'));
+                    modal.hide();
+
+                    // Reset form
+                    this.reset();
+
+                    // Refresh boards
+                    loadMyCards();
+
+                    // Show success message
+                    showNotification('Board created successfully!', 'success');
+                } else {
+                    showNotification('Failed to create board: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error creating board:', error);
+                showNotification('Error creating board. Please try again.', 'error');
+            });
+        });
+
+        function showNotification(message, type) {
+            // Simple notification - you can enhance this
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            const alertHtml = `
+                <div class="alert ${alertClass} alert-dismissible fade show position-fixed"
+                     style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;     ">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+
+            // Add to body
+            document.body.insertAdjacentHTML('beforeend', alertHtml);
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                const alert = document.querySelector('.alert:last-of-type');
+                if (alert) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
     </script>
 
 </body>

@@ -485,4 +485,214 @@ class AdminController extends Controller
             'user' => $updatedUser
         ]);
     }
+
+    /**
+     * Get all boards for a project
+     */
+    public function getProjectBoards($projectId)
+    {
+        try {
+            $boards = DB::table('boards')
+                ->leftJoin('cards', 'boards.board_id', '=', 'cards.board_id')
+                ->where('boards.project_id', $projectId)
+                ->select(
+                    'boards.board_id',
+                    'boards.board_name',
+                    'boards.description',
+                    'boards.created_at',
+                    DB::raw('COUNT(cards.card_id) as total_cards'),
+                    DB::raw('COUNT(CASE WHEN cards.status = "todo" THEN 1 END) as todo_cards'),
+                    DB::raw('COUNT(CASE WHEN cards.status = "in_progress" THEN 1 END) as in_progress_cards'),
+                    DB::raw('COUNT(CASE WHEN cards.status = "review" THEN 1 END) as review_cards'),
+                    DB::raw('COUNT(CASE WHEN cards.status = "done" THEN 1 END) as done_cards')
+                )
+                ->groupBy('boards.board_id', 'boards.board_name', 'boards.description', 'boards.created_at')
+                ->orderBy('boards.created_at', 'desc')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'boards' => $boards
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error loading boards: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Create a new board
+     */
+    public function createBoard(Request $request)
+    {
+        try {
+            $request->validate([
+                'project_id' => 'required|exists:projects,project_id',
+                'board_name' => 'required|string|max:255',
+                'description' => 'nullable|string|max:500'
+            ]);
+
+            // Get the next position number for this project
+            $maxPosition = DB::table('boards')
+                ->where('project_id', $request->project_id)
+                ->max('position');
+
+            $nextPosition = $maxPosition ? $maxPosition + 1 : 1;
+
+            $boardId = DB::table('boards')->insertGetId([
+                'project_id' => $request->project_id,
+                'board_name' => $request->board_name,
+                'description' => $request->description,
+                'position' => $nextPosition,
+                'created_at' => now()
+            ]);
+
+            $board = DB::table('boards')->where('board_id', $boardId)->first();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Board created successfully',
+                'board' => $board
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error creating board: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get board detail
+     */
+    public function getBoardDetail($boardId)
+    {
+        try {
+            $board = DB::table('boards')->where('board_id', $boardId)->first();
+
+            if (!$board) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Board not found'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'board' => $board
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error loading board: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update board
+     */
+    public function updateBoard(Request $request, $boardId)
+    {
+        try {
+            $request->validate([
+                'board_name' => 'required|string|max:255',
+                'description' => 'nullable|string|max:500'
+            ]);
+
+            $board = DB::table('boards')->where('board_id', $boardId)->first();
+
+            if (!$board) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Board not found'
+                ], 404);
+            }
+
+            DB::table('boards')
+                ->where('board_id', $boardId)
+                ->update([
+                    'board_name' => $request->board_name,
+                    'description' => $request->description
+                ]);
+
+            $updatedBoard = DB::table('boards')->where('board_id', $boardId)->first();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Board updated successfully',
+                'board' => $updatedBoard
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating board: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete board
+     */
+    public function deleteBoard($boardId)
+    {
+        try {
+            $board = DB::table('boards')->where('board_id', $boardId)->first();
+
+            if (!$board) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Board not found'
+                ], 404);
+            }
+
+            // Get all card IDs in this board
+            $cardIds = DB::table('cards')
+                ->where('board_id', $boardId)
+                ->pluck('card_id')
+                ->toArray();
+
+            if (!empty($cardIds)) {
+                // Delete all related data for these cards
+                DB::table('card_comments')->whereIn('card_id', $cardIds)->delete();
+                DB::table('card_assignments')->whereIn('card_id', $cardIds)->delete();
+                DB::table('card_submissions')->whereIn('card_id', $cardIds)->delete();
+                DB::table('card_reviews')->whereIn('card_id', $cardIds)->delete();
+                DB::table('card_approvals')->whereIn('card_id', $cardIds)->delete();
+                DB::table('card_history')->whereIn('card_id', $cardIds)->delete();
+                DB::table('time_logs')->whereIn('card_id', $cardIds)->delete();
+
+                // Get all subtask IDs for these cards
+                $subtaskIds = DB::table('subtasks')
+                    ->whereIn('card_id', $cardIds)
+                    ->pluck('subtask_id')
+                    ->toArray();
+
+                if (!empty($subtaskIds)) {
+                    // Delete subtask comments
+                    DB::table('subtask_comments')->whereIn('subtask_id', $subtaskIds)->delete();
+                    // Delete subtasks
+                    DB::table('subtasks')->whereIn('subtask_id', $subtaskIds)->delete();
+                }
+
+                // Delete the cards
+                DB::table('cards')->where('board_id', $boardId)->delete();
+            }
+
+            // Delete the board
+            DB::table('boards')->where('board_id', $boardId)->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Board deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error deleting board: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

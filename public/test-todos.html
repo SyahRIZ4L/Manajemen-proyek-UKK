@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Card Todos</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { margin: 20px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { background-color: #d4edda; }
+        .error { background-color: #f8d7da; }
+    </style>
+</head>
+<body>
+    <h1>Card Todos API Test</h1>
+
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        const CARD_ID = 1; // Test with card_id 1
+        const results = document.getElementById('results');
+
+        function addResult(title, success, message) {
+            const div = document.createElement('div');
+            div.className = 'test ' + (success ? 'success' : 'error');
+            div.innerHTML = `<strong>${title}</strong><br>${message}`;
+            results.appendChild(div);
+        }
+
+        async function runTests() {
+            try {
+                // Get CSRF token
+                const tokenResponse = await fetch('/sanctum/csrf-cookie');
+
+                // Test 1: Create a todo
+                addResult('Test 1: Create Todo', true, 'Attempting to create a todo...');
+                const createResponse = await fetch(`${API_BASE}/api/card-todos`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        card_id: CARD_ID,
+                        text: 'Test todo item - ' + new Date().toISOString()
+                    })
+                });
+
+                const createData = await createResponse.json();
+                if (createData.success) {
+                    addResult('Test 1: Create Todo', true, `Todo created successfully! ID: ${createData.todo.todo_id}`);
+                    window.testTodoId = createData.todo.todo_id;
+                } else {
+                    addResult('Test 1: Create Todo', false, `Failed: ${createData.message}`);
+                }
+
+                // Test 2: Get todos
+                addResult('Test 2: Get Todos', true, 'Fetching todos...');
+                const getResponse = await fetch(`${API_BASE}/api/card-todos?card_id=${CARD_ID}`, {
+                    credentials: 'include'
+                });
+                const getData = await getResponse.json();
+                if (getData.success) {
+                    addResult('Test 2: Get Todos', true, `Found ${getData.todos.length} todos`);
+                } else {
+                    addResult('Test 2: Get Todos', false, `Failed: ${getData.message}`);
+                }
+
+                // Test 3: Toggle todo (if we created one)
+                if (window.testTodoId) {
+                    addResult('Test 3: Toggle Todo', true, 'Toggling todo completion...');
+                    const toggleResponse = await fetch(`${API_BASE}/api/card-todos/${window.testTodoId}/toggle`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                        },
+                        credentials: 'include'
+                    });
+                    const toggleData = await toggleResponse.json();
+                    if (toggleData.success) {
+                        addResult('Test 3: Toggle Todo', true, `Todo toggled! Completed: ${toggleData.todo.completed}`);
+                    } else {
+                        addResult('Test 3: Toggle Todo', false, `Failed: ${toggleData.message}`);
+                    }
+                }
+
+            } catch (error) {
+                addResult('Error', false, error.message);
+            }
+        }
+
+        // Note: This test requires authentication
+        addResult('Note', true, 'These tests require you to be logged in. Please login first if you see authentication errors.');
+
+        // Uncomment to run tests automatically
+        // setTimeout(runTests, 1000);
+    </script>
+</body>
+</html>

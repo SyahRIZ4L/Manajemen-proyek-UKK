@@ -87,13 +87,19 @@ class NotificationController extends Controller
                         'project_name' => $notification->project ? $notification->project->project_name : null,
                         'triggered_by' => $notification->triggeredBy ? $notification->triggeredBy->full_name : null,
                         'is_read' => $notification->is_read,
-                        'created_at' => $notification->created_at
+                        'created_at' => $notification->created_at,
+                        'data' => [
+                            'action_url' => '#'
+                        ]
                     ];
                 });
 
+            $unreadCount = Notification::forUser($user->user_id)->unread()->count();
+
             return response()->json([
                 'success' => true,
-                'data' => $notifications
+                'notifications' => $notifications,
+                'unread_count' => $unreadCount
             ]);
         } catch (\Exception $e) {
             return response()->json([

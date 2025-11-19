@@ -318,7 +318,7 @@
                     </a>
                     <a class="nav-link {{ request()->routeIs('member.my-cards*') ? 'active' : '' }}"
                        href="{{ route('member.my-cards') }}">
-                        <i class="bi bi-kanban me-2"></i>My Cards
+                        <i class="bi bi-kanban me-2"></i>My Tasks
                     </a>
                     <a class="nav-link {{ request()->routeIs('member.time-logs*') ? 'active' : '' }}"
                        href="{{ route('member.time-logs') }}">
@@ -405,23 +405,6 @@
                                 </li>
                             </ul>
                         </div>
-
-                        <!-- Active Timer Display -->
-                        <div id="active-timer" class="d-none">
-                            <div class="card border-warning">
-                                <div class="card-body p-2">
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi bi-play-circle text-warning me-2"></i>
-                                        <small class="me-2">Working on:</small>
-                                        <strong class="me-2" id="timer-card-title"></strong>
-                                        <span class="timer-display text-warning" id="timer-display">00:00:00</span>
-                                        <button class="btn btn-sm btn-outline-danger ms-2" id="stop-timer-btn">
-                                            <i class="bi bi-stop-circle"></i> Stop
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -449,11 +432,8 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Active Timer Script -->
+    <!-- Notifications Script -->
     <script>
-        let timerInterval;
-        let timerStartTime;
-        let activeCardId;
         let notificationInterval;
         let isActive = true;
 
@@ -461,18 +441,16 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM loaded, initializing all components...');
 
-            // Initialize timer and notifications with error handling
+            // Initialize notifications with error handling
             try {
-                checkActiveTimer();
                 checkNotifications();
                 startAdaptivePolling();
             } catch (error) {
-                console.error('Error initializing timer/notifications:', error);
+                console.error('Error initializing notifications:', error);
             }
 
-            // Attach event listeners for timer and notifications
+            // Attach event listeners for notifications
             try {
-                attachStopTimerListener();
                 attachMarkAllReadListener();
             } catch (error) {
                 console.error('Error attaching event listeners:', error);
@@ -499,106 +477,11 @@
         });
 
         function startAdaptivePolling() {
-            // Timer polling - more frequent when active
-            timerInterval = setInterval(() => {
-                if (document.getElementById('active-timer') && !document.getElementById('active-timer').classList.contains('d-none')) {
-                    checkActiveTimer();
-                }
-            }, isActive ? 10000 : 30000); // 10s when active, 30s when inactive
-
             // Notification polling - less frequent overall
             notificationInterval = setInterval(checkNotifications, isActive ? 45000 : 120000); // 45s when active, 2min when inactive
 
             // Reset activity flag periodically
             setTimeout(() => { isActive = false; }, 30000);
-        }
-
-        function checkActiveTimer() {
-            fetch('/member/timer/active')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.active) {
-                        showActiveTimer(data);
-                    } else {
-                        hideActiveTimer();
-                    }
-                })
-                .catch(error => console.error('Error checking active timer:', error));
-        }
-
-        function showActiveTimer(data) {
-            document.getElementById('active-timer').classList.remove('d-none');
-            document.getElementById('timer-card-title').textContent = data.card_title;
-
-            activeCardId = data.card_id;
-            timerStartTime = new Date(data.start_time);
-
-            // Update timer display
-            updateTimerDisplay();
-
-            // Start updating every second
-            if (timerInterval) clearInterval(timerInterval);
-            timerInterval = setInterval(updateTimerDisplay, 1000);
-        }
-
-        function hideActiveTimer() {
-            document.getElementById('active-timer').classList.add('d-none');
-            if (timerInterval) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-            }
-        }
-
-        function updateTimerDisplay() {
-            const now = new Date();
-            const elapsed = Math.floor((now - timerStartTime) / 1000);
-
-            const hours = Math.floor(elapsed / 3600);
-            const minutes = Math.floor((elapsed % 3600) / 60);
-            const seconds = elapsed % 60;
-
-            const display = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            document.getElementById('timer-display').textContent = display;
-        }
-
-        // Stop timer button - moved to DOM ready
-        function attachStopTimerListener() {
-            const stopTimerBtn = document.getElementById('stop-timer-btn');
-            if (stopTimerBtn) {
-                stopTimerBtn.addEventListener('click', function() {
-                    if (activeCardId) {
-                        stopTimer(activeCardId);
-                    }
-                });
-            }
-        }
-
-        function stopTimer(cardId) {
-            fetch(`/member/card/${cardId}/timer/stop`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    hideActiveTimer();
-                    // Show success message
-                    showAlert('success', 'Timer stopped successfully!');
-                    // Reload page to update data
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1000);
-                } else {
-                    showAlert('danger', data.error || 'Failed to stop timer');
-                }
-            })
-            .catch(error => {
-                console.error('Error stopping timer:', error);
-                showAlert('danger', 'An error occurred while stopping the timer');
-            });
         }
 
         function showAlert(type, message) {

@@ -75,6 +75,11 @@ class Card extends Model
         return $this->hasMany(CardHistory::class, 'card_id', 'card_id');
     }
 
+    public function todos(): HasMany
+    {
+        return $this->hasMany(CardTodo::class, 'card_id', 'card_id');
+    }
+
     // Scopes
     public function scopeByStatus($query, $status)
     {
@@ -388,17 +393,20 @@ class Card extends Model
 
     private function shouldStartAutoTimer($oldStatus, $newStatus)
     {
-        // Start timer when:
-        // - Card moves from todo to in_progress (assigned and started)
-        // - Card moves to review state
+        // START timer: todo → in_progress (first time start)
+        // RESUME timer: review → in_progress (rejected, continue work)
         return ($oldStatus === 'todo' && $newStatus === 'in_progress') ||
-               ($newStatus === 'review' && $oldStatus !== 'review');
+               ($oldStatus === 'review' && $newStatus === 'in_progress');
     }
 
     private function shouldStopAutoTimer($oldStatus, $newStatus)
     {
-        // Stop timer when card is done or moves back to todo
-        return $newStatus === 'done' || $newStatus === 'todo';
+        // PAUSE timer: in_progress → review (submitted for review)
+        // STOP timer: → done (completed permanently)
+        // STOP timer: → todo (reset)
+        return $newStatus === 'review' ||
+               $newStatus === 'done' ||
+               $newStatus === 'todo';
     }
 
     private function isRejected($oldStatus, $newStatus)
@@ -409,8 +417,9 @@ class Card extends Model
 
     private function handleRejection()
     {
-        // When card is rejected, continue timer automatically
-        $this->autoStartTimer();
+        // When rejected, timer will be resumed by shouldStartAutoTimer
+        // No need to manually start here to avoid double start
+        Log::info('Card rejected, timer will resume via shouldStartAutoTimer');
 
         // Log the rejection for tracking
         $this->logRejection();
