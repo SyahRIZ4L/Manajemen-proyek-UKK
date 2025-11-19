@@ -2544,13 +2544,55 @@
         }
 
         // Notification system
-        function showNotification(message, type = 'info') {
+        // Universal notification function - handles multiple parameter formats
+        function showNotification(param1, param2, param3) {
+            let type, title, message;
+
+            // Detect parameter format
+            if (param3 !== undefined) {
+                // Format: showNotification(type, title, message)
+                type = param1;
+                title = param2;
+                message = param3;
+            } else if (param2 !== undefined) {
+                // Format: showNotification(message, type)
+                message = param1;
+                type = param2;
+                title = '';
+            } else {
+                // Format: showNotification(message)
+                message = param1;
+                type = 'info';
+                title = '';
+            }
+
             const notification = document.createElement('div');
-            notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
-            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            const alertType = type === 'error' ? 'danger' : type;
+            notification.className = `alert alert-${alertType} alert-dismissible fade show position-fixed`;
+
+            // Set base positioning styles
+            notification.style.top = '20px';
+            notification.style.right = '20px';
+            notification.style.zIndex = '9999';
+            notification.style.minWidth = '300px';
+
+            // Add color styling based on type
+            if (type === 'success') {
+                notification.style.backgroundColor = '#28a745';
+                notification.style.color = 'white';
+                notification.style.borderColor = '#28a745';
+            } else if (type === 'error' || type === 'danger') {
+                notification.style.backgroundColor = '#dc3545';
+                notification.style.color = 'white';
+                notification.style.borderColor = '#dc3545';
+            }
+
+            console.log('Notification type:', type, 'Background:', notification.style.backgroundColor);
+
+            const content = title ? `<strong>${title}</strong> ${message}` : message;
             notification.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                ${content}
+                <button type="button" class="btn-close" ${(type === 'success' || type === 'error' || type === 'danger') ? 'data-bs-theme="dark"' : ''} data-bs-dismiss="alert"></button>
             `;
             document.body.appendChild(notification);
 
@@ -4299,26 +4341,7 @@
             });
         }
 
-        function showNotification(type, title, message) {
-            // Create notification element
-            const notification = document.createElement('div');
-            notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
-            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-
-            notification.innerHTML = `
-                <strong>${title}</strong> ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-
-            document.body.appendChild(notification);
-
-            // Auto remove after 5 seconds
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.remove();
-                }
-            }, 5000);
-        }
+        // Removed duplicate showNotification function - using universal one at top
 
         function initializeCreateCardForm() {
             console.log('Initializing create card form...');
@@ -11949,28 +11972,7 @@
             });
         });
 
-        function showNotification(message, type) {
-            // Simple notification - you can enhance this
-            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
-            const alertHtml = `
-                <div class="alert ${alertClass} alert-dismissible fade show position-fixed"
-                     style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;     ">
-                    ${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            `;
-
-            // Add to body
-            document.body.insertAdjacentHTML('beforeend', alertHtml);
-
-            // Auto remove after 5 seconds
-            setTimeout(() => {
-                const alert = document.querySelector('.alert:last-of-type');
-                if (alert) {
-                    alert.remove();
-                }
-            }, 5000);
-        }
+        // Removed duplicate showNotification function - using universal one at top
     </script>
 
 </body>
